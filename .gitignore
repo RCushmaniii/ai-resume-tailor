@@ -48,3 +48,14 @@ coverage
 # Misc
 .vercel
 .netlify
+
+# Python
+server/venv/
+server/__pycache__/
+server/*.pyc
+server/.env
+
+# Old root files (moved to client)
+/src/
+/public/
+/index.html

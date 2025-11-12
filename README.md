@@ -1,19 +1,19 @@
-# React Vite Tailwind Base
+# AI Resume Tailor (LatAm Edition)
 
-**Last Updated:** October 2, 2025
+**Last Updated:** November 5, 2025
 
-A modern, production-ready React template with **ShadCN UI**, **data visualizations**, and a complete **interactive appointment booking showcase**. Built with best practices, mobile-first design, and beautiful animations.
+Paste your resume and job description—get instant, ATS-aware, plain-English fixes tailored for non-native English speakers (e.g., engineers in Mexico applying to U.S./multinational roles).
 
 ---
 
-## ✨ Highlights
+## ✨ MVP Features
 
-🎨 **Interactive Components Showcase** - Full appointment booking system with calendar, time slots, and confirmation dialogs  
-📊 **Data Visualization Dashboard** - Beautiful charts with Recharts (Area, Pie, Bar charts)  
-🎯 **ShadCN UI Integration** - 17+ pre-built, accessible components  
-📱 **Mobile-First & Responsive** - Optimized for all screen sizes  
-⚡ **Lightning Fast** - Powered by Vite 7 with HMR  
-🔒 **Type-Safe** - Full TypeScript support
+🎯 **Instant Analysis** - Paste resume + job description, get results in ≤8 seconds  
+📊 **Match Score** - 0-100 score with detailed breakdown  
+🔍 **Missing Keywords** - Prioritized list with context from JD  
+✍️ **Smart Suggestions** - 5-8 targeted rewrites with rationale  
+🌎 **LatAm Focused** - Guidance for non-native English speakers  
+🔒 **Privacy First** - No server-side storage, process in memory
 
 ---
 
@@ -35,67 +35,105 @@ A modern, production-ready React template with **ShadCN UI**, **data visualizati
 
 ## 🚀 Quick Start
 
+### Prerequisites
+- Node.js 18+ and pnpm
+- Python 3.9+
+
+### Installation
+
 ```bash
-# Install dependencies
+# Install client dependencies
 pnpm install
 
-# Start development server
-pnpm dev
-
-# Build for production
-pnpm build
-
-# Preview production build
-pnpm preview
+# Set up Python virtual environment and install server dependencies
+cd server
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Mac/Linux
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+cd ..
 ```
+
+### Development
+
+```bash
+# Terminal 1: Start Flask backend (port 5000)
+pnpm dev:server
+
+# Terminal 2: Start React frontend (port 3000)
+pnpm dev:client
+```
+
+Open `http://localhost:3000` in your browser.
+
+### Test the Connection
+
+Visit `http://localhost:3000/test-api` to verify the frontend can communicate with the backend.
+
+---
+
+## 📚 Documentation
+
+Detailed documentation is available in the [`/docs`](./docs) folder:
+
+- **[Setup Guide](./docs/SETUP.md)** - Complete installation and configuration
+- **[Phase 0 Summary](./docs/PHASE_0_COMPLETE.md)** - Project scaffold completion
+- **[GitHub Setup](./docs/GITHUB_SETUP.md)** - Repository configuration
+- **[SEO Guide](./docs/SEO_SETUP.md)** - SEO optimization
 
 ---
 
 ## 🎯 Tech Stack
 
-### Core
+### Frontend (`/client`)
 
-- **React 19** - Latest React with concurrent features
-- **TypeScript 5.8** - Full type safety
-- **Vite 7** - Next-generation frontend tooling
-- **Tailwind CSS 3.4** - Utility-first CSS framework
+- **React 19** + **TypeScript 5.8** - Type-safe UI
+- **Vite 7** - Lightning-fast dev server
+- **Tailwind CSS 3.4** + **ShadCN UI** - Beautiful, accessible components
+- **Zustand** - Lightweight state management
+- **TanStack Query** - Server state & caching
+- **React Router v6** - Client-side routing
+- **Lucide React** - Modern icons
 
-### UI & Components
+### Backend (`/server`)
 
-- **ShadCN UI** - Beautifully designed components built with Radix UI
-- **Lucide React** - Modern icon library (500+ icons)
-- **Recharts** - Composable charting library
-- **date-fns** - Modern date utility library
-- **tailwindcss-animate** - Animation utilities
-
-### Developer Experience
-
-- **ESLint** - Code linting with React hooks rules
-- **Prettier** - Code formatting
-- **TypeScript ESLint** - TypeScript-specific linting
-- **MSW** (Mock Service Worker) - API mocking for development
+- **Flask 3.0** - Lightweight Python API
+- **Flask-CORS** - Cross-origin support
+- **spaCy 3.7** - NLP for keyword extraction
+- **OpenAI API** - GPT-4 for suggestions
+- **python-dotenv** - Environment management
 
 ---
 
 ## 📦 Project Structure
 
 ```
-src/
-├── components/
-│   ├── layout/          # Header, Footer
-│   └── ui/              # ShadCN UI components (17 components)
-├── pages/
-│   ├── Components.tsx   # Interactive booking showcase + charts
-│   ├── DocsPage.tsx     # Documentation viewer
-│   ├── ExamplesPage.tsx # Code examples
-│   ├── HomePage.tsx     # Landing page
-│   └── ...              # Other pages
-├── lib/
-│   └── utils.ts         # Utility functions (cn, etc.)
-├── docs/                # Markdown documentation
-├── mocks/               # MSW mock handlers
-└── App.tsx              # Main app with routing
-
+ai-resume-tailor/
+├── client/              # React frontend
+│   ├── src/
+│   │   ├── components/  # UI components
+│   │   ├── features/    # Feature modules (future)
+│   │   ├── lib/         # Utilities
+│   │   └── pages/       # Page components
+│   ├── package.json
+│   └── vite.config.ts   # Vite + API proxy config
+├── server/              # Flask backend
+│   ├── app.py           # Main Flask app
+│   ├── requirements.txt # Python dependencies
+│   ├── .env.example     # Environment template
+│   ├── setup.bat        # Windows setup script
+│   └── venv/            # Python virtual env (gitignored)
+├── docs/                # 📚 Documentation
+│   ├── README.md        # Documentation index
+│   ├── SETUP.md         # Setup guide
+│   ├── PHASE_0_COMPLETE.md  # Phase 0 summary
+│   ├── GITHUB_SETUP.md  # GitHub setup
+│   └── SEO_SETUP.md     # SEO guide
+├── package.json         # Root workspace scripts
+├── pnpm-workspace.yaml  # pnpm workspace config
+├── START_DEV.bat        # Quick start script (Windows)
+└── .env.example         # Environment template
 ```
 
 ---
