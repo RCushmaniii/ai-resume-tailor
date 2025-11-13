@@ -243,16 +243,13 @@ ai-resume-tailor/
 
 ## About This Project
 
-This is a portfolio project demonstrating:
+Portfolio project demonstrating:
 
-- Full-stack development (React frontend + Flask backend)
-- Third-party API integration (OpenAI)
-- Production deployment (Vercel + Render)
-- CORS and security configuration
-- Environment management across dev/prod
-- User-centered design (privacy-first, zero-friction UX)
-
-Built by **Robert Cushman**, a business English consultant transitioning into software development. This project showcases the ability to take an idea from concept to production deployment while solving real technical challenges along the way.
+- Full-stack development (React + TypeScript, Flask + Python)
+- AI/ML integration (OpenAI GPT-4 API)
+- Production deployment with CI/CD (Vercel + Render)
+- Security configuration (CORS, input validation, environment management)
+- Modern development workflow (Vite, TypeScript, Tailwind CSS)
 
 ---
 
