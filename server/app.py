@@ -13,6 +13,9 @@ from ai_engine import analyze_resume
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+# App version for deployment tracking
+VERSION = "1.0.1"
+
 # Load environment variables
 load_dotenv()
 
@@ -51,7 +54,11 @@ def contains_suspicious_content(text: str) -> bool:
 
 @app.route("/api/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok", "message": "Flask backend is running"})
+    return jsonify({
+        "status": "ok",
+        "message": "Flask backend is running",
+        "version": VERSION
+    })
 
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
