@@ -25,7 +25,9 @@ export function Analyze() {
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
     
     try {
-      const response = await fetch('/api/analyze', {
+      const API_URL = import.meta.env.VITE_API_URL || '/api';
+      console.log('🔍 API URL:', API_URL); // Debug: verify environment variable
+      const response = await fetch(`${API_URL}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
