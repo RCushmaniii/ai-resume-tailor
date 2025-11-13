@@ -55,6 +55,7 @@ export function Header({ navigate }: HeaderProps) {
           <div className="hidden md:flex md:items-center md:space-x-6">
             <a href="/analyze" onClick={(e) => { e.preventDefault(); handleNavClick('analyze'); }} className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">Analyze Resume</a>
             <a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">How It Works</a>
+            <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/readme'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">Docs</a>
             <a href="/privacy" onClick={(e) => { e.preventDefault(); handleNavClick('privacy'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">Privacy</a>
           </div>
 
@@ -89,6 +90,7 @@ export function Header({ navigate }: HeaderProps) {
           <div className="px-2 pt-2 pb-3 space-y-1">
             <a href="/analyze" onClick={(e) => { e.preventDefault(); handleNavClick('analyze'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">Analyze Resume</a>
             <a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">How It Works</a>
+            <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/readme'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">Documentation</a>
             <a href="/privacy" onClick={(e) => { e.preventDefault(); handleNavClick('privacy'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">Privacy</a>
           </div>
         </div>

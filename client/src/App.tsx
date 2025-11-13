@@ -1,17 +1,19 @@
 // File: src/App.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Toaster } from 'sonner';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { Landing } from './pages/Landing';
-import { DocsPage } from './pages/DocsPage';
-import { ExamplesPage } from './pages/ExamplesPage';
-import { ComponentsPage } from './pages/Components';
-import { NotFoundPage } from './pages/NotFoundPage';
-import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
-import { TermsOfServicePage } from './pages/TermsOfServicePage';
-import TestApiPage from './pages/TestApiPage';
-import { Analyze } from './pages/Analyze';
+
+// Lazy load pages for code splitting
+const DocsPage = lazy(() => import('./pages/DocsPage').then(m => ({ default: m.DocsPage })));
+const ExamplesPage = lazy(() => import('./pages/ExamplesPage').then(m => ({ default: m.ExamplesPage })));
+const ComponentsPage = lazy(() => import('./pages/Components').then(m => ({ default: m.ComponentsPage })));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage').then(m => ({ default: m.TermsOfServicePage })));
+const TestApiPage = lazy(() => import('./pages/TestApiPage'));
+const Analyze = lazy(() => import('./pages/Analyze').then(m => ({ default: m.Analyze })));
 
 // Define the possible pages in our application
 export type Page = 'home' | 'components' | 'docs' | 'examples' | 'privacy' | 'terms' | 'test-api' | 'analyze' | 'not-found';
@@ -106,7 +108,16 @@ function App() {
       <Toaster position="top-center" richColors closeButton />
       <Header navigate={handleNavClick} />
       <main className={currentPage === 'home' ? 'flex-grow' : 'flex-grow container mx-auto px-4 py-8'}>
-        {renderCurrentPage()}
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
+          </div>
+        }>
+          {renderCurrentPage()}
+        </Suspense>
       </main>
       <Footer navigate={handleNavClick} />
     </div>

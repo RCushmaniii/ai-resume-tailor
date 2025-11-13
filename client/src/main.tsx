@@ -4,17 +4,16 @@ import App from './App.tsx'
 import './index.css'
 
 async function enableMocking() {
-  // For the template, we'll enable MSW by default for demonstration purposes
-  // In a real app, you might want to check an environment variable
-  const shouldEnableMocking = true;
+  // Only enable MSW in development mode
+  const shouldEnableMocking = import.meta.env.DEV;
   
-  // Skip MSW initialization if it's disabled
+  // Skip MSW initialization if it's disabled (production)
   if (!shouldEnableMocking) {
-    console.info('API mocking is disabled.');
+    console.info('API mocking is disabled (production mode).');
     return;
   }
   
-  console.info('API mocking is enabled.');
+  console.info('API mocking is enabled (development mode).');
   
   try {
     // Use the setupMsw helper to initialize MSW

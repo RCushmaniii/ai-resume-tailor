@@ -17,7 +17,16 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+
+# CORS configuration - allow requests from your frontend domain
+# In production, replace with your actual frontend URL
+CORS(app, resources={
+    r"/api/*": {
+        "origins": os.getenv("FRONTEND_URL", "*"),  # Set FRONTEND_URL in production
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"],
+    }
+})
 
 # Security: Suspicious patterns that might indicate injection attempts
 SUSPICIOUS_PATTERNS = [

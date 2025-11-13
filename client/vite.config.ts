@@ -74,6 +74,37 @@ export default defineConfig({
     outDir: 'dist',
     // Ensure assets are copied
     assetsInlineLimit: 0,
+    // Code splitting and chunk optimization
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate React and React-DOM into their own chunk
+          'react-vendor': ['react', 'react-dom'],
+          // Separate UI library components
+          'ui-vendor': [
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-label',
+            '@radix-ui/react-progress',
+            '@radix-ui/react-select',
+            '@radix-ui/react-separator',
+            '@radix-ui/react-slider',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-tabs',
+          ],
+          // Separate charting library
+          'charts-vendor': ['recharts'],
+          // Separate other large dependencies
+          'utils-vendor': ['clsx', 'class-variance-authority', 'tailwind-merge'],
+          // Toast notification library
+          'toast-vendor': ['sonner'],
+        },
+      },
+    },
+    // Increase chunk size warning limit since we're splitting properly
+    chunkSizeWarningLimit: 600,
   },
   server: {
     // Configure the dev server to handle client-side routing

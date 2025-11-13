@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { AnalysisResult } from './store';
+import type { AnalysisResult } from './store';
 
 interface AnalyzeResumeParams {
   resume: string;
