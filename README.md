@@ -1,19 +1,20 @@
-# AI Resume Tailor (LatAm Edition)
+# AI Resume Tailor
 
-**Last Updated:** November 5, 2025
+**Last Updated:** November 12, 2025  
+**Live App:** https://ai-resume-tailor-client.vercel.app
 
-Paste your resume and job description—get instant, ATS-aware, plain-English fixes tailored for non-native English speakers (e.g., engineers in Mexico applying to U.S./multinational roles).
+Paste your resume and job description—get instant, ATS-aware, AI-powered analysis in under 60 seconds. Free forever, no signup required.
 
 ---
 
-## ✨ MVP Features
+## ✨ Features
 
-🎯 **Instant Analysis** - Paste resume + job description, get results in ≤8 seconds  
-📊 **Match Score** - 0-100 score with detailed breakdown  
-🔍 **Missing Keywords** - Prioritized list with context from JD  
-✍️ **Smart Suggestions** - 5-8 targeted rewrites with rationale  
-🌎 **LatAm Focused** - Guidance for non-native English speakers  
-🔒 **Privacy First** - No server-side storage, process in memory
+🎯 **Instant Analysis** - Get results in under 60 seconds  
+📊 **Match Score** - 0-100 compatibility score with detailed breakdown  
+🔍 **Missing Keywords** - Discover what ATS systems are looking for  
+✍️ **Smart Suggestions** - Actionable improvements powered by GPT-4  
+🔒 **Privacy First** - No data storage, everything processed in real-time  
+💰 **Always Free** - No credit card, no signup, unlimited analyses
 
 ---
 
