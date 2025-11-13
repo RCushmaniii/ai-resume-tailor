@@ -3,6 +3,7 @@
 **Last Updated:** November 5, 2025
 
 Paste your resume and job description—get instant, ATS-aware, plain-English fixes tailored for non-native English speakers (e.g., engineers in Mexico applying to U.S./multinational roles).
+MY_EMAIL=info@rankitbetter.com
 
 ---
 
@@ -36,6 +37,7 @@ Paste your resume and job description—get instant, ATS-aware, plain-English fi
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+ and pnpm
 - Python 3.9+
 
