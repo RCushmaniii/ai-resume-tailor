@@ -1,5 +1,6 @@
 // File: src/components/layout/Header.tsx
 import { useState } from 'react';
+import logoImage from '@/assets/images/logo.jpg';
 
 type HeaderProps = {
   navigate: (page: string) => void;
@@ -42,7 +43,7 @@ export function Header({ navigate }: HeaderProps) {
           {/* Logo and Branding */}
           <div className="flex-shrink-0">
             <a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }}>
-              <img className="h-24 w-auto" src="/src/assets/images/logo.jpg" alt="AI Resume Tailor Logo" />
+              <img className="h-24 w-auto" src={logoImage} alt="AI Resume Tailor Logo" />
             </a>
           </div>
 

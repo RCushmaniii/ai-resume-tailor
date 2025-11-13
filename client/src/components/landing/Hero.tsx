@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Sparkles, ArrowRight } from 'lucide-react';
+import heroImage from '@/assets/images/hero.jpg';
 
 export function Hero() {
   const handleCTA = (e: React.MouseEvent) => {
@@ -70,7 +71,7 @@ export function Hero() {
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border-8 border-white">
               <img
-                src="/src/assets/images/hero.jpg"
+                src={heroImage}
                 alt="Professional resume analysis"
                 className="w-full h-auto object-cover"
                 onError={(e) => {

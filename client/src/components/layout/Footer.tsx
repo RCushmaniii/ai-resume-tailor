@@ -1,4 +1,5 @@
 // File: src/components/layout/Footer.tsx
+import logoImage from '@/assets/images/logo.jpg';
 
 type FooterProps = {
   navigate: (page: string) => void;
@@ -42,7 +43,7 @@ export function Footer({ navigate }: FooterProps) {
         <div className="flex justify-center mb-8 sm:hidden">
           <div className="flex flex-col items-center">
             <a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }}>
-              <img className="h-16 w-auto" src="/src/assets/images/logo.jpg" alt="AI Resume Tailor logo" />
+              <img className="h-16 w-auto" src={logoImage} alt="AI Resume Tailor logo" />
             </a>
           </div>
         </div>
@@ -85,7 +86,7 @@ export function Footer({ navigate }: FooterProps) {
           <div className="hidden sm:flex items-start justify-end">
             <div className="flex flex-col items-center">
               <a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }}>
-                <img className="h-16 w-auto mb-2" src="/src/assets/images/logo.jpg" alt="AI Resume Tailor logo" />
+                <img className="h-16 w-auto mb-2" src={logoImage} alt="AI Resume Tailor logo" />
               </a>
               <span className="text-sm text-slate-500 text-center">Powered by AI<br/>Free Forever</span>
             </div>
