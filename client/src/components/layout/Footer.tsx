@@ -66,7 +66,7 @@ export function Footer({ navigate }: FooterProps) {
           <div className="space-y-2">
             <h3 className={headingStyles}>Resources</h3>
             <ul className="space-y-2">
-              <li><a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/readme'); }} className={linkStyles}>Documentation</a></li>
+              <li><a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className={linkStyles}>Documentation</a></li>
               <li><a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }} className={linkStyles}>Resume Tips</a></li>
               <li><a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }} className={linkStyles}>ATS Guide</a></li>
               <li><a href="https://github.com/RCushmaniii/ai-resume-tailor" target="_blank" rel="noopener noreferrer" className={linkStyles}>GitHub</a></li>

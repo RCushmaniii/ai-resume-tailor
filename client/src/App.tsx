@@ -31,13 +31,13 @@ function App() {
     // If docs page, check if the subpage is valid
     let isValidSubpage = true;
     if (page === 'docs') {
-      const validSubpages = ['readme', 'quick_start', 'template_usage', 'mobile_responsiveness', 'core_coding_principals', 'changelog', 'prd', 'next_steps'];
-      isValidSubpage = validSubpages.includes(subpage);
+      const validSubpages = ['index', 'quick_start', 'prd', 'roadmap', 'setup', 'security', 'testing', 'deployment', 'template_usage', 'mobile_responsiveness', 'coding_principles', 'changelog', 'phase_0', 'phase_2'];
+      isValidSubpage = !subpage || validSubpages.includes(subpage);
     }
     
     return {
       currentPage: isValidPage && (page !== 'docs' || isValidSubpage) ? page as Page : 'not-found',
-      currentDoc: subpage || 'readme'
+      currentDoc: subpage || 'index'
     };
   };
 
@@ -85,7 +85,7 @@ function App() {
       case 'components':
         return <ComponentsPage />;
       case 'docs':
-        return <DocsPage docName={currentDoc as 'readme' | 'quick_start' | 'template_usage' | 'mobile_responsiveness' | 'core_coding_principals' | 'changelog' | 'prd' | 'next_steps'} navigate={handleNavClick} />;
+        return <DocsPage docName={currentDoc as 'index' | 'quick_start' | 'prd' | 'roadmap' | 'setup' | 'security' | 'testing' | 'deployment' | 'template_usage' | 'mobile_responsiveness' | 'coding_principles' | 'changelog' | 'phase_0' | 'phase_2'} navigate={handleNavClick} />;
       case 'examples':
         return <ExamplesPage />;
       case 'privacy':

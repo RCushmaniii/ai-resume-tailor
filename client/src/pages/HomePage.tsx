@@ -95,7 +95,7 @@ export function HomePage() {
                 </a>
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg h-12" asChild>
-                <a href="/docs/quick_start">
+                <a href="/docs/index">
                   Quick Start Guide
                 </a>
               </Button>

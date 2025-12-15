@@ -19,6 +19,12 @@ coverage
 .coverage
 .nyc_output
 
+# Generated documentation sync output (canonical source is /docs)
+client/public/docs/
+
+# Retired legacy in-app docs source (canonical source is /docs)
+client/src/docs/
+
 # Local env files
 .env
 .env.local

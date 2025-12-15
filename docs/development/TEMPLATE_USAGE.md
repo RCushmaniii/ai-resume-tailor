@@ -1,4 +1,4 @@
-# Template Usage Guide
+# Template Usage
 
 This document provides detailed information about how to use this template effectively.
 
@@ -14,7 +14,6 @@ react-vite-tailwind-base/
 │   ├── components/       # Reusable UI components
 │   │   ├── layout/       # Layout components (Header, Footer)
 │   │   └── ui/           # ShadCN UI components (17 components)
-│   ├── docs/             # Documentation (markdown files)
 │   ├── examples/         # Example components (removable)
 │   ├── lib/              # Utility functions (cn, utils)
 │   ├── mocks/            # MSW API mocking
@@ -128,16 +127,16 @@ pnpm dlx shadcn@latest add toast popover command
 ### Importing Components
 
 ```tsx
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Calendar } from '@/components/ui/calendar'
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
 ```
 
 ### Example Usage
 
 ```tsx
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 function MyComponent() {
   return (
@@ -152,7 +151,7 @@ function MyComponent() {
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }
 ```
 
@@ -161,7 +160,7 @@ function MyComponent() {
 The template includes Lucide React for modern, customizable icons:
 
 ```tsx
-import { Calendar, User, Mail, Settings, TrendingUp } from 'lucide-react'
+import { Calendar, User, Mail, Settings, TrendingUp } from 'lucide-react';
 
 function MyComponent() {
   return (
@@ -169,7 +168,7 @@ function MyComponent() {
       <Calendar className="h-6 w-6 text-primary" />
       <User className="h-4 w-4 text-muted-foreground" />
     </div>
-  )
+  );
 }
 ```
 
@@ -178,18 +177,15 @@ Browse all 500+ icons at: https://lucide.dev/icons/
 ## Best Practices
 
 1. **Component Structure**
-
    - Keep components small and focused
    - Use TypeScript interfaces for props
    - Follow the project's naming conventions
 
 2. **State Management**
-
    - For small projects, use React's built-in state management
    - For larger projects, consider adding a state management library
 
 3. **Styling**
-
    - Use Tailwind utility classes for styling
    - Create reusable component classes for consistency
    - Follow the project's design system

@@ -1,19 +1,25 @@
 // File: src/pages/DocsPage.tsx
 import React, { useState, useEffect } from 'react';
 import { marked } from 'marked';
-import { FileText, BookOpen, Code, Lightbulb, ListTodo, Rocket, History, Smartphone } from 'lucide-react';
+import { FileText, BookOpen, Code, Lightbulb, Rocket, History, Shield, Wrench, FlaskConical, Target, Smartphone } from 'lucide-react';
 
 // Create a local component that doesn't rely on the import
 const DocsLayout = ({ children, activeDoc, navigate }: { children: React.ReactNode, activeDoc: string, navigate: (page: string) => void }) => {
   const navItems = [
-    { id: 'readme', label: 'README', icon: FileText },
+    { id: 'index', label: 'Docs Index', icon: FileText },
     { id: 'quick_start', label: 'Quick Start', icon: Rocket },
+    { id: 'prd', label: 'PRD', icon: Lightbulb },
+    { id: 'roadmap', label: 'Roadmap', icon: Target },
+    { id: 'setup', label: 'Setup', icon: Rocket },
+    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'testing', label: 'Testing', icon: Wrench },
+    { id: 'deployment', label: 'Deployment', icon: FlaskConical },
     { id: 'template_usage', label: 'Template Usage', icon: BookOpen },
-    { id: 'mobile_responsiveness', label: 'Mobile Responsive', icon: Smartphone },
-    { id: 'core_coding_principals', label: 'Coding Principles', icon: Code },
+    { id: 'mobile_responsiveness', label: 'Mobile Responsiveness', icon: Smartphone },
+    { id: 'coding_principles', label: 'Coding Principles', icon: Code },
     { id: 'changelog', label: 'Changelog', icon: History },
-    { id: 'prd', label: 'Product Doc (PRD)', icon: Lightbulb },
-    { id: 'next_steps', label: 'Next Steps', icon: ListTodo },
+    { id: 'phase_0', label: 'Phase 0', icon: BookOpen },
+    { id: 'phase_2', label: 'Phase 2', icon: BookOpen },
   ];
 
   return (
@@ -44,7 +50,7 @@ const DocsLayout = ({ children, activeDoc, navigate }: { children: React.ReactNo
 };
 
 type DocsPageProps = {
-  docName: 'readme' | 'quick_start' | 'template_usage' | 'mobile_responsiveness' | 'core_coding_principals' | 'changelog' | 'prd' | 'next_steps';
+  docName: 'index' | 'quick_start' | 'prd' | 'roadmap' | 'setup' | 'security' | 'testing' | 'deployment' | 'template_usage' | 'mobile_responsiveness' | 'coding_principles' | 'changelog' | 'phase_0' | 'phase_2';
   navigate: (page: string) => void;
 };
 
@@ -57,24 +63,36 @@ export function DocsPage({ docName, navigate }: DocsPageProps) {
     const fetchDoc = async () => {
       setLoading(true);
       setError(null);
-      let filePath = '/README.md'; // Default to README
+      let filePath = '/docs/README.md';
       
-      if (docName === 'readme') {
-        filePath = '/README.md';
+      if (docName === 'index') {
+        filePath = '/docs/README.md';
       } else if (docName === 'quick_start') {
-        filePath = '/src/docs/quick_start.md';
-      } else if (docName === 'template_usage') {
-        filePath = '/src/docs/template_usage.md';
-      } else if (docName === 'mobile_responsiveness') {
-        filePath = '/src/docs/mobile_responsiveness.md';
-      } else if (docName === 'core_coding_principals') {
-        filePath = '/src/docs/core_coding_principals.md';
-      } else if (docName === 'changelog') {
-        filePath = '/src/docs/changelog.md';
+        filePath = '/docs/development/QUICK_START.md';
       } else if (docName === 'prd') {
-        filePath = '/src/docs/prd.md';
-      } else if (docName === 'next_steps') {
-        filePath = '/src/docs/next_steps.md';
+        filePath = '/docs/product/PRD.md';
+      } else if (docName === 'roadmap') {
+        filePath = '/docs/product/ROADMAP.md';
+      } else if (docName === 'setup') {
+        filePath = '/docs/development/SETUP.md';
+      } else if (docName === 'security') {
+        filePath = '/docs/development/SECURITY.md';
+      } else if (docName === 'testing') {
+        filePath = '/docs/development/TESTING.md';
+      } else if (docName === 'deployment') {
+        filePath = '/docs/operations/DEPLOYMENT.md';
+      } else if (docName === 'template_usage') {
+        filePath = '/docs/development/TEMPLATE_USAGE.md';
+      } else if (docName === 'mobile_responsiveness') {
+        filePath = '/docs/development/MOBILE_RESPONSIVENESS.md';
+      } else if (docName === 'coding_principles') {
+        filePath = '/docs/development/CODING_PRINCIPLES.md';
+      } else if (docName === 'changelog') {
+        filePath = '/docs/development/CHANGELOG.md';
+      } else if (docName === 'phase_0') {
+        filePath = '/docs/phases/PHASE_0.md';
+      } else if (docName === 'phase_2') {
+        filePath = '/docs/phases/PHASE_2.md';
       }
       
       try {

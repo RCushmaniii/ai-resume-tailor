@@ -1,9 +1,6 @@
-# 🧠 Coding Principles — Project Summary
+# Coding Principles
 
-Our codebase is guided by a clear set of principles to ensure it remains **secure, maintainable, and predictable**.  
-These rules are enforced through Windsurf and documented here for clarity.
-
----
+Our codebase is guided by a clear set of principles to ensure it remains **secure, maintainable, and predictable**.
 
 ## 🎯 Why This Matters
 
@@ -99,5 +96,4 @@ Feature-based modules with clear import boundaries. Shared layers (`ui`, `lib`, 
 
 ---
 
-**Tip:** Each principle is defined in detail under `.windsurf/rules/`.  
-This summary links them together as the **why** behind the rules.
+Each principle is defined in detail under `.windsurf/rules/`.

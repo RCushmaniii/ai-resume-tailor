@@ -2,49 +2,41 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import fs from 'fs-extra'
+import type { ViteDevServer } from 'vite'
 
 // Custom plugin to copy markdown files to the build output
 function copyMarkdownFiles() {
   return {
     name: 'copy-markdown-files',
+    configureServer(server: ViteDevServer) {
+      const docsDir = resolve(__dirname, '..', 'docs')
+      const publicDocsDir = resolve(__dirname, 'public', 'docs')
+
+      const syncDocsToPublic = () => {
+        if (!fs.existsSync(docsDir)) return
+
+        fs.copySync(docsDir, publicDocsDir)
+        console.log(`✅ Synced docs to ${publicDocsDir}`)
+      }
+
+      syncDocsToPublic()
+      server.watcher.add(docsDir)
+
+      server.watcher.on('all', (_event, filePath) => {
+        if (typeof filePath === 'string' && filePath.startsWith(docsDir)) {
+          syncDocsToPublic()
+        }
+      })
+    },
     writeBundle() {
       try {
-        // Copy README.md from project root to dist
-        if (fs.existsSync('README.md')) {
-          fs.copySync('README.md', 'dist/README.md')
+        const docsSourceDir = resolve(__dirname, '..', 'docs')
+        const docsTargetDir = 'dist/docs'
+
+        if (fs.existsSync(docsSourceDir)) {
+          fs.copySync(docsSourceDir, docsTargetDir)
+          console.log(`✅ Copied docs to ${docsTargetDir}`)
         }
-        
-        // Create a function to recursively find and copy all markdown files
-        function copyMarkdownFilesRecursively(sourceDir: string, targetDir: string) {
-          // Ensure the target directory exists
-          fs.ensureDirSync(targetDir)
-          
-          // Get all files and directories in the source directory
-          const items = fs.readdirSync(sourceDir)
-          
-          // Process each item
-          items.forEach(item => {
-            const sourcePath = `${sourceDir}/${item}`
-            const targetPath = `${targetDir}/${item}`
-            
-            // Check if it's a directory
-            if (fs.statSync(sourcePath).isDirectory()) {
-              // Skip node_modules and dist directories
-              if (item !== 'node_modules' && item !== 'dist') {
-                // Recursively process subdirectories
-                copyMarkdownFilesRecursively(sourcePath, targetPath)
-              }
-            } 
-            // If it's a markdown file, copy it
-            else if (item.endsWith('.md')) {
-              fs.copySync(sourcePath, targetPath)
-              console.log(`Copied: ${sourcePath} -> ${targetPath}`)
-            }
-          })
-        }
-        
-        // Start the recursive copy from the project root
-        copyMarkdownFilesRecursively('.', 'dist')
         
         // Ensure the legal directory is copied
         if (fs.existsSync('public/legal')) {
@@ -52,7 +44,7 @@ function copyMarkdownFiles() {
           console.log('✅ Copied legal markdown files to dist/legal')
         }
         
-        console.log('✅ Successfully copied all markdown files to dist')
+        console.log('✅ Successfully copied docs markdown files to dist')
       } catch (error) {
         console.error('❌ Error copying markdown files:', error)
       }
@@ -116,7 +108,8 @@ export default defineConfig({
     middlewareMode: false,
     fs: {
       // Prevent serving files from root that might conflict with routes
-      deny: ['components.json']
+      deny: ['components.json'],
+      allow: [resolve(__dirname, '..')]
     },
     // Proxy API requests to Flask backend
     proxy: {

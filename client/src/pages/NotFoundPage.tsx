@@ -9,7 +9,7 @@ export function NotFoundPage() {
   const popularPages = [
     { name: 'Home', path: '/home', icon: Home },
     { name: 'Components', path: '/components', icon: FileQuestion },
-    { name: 'Documentation', path: '/docs/template_usage', icon: Search },
+    { name: 'Documentation', path: '/docs/index', icon: Search },
   ];
 
   return (
@@ -94,11 +94,11 @@ export function NotFoundPage() {
                 className="flex-1"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    window.location.href = '/docs/template_usage';
+                    window.location.href = '/docs/index';
                   }
                 }}
               />
-              <Button onClick={() => window.location.href = '/docs/template_usage'}>
+              <Button onClick={() => window.location.href = '/docs/index'}>
                 <Search className="h-4 w-4" />
               </Button>
             </div>
