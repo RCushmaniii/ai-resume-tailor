@@ -97,13 +97,34 @@ export function DocsPage({ docName, navigate }: DocsPageProps) {
       
       try {
         console.log(`Fetching document from: ${filePath}`);
-        const response = await fetch(filePath);
+        const response = await fetch(filePath, {
+          headers: {
+            Accept: 'text/plain'
+          }
+        });
         
         if (!response.ok) {
           throw new Error(`Could not load ${filePath}. Status: ${response.status}`);
         }
         
         const text = await response.text();
+        const contentType = response.headers.get('content-type') ?? '';
+        const looksLikeHtml =
+          contentType.includes('text/html') ||
+          text.includes('<html') ||
+          text.includes('<head') ||
+          text.includes('/@vite/client') ||
+          text.includes('<meta');
+
+        if (looksLikeHtml) {
+          throw new Error(
+            `Expected markdown but received HTML for ${filePath}. ` +
+              `EN: This usually means the doc file is not being served (SPA fallback). ` +
+              `Restart the dev server so /docs syncs into client/public/docs. ` +
+              `ES: Se esperaba markdown pero se recibió HTML (fallback de SPA). ` +
+              `Reinicia el servidor de desarrollo para que /docs se sincronice en client/public/docs.`
+          );
+        }
         console.log(`Received markdown content (first 50 chars): ${text.substring(0, 50)}...`);
         
         // Parse the markdown to HTML
