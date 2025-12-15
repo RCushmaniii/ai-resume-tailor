@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.0.0] - 2025-12-15
+
+### 🎉 Initial Major Release
+
+- **Resume vs Job Description Analysis** - Analyze pasted resume text against a pasted job description.
+- **Match Scoring + Breakdown** - Returns a 0-100 score with breakdown dimensions.
+- **Missing Keywords + Suggestions** - Structured results for improving ATS match.
+- **Input Validation + Security** - Client + server checks for suspicious content and length limits.
+- **Modern Frontend UI** - React + Vite + Tailwind + shadcn/ui.
+- **Production Deployment Ready** - Environment-based configuration and documented deployment approach.
+- **Documentation Consolidation** - Canonical docs live under `/docs` and are available in-app via `/docs/*`.
+
 ## [September 30, 2025] - Major Update
 
 ### 🎉 Added

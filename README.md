@@ -3,6 +3,9 @@
 **Live Demo:** [https://ai-resume-tailor-client.vercel.app](https://ai-resume-tailor-client.vercel.app)  
 **Repository:** [github.com/RCushmaniii/ai-resume-tailor](https://github.com/RCushmaniii/ai-resume-tailor)
 
+**Release:** v1.0.0  
+**Docs:** [/docs/README.md](./docs/README.md)
+
 A full-stack web application that analyzes resumes against job descriptions using OpenAI's GPT-4, providing quantified match scores, missing keyword detection, and actionable improvement suggestions. Built to demonstrate production-ready deployment, API integration, and modern frontend architecture.
 
 ---
