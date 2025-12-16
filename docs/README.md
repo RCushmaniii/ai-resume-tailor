@@ -13,12 +13,14 @@ Welcome to the AI Resume Tailor documentation! All project documentation is now 
 
 - **[PRD](./product/PRD.md)** - Product requirements
 - **[Roadmap](./product/ROADMAP.md)** - Planned enhancements
+- **[Monetization & Abuse Controls](./product/MONETIZATION_AND_ABUSE_CONTROLS.md)** - Quotas, feature gating, and anti-abuse strategy
 
 ### 💻 Development
 
 - **[Security](./development/SECURITY.md)** - Security measures and validation
 - **[Testing](./development/TESTING.md)** - Consolidated testing guide
 - **[Deployment (legacy)](./development/DEPLOYMENT.md)** - Existing backend deployment guide
+- **[Supabase & Postgres Best Practices](./development/SUPABASE_POSTGRES_BEST_PRACTICES.md)**
 - **[Coding Principles](./development/CODING_PRINCIPLES.md)**
 - **[Changelog](./development/CHANGELOG.md)**
 

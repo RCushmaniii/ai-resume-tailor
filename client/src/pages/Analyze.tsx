@@ -6,6 +6,31 @@ import { LoadingState } from '@/components/analyze/LoadingState';
 import { ResultsSection } from '@/components/analyze/ResultsSection';
 import type { DisplayAnalysisResult } from '@/types/analysis';
 import { transformAnalysisResult, type AnalysisResult } from '@/types/analysis';
+import { fetchWithAuth } from '@/lib/fetchWithAuth';
+import { useAuth } from '@/lib/useAuth';
+
+const GUEST_CREDITS_TOTAL = Number(import.meta.env.VITE_GUEST_CREDITS_TOTAL ?? 5);
+const GUEST_CREDITS_STORAGE_KEY = 'guest_analyses_used';
+
+function getGuestAnalysesUsed(): number {
+  try {
+    const raw = localStorage.getItem(GUEST_CREDITS_STORAGE_KEY);
+    const parsed = Number(raw ?? 0);
+    return Number.isFinite(parsed) ? parsed : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function incrementGuestAnalysesUsed(): number {
+  const next = getGuestAnalysesUsed() + 1;
+  try {
+    localStorage.setItem(GUEST_CREDITS_STORAGE_KEY, String(next));
+  } catch {
+    // Ignore storage errors; gating is best-effort until server-side enforcement exists.
+  }
+  return next;
+}
 
 export function Analyze() {
   const [resumeText, setResumeText] = useState('');
@@ -13,10 +38,24 @@ export function Analyze() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<DisplayAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
   
   const resumeInputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleAnalyze = async () => {
+    if (!user) {
+      const used = getGuestAnalysesUsed();
+      if (used >= GUEST_CREDITS_TOTAL) {
+        const message = `You’ve used your ${GUEST_CREDITS_TOTAL} free analyses. Please create a free account to continue. / Has usado tus ${GUEST_CREDITS_TOTAL} análisis gratis. Crea una cuenta gratis para continuar.`;
+        toast.error('Free limit reached', {
+          description: message,
+          duration: 8000,
+        });
+        setError(message);
+        return;
+      }
+    }
+
     setIsAnalyzing(true);
     setError(null);
     
@@ -27,7 +66,7 @@ export function Analyze() {
     try {
       const API_URL = import.meta.env.VITE_API_URL || '/api';
       console.log('🔍 API URL:', API_URL); // Debug: verify environment variable
-      const response = await fetch(`${API_URL}/analyze`, {
+      const response = await fetchWithAuth(`${API_URL}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -44,7 +83,11 @@ export function Analyze() {
         throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
-      const apiResult: AnalysisResult = await response.json();
+      const apiResult: AnalysisResult & {
+        credits_remaining?: number;
+        credits_total?: number;
+        credits_used?: number;
+      } = await response.json();
       
       // Transform backend format to frontend display format
       const displayResult = transformAnalysisResult(apiResult);
@@ -53,6 +96,20 @@ export function Analyze() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setResults(displayResult);
+
+      if (!user) {
+        const nextUsed = incrementGuestAnalysesUsed();
+        const remaining = Math.max(0, GUEST_CREDITS_TOTAL - nextUsed);
+        toast.message('Analysis complete', {
+          description: `Free analyses remaining: ${remaining} / ${GUEST_CREDITS_TOTAL}. / Análisis gratis restantes: ${remaining} / ${GUEST_CREDITS_TOTAL}.`,
+          duration: 5000,
+        });
+      } else if (typeof apiResult.credits_remaining === 'number' && typeof apiResult.credits_total === 'number') {
+        toast.message('Analysis complete', {
+          description: `Credits remaining: ${apiResult.credits_remaining} / ${apiResult.credits_total}. / Créditos restantes: ${apiResult.credits_remaining} / ${apiResult.credits_total}.`,
+          duration: 5000,
+        });
+      }
       
       // Smooth scroll to results
       setTimeout(() => {

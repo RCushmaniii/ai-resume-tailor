@@ -1,6 +1,10 @@
 // File: src/components/layout/Header.tsx
 import { useState } from 'react';
 import logoImage from '@/assets/images/logo.jpg';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { AuthDialog } from '@/components/auth/AuthDialog';
+import { useAuth } from '@/lib/useAuth';
 
 type HeaderProps = {
   navigate: (page: string) => void;
@@ -8,6 +12,20 @@ type HeaderProps = {
 
 export function Header({ navigate }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { enabled: authEnabled, user, supabase } = useAuth();
+
+  const handleSignOut = async () => {
+    if (!supabase) return;
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Sign out failed / Error al cerrar sesión', {
+        description: error.message,
+        duration: 8000,
+      });
+      return;
+    }
+    toast.success('Signed out / Sesión cerrada');
+  };
 
   const handleNavClick = (page: string) => {
     setIsMenuOpen(false);
@@ -58,6 +76,21 @@ export function Header({ navigate }: HeaderProps) {
             <a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">How It Works</a>
             <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">Docs</a>
             <a href="/privacy" onClick={(e) => { e.preventDefault(); handleNavClick('privacy'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">Privacy</a>
+
+            {authEnabled ? (
+              user ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 max-w-[180px] truncate" title={user.email ?? undefined}>
+                    {user.email ?? 'Signed in'}
+                  </span>
+                  <Button variant="outline" onClick={handleSignOut}>
+                    Sign out
+                  </Button>
+                </div>
+              ) : (
+                <AuthDialog triggerLabel="Sign in" />
+              )
+            ) : null}
           </div>
 
           {/* Mobile Menu Button */}
@@ -93,6 +126,22 @@ export function Header({ navigate }: HeaderProps) {
             <a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">How It Works</a>
             <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">Documentation</a>
             <a href="/privacy" onClick={(e) => { e.preventDefault(); handleNavClick('privacy'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">Privacy</a>
+
+            {authEnabled ? (
+              user ? (
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800"
+                >
+                  Sign out
+                </button>
+              ) : (
+                <div className="px-3 py-2">
+                  <AuthDialog triggerLabel="Sign in" />
+                </div>
+              )
+            ) : null}
           </div>
         </div>
       )}
