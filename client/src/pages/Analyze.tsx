@@ -9,7 +9,7 @@ import { transformAnalysisResult, type AnalysisResult } from '@/types/analysis';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
 import { useAuth } from '@/lib/useAuth';
 
-const GUEST_CREDITS_TOTAL = Number(import.meta.env.VITE_GUEST_CREDITS_TOTAL ?? 5);
+const GUEST_CREDITS_TOTAL = Number(import.meta.env.VITE_GUEST_CREDITS_TOTAL ?? 3);
 const GUEST_CREDITS_STORAGE_KEY = 'guest_analyses_used';
 
 function getGuestAnalysesUsed(): number {

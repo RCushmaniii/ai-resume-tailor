@@ -210,8 +210,8 @@ def analyze():
             if user_json:
                 user_id = user_json.get("id")
 
-        guest_limit = int(os.getenv("GUEST_CREDITS_TOTAL", "5"))
-        reg_limit = int(os.getenv("REG_CREDITS_TOTAL", "5"))
+        guest_limit = int(os.getenv("GUEST_CREDITS_TOTAL", "3"))
+        reg_limit = int(os.getenv("REG_CREDITS_TOTAL", "7"))
 
         if user_id:
             used = int(_usage_counts_user.get(user_id, 0))
