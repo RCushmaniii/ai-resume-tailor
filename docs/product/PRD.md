@@ -4,7 +4,7 @@
 
 - **Product Name**: AI Resume Tailor
 - **Author / Owner**: Robert Cushman
-- **Date / Version**: 2025-11-12 / v1.0.1
+- **Date / Version**: 2025-12-15 / v1.0.2
 - **Status**: Live (MVP)
 
 ### 1.1 Purpose
@@ -27,6 +27,7 @@ Many resumes are rejected by Applicant Tracking Systems (ATS) before reaching re
 - **Primary Goal**: Deliver clear, actionable resume-to-job fit feedback in under a minute.
 - **Secondary Goals**:
   - Keep UX “zero friction” (no signup, no stored user data)
+  - Offer fully bilingual UX (English + Spanish) as a core brand feature
   - Provide robust validation and user-friendly errors
   - Support production deployment (frontend + backend) with environment-based configuration
 - **Success Metrics / KPIs**:
@@ -62,6 +63,15 @@ A web app where the user pastes resume text and a job description, then receives
   - Payments/subscriptions
   - PDF upload/parsing (future enhancement)
   - Guaranteed ATS “pass” or hiring outcomes
+
+### 4.4 Planned Enhancement: Bilingual UX (en/es)
+
+- The app must support a language toggle between English (`en`) and Spanish (`es`).
+- All user-facing UI copy (labels, buttons, headings, toasts, dialogs, empty states, errors) must be localizable.
+- Language selection must persist per user (local storage for guests; later extend to profile for signed-in users).
+- A default language should be selected using browser preferences (e.g., `navigator.language`) with a deterministic fallback to English.
+- Translations must use an i18n framework (industry best practices) rather than ad-hoc string conditionals.
+- The bilingual layer must include marketing-facing pages and legal pages rendered in-app.
 
 ### 4.3 Key Features
 
@@ -126,6 +136,15 @@ A web app where the user pastes resume text and a job description, then receives
   - `missing_keywords[]` with `priority` in `high|medium|low`
   - `improvement_suggestions[]`
 
+### 7.1 Bilingual Functional Requirements (en/es)
+
+- The UI must provide a language switcher that is accessible by keyboard and screen readers.
+- The system must not hardcode user-facing strings directly in page/components; it must use translation keys.
+- The app must ship with complete translation coverage for `en` and `es` for all MVP + SaaS-v2 UI surfaces.
+- Backend error responses intended for end-users must have a translation strategy (either:
+  - return stable error codes/keys that the client translates, or
+  - return localized messages based on request language).
+
 ---
 
 ## 8. Non-Functional Requirements
@@ -143,6 +162,11 @@ A web app where the user pastes resume text and a job description, then receives
   - CORS restricted by `FRONTEND_URL` in production
 - **Compliance**:
   - No formal compliance guarantees; user-provided text should not be stored
+
+- **Localization / i18n Quality**:
+  - Missing translation keys must not crash the UI; the system must fail gracefully with English fallback.
+  - The language toggle must be fast (no full reload required).
+  - New UI features must include `en` + `es` translations before merging.
 
 ---
 
@@ -191,8 +215,41 @@ A web app where the user pastes resume text and a job description, then receives
 ## 13. Open Questions
 
 - Should the backend support `job_url` ingestion (fetch + clean) as an official feature?
-- Should the app support bilingual UX (en/es) as a requirement for MVP or a later phase?
 - Should results include additional breakdown dimensions beyond the current three?
+
+---
+
+## 15. Scope Impact Analysis: Bilingual UX (en/es)
+
+### 15.1 Engineering Impact (Frontend)
+
+- Introduce an i18n library and enforce translation-key usage across all UI.
+- Extract all UI strings into translation resource files (namespaced by route/feature).
+- Add a language selector component and persistence mechanism.
+- Ensure toasts, dialogs, validation errors, and empty states are localized.
+
+### 15.2 Engineering Impact (Backend)
+
+- Decide on a stable strategy for user-facing errors:
+  - Prefer returning stable error codes/keys and letting the client translate.
+  - Optionally use a request language header for server-side localized messaging.
+- Ensure authentication/credits errors are compatible with bilingual UI.
+
+### 15.3 Content & UX Impact
+
+- Spanish copy quality must be consistent and professional (avoid machine-translation-only).
+- Ensure critical conversion CTAs are translated (signup prompt, credits messaging).
+
+### 15.4 QA / Testing Impact
+
+- Add regression checks for both locales on all primary flows.
+- Add a translation coverage checklist for new UI features.
+
+### 15.5 Risks & Mitigations
+
+- Risk: mixed-language UI if translation coverage is incomplete → enforce PR checks for translation keys.
+- Risk: inconsistent terminology across screens → maintain a glossary for recurring terms.
+- Risk: server/client mismatch for errors → standardize error codes and translate client-side.
 
 ---
 
