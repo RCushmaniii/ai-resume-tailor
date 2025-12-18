@@ -1,6 +1,7 @@
 // File: src/App.tsx
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Toaster } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { Landing } from './pages/Landing';
@@ -19,13 +20,22 @@ const Analyze = lazy(() => import('./pages/Analyze').then(m => ({ default: m.Ana
 export type Page = 'home' | 'components' | 'docs' | 'examples' | 'privacy' | 'terms' | 'test-api' | 'analyze' | 'not-found';
 
 function App() {
+  const { t } = useTranslation();
+
   // Parse the current URL to determine the initial page and doc
   const getInitialRouteFromUrl = () => {
     const path = window.location.pathname.slice(1) || 'home'; // Default to home page
     const [page, subpage] = path.split('/');
     
     // Check if the page is valid
-    const validPages = ['home', 'components', 'docs', 'examples', 'privacy', 'terms', 'test-api', 'analyze'];
+    const validPages = [
+      'home',
+      'docs',
+      'privacy',
+      'terms',
+      'analyze',
+      ...(import.meta.env.DEV ? (['components', 'examples', 'test-api'] as const) : []),
+    ];
     const isValidPage = validPages.includes(page);
     
     // If docs page, check if the subpage is valid
@@ -46,6 +56,13 @@ function App() {
   const [currentDoc, setCurrentDoc] = useState<string>(initialDoc);
 
   const handleNavClick = (page: string) => {
+    if (!import.meta.env.DEV && ['components', 'examples', 'test-api'].includes(page)) {
+      setCurrentPage('not-found');
+      window.history.pushState(null, '', `/not-found`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     // Check if it's a docs page with a specific doc
     if (page.startsWith('docs/')) {
       const docName = page.split('/')[1];
@@ -83,16 +100,19 @@ function App() {
       case 'home':
         return <Landing />;
       case 'components':
+        if (!import.meta.env.DEV) return <NotFoundPage />;
         return <ComponentsPage />;
       case 'docs':
         return <DocsPage docName={currentDoc as 'index' | 'quick_start' | 'prd' | 'roadmap' | 'setup' | 'security' | 'testing' | 'deployment' | 'template_usage' | 'mobile_responsiveness' | 'coding_principles' | 'changelog' | 'phase_0' | 'phase_2'} navigate={handleNavClick} />;
       case 'examples':
+        if (!import.meta.env.DEV) return <NotFoundPage />;
         return <ExamplesPage />;
       case 'privacy':
         return <PrivacyPolicyPage />;
       case 'terms':
         return <TermsOfServicePage />;
       case 'test-api':
+        if (!import.meta.env.DEV) return <NotFoundPage />;
         return <TestApiPage />;
       case 'analyze':
         return <Analyze />;
@@ -112,7 +132,7 @@ function App() {
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading...</p>
+              <p className="text-muted-foreground">{t('app.loading')}</p>
             </div>
           </div>
         }>

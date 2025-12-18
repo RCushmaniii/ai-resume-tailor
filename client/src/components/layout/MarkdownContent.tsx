@@ -1,6 +1,7 @@
 // File: src/components/layout/MarkdownContent.tsx
 import { useState, useEffect } from 'react';
 import { loadMarkdown } from '../../lib/markdown';
+import { useTranslation } from 'react-i18next';
 
 interface MarkdownContentProps {
   filePath: string;
@@ -14,6 +15,7 @@ export function MarkdownContent({ filePath }: MarkdownContentProps) {
   const [content, setContent] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
   
   // Define the cobalt blue color for use in styles
   const cobaltBlue = '#0047ab';
@@ -29,7 +31,7 @@ export function MarkdownContent({ filePath }: MarkdownContentProps) {
         const html = await loadMarkdown(filePath);
         setContent(html);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setError(err instanceof Error ? err.message : t('markdown.errors.unknown'));
         console.error('Error fetching markdown content:', err);
       } finally {
         setLoading(false);
@@ -37,7 +39,7 @@ export function MarkdownContent({ filePath }: MarkdownContentProps) {
     };
     
     fetchMarkdown();
-  }, [filePath]);
+  }, [filePath, t]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -49,7 +51,7 @@ export function MarkdownContent({ filePath }: MarkdownContentProps) {
       
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          <p>Error: {error}</p>
+          <p>{t('markdown.errorPrefix', { message: error })}</p>
         </div>
       )}
       

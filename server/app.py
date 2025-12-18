@@ -47,6 +47,26 @@ _usage_counts_guest = {}
 _usage_counts_user = {}
 
 
+def api_error(
+    *,
+    error_code: str,
+    status_code: int,
+    message: str,
+    details: dict | None = None,
+    extra: dict | None = None,
+):
+    payload = {
+        "error_code": error_code,
+        "error": message,
+        "message": message,
+    }
+    if details:
+        payload["details"] = details
+    if extra:
+        payload.update(extra)
+    return jsonify(payload), status_code
+
+
 def _get_bearer_token() -> str | None:
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
@@ -112,21 +132,33 @@ def me():
 
     token = _get_bearer_token()
     if not token:
-        return jsonify({"error": "Missing bearer token"}), 401
+        return api_error(
+            error_code="AUTH_MISSING_BEARER_TOKEN",
+            status_code=401,
+            message="Missing bearer token",
+        )
 
     try:
         user_json = _validate_supabase_token(token)
         if not user_json:
-            return jsonify({"error": "Invalid token"}), 401
+            return api_error(
+                error_code="AUTH_INVALID_TOKEN",
+                status_code=401,
+                message="Invalid token",
+            )
         return jsonify(
             {
                 "id": user_json.get("id"),
                 "email": user_json.get("email"),
             }
         )
-    except Exception as e:
-        logger.error(f"Error validating Supabase token: {str(e)}")
-        return jsonify({"error": "Auth validation failed"}), 500
+    except Exception:
+        logger.exception("Error validating Supabase token")
+        return api_error(
+            error_code="AUTH_VALIDATION_FAILED",
+            status_code=500,
+            message="Auth validation failed",
+        )
 
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
@@ -137,10 +169,12 @@ def analyze():
         # Get data from request
         data = request.json
         if not data:
-            return jsonify({
-                "error": "No data provided",
-                "match_score": 0
-            }), 400
+            return api_error(
+                error_code="ANALYZE_NO_DATA",
+                status_code=400,
+                message="No data provided",
+                extra={"match_score": 0},
+            )
         
         # Get resume and job description text
         resume_text = data.get("resume", "")
@@ -148,31 +182,43 @@ def analyze():
         
         # Validate inputs - empty check
         if not resume_text or not resume_text.strip():
-            return jsonify({
-                "error": "Resume text is required",
-                "match_score": 0
-            }), 400
+            return api_error(
+                error_code="ANALYZE_RESUME_REQUIRED",
+                status_code=400,
+                message="Resume text is required",
+                details={"field": "resume"},
+                extra={"match_score": 0},
+            )
         
         if not job_text or not job_text.strip():
-            return jsonify({
-                "error": "Job description text is required",
-                "match_score": 0
-            }), 400
+            return api_error(
+                error_code="ANALYZE_JOB_REQUIRED",
+                status_code=400,
+                message="Job description text is required",
+                details={"field": "job_description"},
+                extra={"match_score": 0},
+            )
         
         # Security check - detect suspicious content
         if contains_suspicious_content(resume_text):
             logger.warning("Suspicious content detected in resume text")
-            return jsonify({
-                "error": "Invalid content detected in resume. Please provide plain text only.",
-                "match_score": 0
-            }), 400
+            return api_error(
+                error_code="ANALYZE_RESUME_SUSPICIOUS",
+                status_code=400,
+                message="Invalid content detected in resume. Please provide plain text only.",
+                details={"field": "resume"},
+                extra={"match_score": 0},
+            )
         
         if contains_suspicious_content(job_text):
             logger.warning("Suspicious content detected in job description text")
-            return jsonify({
-                "error": "Invalid content detected in job description. Please provide plain text only.",
-                "match_score": 0
-            }), 400
+            return api_error(
+                error_code="ANALYZE_JOB_SUSPICIOUS",
+                status_code=400,
+                message="Invalid content detected in job description. Please provide plain text only.",
+                details={"field": "job_description"},
+                extra={"match_score": 0},
+            )
         
         # Validate input lengths - reject if too long
         max_length = 10000
@@ -180,28 +226,40 @@ def analyze():
         min_job_length = 100
         
         if len(resume_text.strip()) < min_resume_length:
-            return jsonify({
-                "error": f"Resume text is too short (minimum {min_resume_length} characters)",
-                "match_score": 0
-            }), 400
+            return api_error(
+                error_code="ANALYZE_RESUME_TOO_SHORT",
+                status_code=400,
+                message=f"Resume text is too short (minimum {min_resume_length} characters)",
+                details={"field": "resume", "min_length": min_resume_length},
+                extra={"match_score": 0},
+            )
         
         if len(job_text.strip()) < min_job_length:
-            return jsonify({
-                "error": f"Job description text is too short (minimum {min_job_length} characters)",
-                "match_score": 0
-            }), 400
+            return api_error(
+                error_code="ANALYZE_JOB_TOO_SHORT",
+                status_code=400,
+                message=f"Job description text is too short (minimum {min_job_length} characters)",
+                details={"field": "job_description", "min_length": min_job_length},
+                extra={"match_score": 0},
+            )
         
         if len(resume_text) > max_length:
-            return jsonify({
-                "error": f"Resume text is too long (maximum {max_length:,} characters)",
-                "match_score": 0
-            }), 400
+            return api_error(
+                error_code="ANALYZE_RESUME_TOO_LONG",
+                status_code=400,
+                message=f"Resume text is too long (maximum {max_length:,} characters)",
+                details={"field": "resume", "max_length": max_length},
+                extra={"match_score": 0},
+            )
         
         if len(job_text) > max_length:
-            return jsonify({
-                "error": f"Job description text is too long (maximum {max_length:,} characters)",
-                "match_score": 0
-            }), 400
+            return api_error(
+                error_code="ANALYZE_JOB_TOO_LONG",
+                status_code=400,
+                message=f"Job description text is too long (maximum {max_length:,} characters)",
+                details={"field": "job_description", "max_length": max_length},
+                extra={"match_score": 0},
+            )
         
         token = _get_bearer_token()
         user_id = None
@@ -218,30 +276,34 @@ def analyze():
             total = reg_limit
             remaining = max(0, total - used)
             if used >= total:
-                return jsonify(
-                    {
-                        "error": "Credit limit reached",
+                return api_error(
+                    error_code="ANALYZE_CREDITS_EXCEEDED_REGISTERED",
+                    status_code=429,
+                    message="Credit limit reached",
+                    extra={
                         "match_score": 0,
                         "credits_total": total,
                         "credits_used": used,
                         "credits_remaining": remaining,
-                    }
-                ), 429
+                    },
+                )
         else:
             guest_id = _get_guest_identity()
             used = int(_usage_counts_guest.get(guest_id, 0))
             total = guest_limit
             remaining = max(0, total - used)
             if used >= total:
-                return jsonify(
-                    {
-                        "error": "Free limit reached. Please create an account to continue.",
+                return api_error(
+                    error_code="ANALYZE_CREDITS_EXCEEDED_GUEST",
+                    status_code=429,
+                    message="Free limit reached. Please create an account to continue.",
+                    extra={
                         "match_score": 0,
                         "credits_total": total,
                         "credits_used": used,
                         "credits_remaining": remaining,
-                    }
-                ), 429
+                    },
+                )
 
         # Use AI engine to analyze resume against job description
         result = analyze_resume(resume_text, job_text)
@@ -269,12 +331,14 @@ def analyze():
         
         return jsonify(result)
         
-    except Exception as e:
-        logger.error(f"Error processing request: {str(e)}")
-        return jsonify({
-            "error": f"Server error: {str(e)}",
-            "match_score": 0
-        }), 500
+    except Exception:
+        logger.exception("Error processing request")
+        return api_error(
+            error_code="INTERNAL_ERROR",
+            status_code=500,
+            message="Server error",
+            extra={"match_score": 0},
+        )
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

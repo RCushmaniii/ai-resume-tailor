@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ type AuthDialogProps = {
 
 export function AuthDialog({ triggerLabel }: AuthDialogProps) {
   const supabase = useMemo(() => getSupabaseClient(), []);
+  const { t } = useTranslation();
 
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -30,12 +32,12 @@ export function AuthDialog({ triggerLabel }: AuthDialogProps) {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      toast.success("Signed in / Sesión iniciada");
+      toast.success(t("authDialog.toasts.signedIn"));
       setOpen(false);
       resetForm();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign in failed";
-      toast.error("Sign in failed / Error al iniciar sesión", { description: message, duration: 8000 });
+      toast.error(t("authDialog.toasts.signInFailed"), { description: message, duration: 8000 });
     } finally {
       setBusy(false);
     }
@@ -47,12 +49,12 @@ export function AuthDialog({ triggerLabel }: AuthDialogProps) {
     try {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
-      toast.success("Check your email to confirm / Revisa tu correo para confirmar");
+      toast.success(t("authDialog.toasts.signUpConfirm"));
       setOpen(false);
       resetForm();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign up failed";
-      toast.error("Sign up failed / Error al registrarse", { description: message, duration: 8000 });
+      toast.error(t("authDialog.toasts.signUpFailed"), { description: message, duration: 8000 });
     } finally {
       setBusy(false);
     }
@@ -65,26 +67,26 @@ export function AuthDialog({ triggerLabel }: AuthDialogProps) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Account / Cuenta</DialogTitle>
+          <DialogTitle>{t("authDialog.title")}</DialogTitle>
           <DialogDescription>
-            Sign in to save analyses and get more credits. / Inicia sesión para guardar análisis y obtener más créditos.
+            {t("authDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
         {!supabase ? (
           <div className="text-sm text-muted-foreground">
-            Supabase is not configured. Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_PUBLISHABLE_KEY</code>.
+            {t("authDialog.supabaseNotConfigured")}
           </div>
         ) : (
           <Tabs defaultValue="signin">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Sign up</TabsTrigger>
+              <TabsTrigger value="signin">{t("authDialog.tabs.signIn")}</TabsTrigger>
+              <TabsTrigger value="signup">{t("authDialog.tabs.signUp")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="auth-email-signin">Email / Correo</Label>
+                <Label htmlFor="auth-email-signin">{t("authDialog.fields.email")}</Label>
                 <Input
                   id="auth-email-signin"
                   type="email"
@@ -94,7 +96,7 @@ export function AuthDialog({ triggerLabel }: AuthDialogProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="auth-password-signin">Password / Contraseña</Label>
+                <Label htmlFor="auth-password-signin">{t("authDialog.fields.password")}</Label>
                 <Input
                   id="auth-password-signin"
                   type="password"
@@ -104,13 +106,13 @@ export function AuthDialog({ triggerLabel }: AuthDialogProps) {
                 />
               </div>
               <Button onClick={handleSignIn} disabled={busy || !email || !password} className="w-full">
-                {busy ? "Working..." : "Sign in"}
+                {busy ? t("authDialog.status.working") : t("authDialog.actions.signIn")}
               </Button>
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="auth-email-signup">Email / Correo</Label>
+                <Label htmlFor="auth-email-signup">{t("authDialog.fields.email")}</Label>
                 <Input
                   id="auth-email-signup"
                   type="email"
@@ -120,7 +122,7 @@ export function AuthDialog({ triggerLabel }: AuthDialogProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="auth-password-signup">Password / Contraseña</Label>
+                <Label htmlFor="auth-password-signup">{t("authDialog.fields.password")}</Label>
                 <Input
                   id="auth-password-signup"
                   type="password"
@@ -130,7 +132,7 @@ export function AuthDialog({ triggerLabel }: AuthDialogProps) {
                 />
               </div>
               <Button onClick={handleSignUp} disabled={busy || !email || !password} className="w-full">
-                {busy ? "Working..." : "Create account"}
+                {busy ? t("authDialog.status.working") : t("authDialog.actions.signUp")}
               </Button>
             </TabsContent>
           </Tabs>

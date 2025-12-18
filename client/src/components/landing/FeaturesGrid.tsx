@@ -1,41 +1,44 @@
 import { Zap, Target, BarChart, Sparkles, Shield, Heart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function FeaturesGrid() {
+  const { t } = useTranslation();
+
   const features = [
     {
       icon: Zap,
-      title: 'Instant Match Score',
-      description: 'Know exactly where you stand with a 0-100% compatibility score in seconds.',
+      title: t('landing.features.cards.matchScore.title'),
+      description: t('landing.features.cards.matchScore.description'),
       color: 'text-blue-600 bg-blue-50',
     },
     {
       icon: Target,
-      title: 'Missing Keywords',
-      description: 'See exactly what recruiters are looking for with priority-ranked keywords.',
+      title: t('landing.features.cards.missingKeywords.title'),
+      description: t('landing.features.cards.missingKeywords.description'),
       color: 'text-amber-600 bg-amber-50',
     },
     {
       icon: BarChart,
-      title: '3-Part Analysis',
-      description: 'Get detailed breakdowns: Keywords • Semantic Match • Tone & Style.',
+      title: t('landing.features.cards.analysis3Part.title'),
+      description: t('landing.features.cards.analysis3Part.description'),
       color: 'text-purple-600 bg-purple-50',
     },
     {
       icon: Sparkles,
-      title: 'Smart Suggestions',
-      description: 'Receive 3-5 actionable tips to improve your resume instantly.',
+      title: t('landing.features.cards.smartSuggestions.title'),
+      description: t('landing.features.cards.smartSuggestions.description'),
       color: 'text-green-600 bg-green-50',
     },
     {
       icon: Shield,
-      title: '100% Private',
-      description: 'Nothing is stored or shared. Your data stays completely confidential.',
+      title: t('landing.features.cards.private.title'),
+      description: t('landing.features.cards.private.description'),
       color: 'text-slate-600 bg-slate-50',
     },
     {
       icon: Heart,
-      title: 'Always Free',
-      description: 'No credit card required. No signup needed. Unlimited analyses.',
+      title: t('landing.features.cards.free.title'),
+      description: t('landing.features.cards.free.description'),
       color: 'text-red-600 bg-red-50',
     },
   ];
@@ -46,10 +49,10 @@ export function FeaturesGrid() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Your AI-Powered Resume Coach
+            {t('landing.features.heading')}
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Everything you need to optimize your resume and land more interviews
+            {t('landing.features.subheading')}
           </p>
         </div>
 

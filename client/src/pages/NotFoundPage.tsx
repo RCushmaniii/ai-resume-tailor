@@ -1,15 +1,18 @@
 // File: src/pages/NotFoundPage.tsx
-import { Home, Search, ArrowLeft, FileQuestion } from 'lucide-react';
+import { Home, Search, ArrowLeft, FileQuestion, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { useTranslation } from 'react-i18next';
 
 export function NotFoundPage() {
+  const { t } = useTranslation();
+
   const popularPages = [
-    { name: 'Home', path: '/home', icon: Home },
-    { name: 'Components', path: '/components', icon: FileQuestion },
-    { name: 'Documentation', path: '/docs/index', icon: Search },
+    { name: t('notFound.popular.pages.home'), path: '/home', icon: Home },
+    { name: t('notFound.popular.pages.analyze'), path: '/analyze', icon: BarChart3 },
+    { name: t('notFound.popular.pages.docs'), path: '/docs/index', icon: Search },
   ];
 
   return (
@@ -26,11 +29,11 @@ export function NotFoundPage() {
           </h1>
           
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Page Not Found
+            {t('notFound.title')}
           </h2>
           
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-md mx-auto px-4">
-            Oops! The page you're looking for doesn't exist or has been moved to a new location.
+            {t('notFound.description')}
           </p>
         </div>
 
@@ -42,7 +45,7 @@ export function NotFoundPage() {
             onClick={() => window.history.back()}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Go Back
+            {t('notFound.actions.goBack')}
           </Button>
           <Button 
             size="lg" 
@@ -51,7 +54,7 @@ export function NotFoundPage() {
             onClick={() => window.location.href = '/home'}
           >
             <Home className="mr-2 h-4 w-4" />
-            Return Home
+            {t('notFound.actions.returnHome')}
           </Button>
         </div>
 
@@ -60,8 +63,8 @@ export function NotFoundPage() {
         {/* Popular Pages Card */}
         <Card className="border-2 mx-4 sm:mx-0">
           <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Popular Pages</CardTitle>
-            <CardDescription>Here are some pages you might be looking for</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">{t('notFound.popular.title')}</CardTitle>
+            <CardDescription>{t('notFound.popular.description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {popularPages.map((page) => (
@@ -83,14 +86,14 @@ export function NotFoundPage() {
           <CardHeader>
             <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
               <Search className="h-5 w-5" />
-              Looking for something specific?
+              {t('notFound.search.title')}
             </CardTitle>
-            <CardDescription>Try searching our documentation</CardDescription>
+            <CardDescription>{t('notFound.search.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex gap-2">
               <Input 
-                placeholder="Search documentation..." 
+                placeholder={t('notFound.search.placeholder')} 
                 className="flex-1"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {

@@ -2,24 +2,27 @@
 import React, { useState, useEffect } from 'react';
 import { marked } from 'marked';
 import { FileText, BookOpen, Code, Lightbulb, Rocket, History, Shield, Wrench, FlaskConical, Target, Smartphone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Create a local component that doesn't rely on the import
 const DocsLayout = ({ children, activeDoc, navigate }: { children: React.ReactNode, activeDoc: string, navigate: (page: string) => void }) => {
+  const { t } = useTranslation();
+
   const navItems = [
-    { id: 'index', label: 'Docs Index', icon: FileText },
-    { id: 'quick_start', label: 'Quick Start', icon: Rocket },
-    { id: 'prd', label: 'PRD', icon: Lightbulb },
-    { id: 'roadmap', label: 'Roadmap', icon: Target },
-    { id: 'setup', label: 'Setup', icon: Rocket },
-    { id: 'security', label: 'Security', icon: Shield },
-    { id: 'testing', label: 'Testing', icon: Wrench },
-    { id: 'deployment', label: 'Deployment', icon: FlaskConical },
-    { id: 'template_usage', label: 'Template Usage', icon: BookOpen },
-    { id: 'mobile_responsiveness', label: 'Mobile Responsiveness', icon: Smartphone },
-    { id: 'coding_principles', label: 'Coding Principles', icon: Code },
-    { id: 'changelog', label: 'Changelog', icon: History },
-    { id: 'phase_0', label: 'Phase 0', icon: BookOpen },
-    { id: 'phase_2', label: 'Phase 2', icon: BookOpen },
+    { id: 'index', label: t('docs.nav.index'), icon: FileText },
+    { id: 'quick_start', label: t('docs.nav.quickStart'), icon: Rocket },
+    { id: 'prd', label: t('docs.nav.prd'), icon: Lightbulb },
+    { id: 'roadmap', label: t('docs.nav.roadmap'), icon: Target },
+    { id: 'setup', label: t('docs.nav.setup'), icon: Rocket },
+    { id: 'security', label: t('docs.nav.security'), icon: Shield },
+    { id: 'testing', label: t('docs.nav.testing'), icon: Wrench },
+    { id: 'deployment', label: t('docs.nav.deployment'), icon: FlaskConical },
+    { id: 'template_usage', label: t('docs.nav.templateUsage'), icon: BookOpen },
+    { id: 'mobile_responsiveness', label: t('docs.nav.mobileResponsiveness'), icon: Smartphone },
+    { id: 'coding_principles', label: t('docs.nav.codingPrinciples'), icon: Code },
+    { id: 'changelog', label: t('docs.nav.changelog'), icon: History },
+    { id: 'phase_0', label: t('docs.nav.phase0'), icon: BookOpen },
+    { id: 'phase_2', label: t('docs.nav.phase2'), icon: BookOpen },
   ];
 
   return (
@@ -58,6 +61,7 @@ export function DocsPage({ docName, navigate }: DocsPageProps) {
   const [content, setContent] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchDoc = async () => {
@@ -96,7 +100,6 @@ export function DocsPage({ docName, navigate }: DocsPageProps) {
       }
       
       try {
-        console.log(`Fetching document from: ${filePath}`);
         const response = await fetch(filePath, {
           headers: {
             Accept: 'text/plain'
@@ -104,7 +107,7 @@ export function DocsPage({ docName, navigate }: DocsPageProps) {
         });
         
         if (!response.ok) {
-          throw new Error(`Could not load ${filePath}. Status: ${response.status}`);
+          throw new Error(t('docs.errors.loadFailed', { filePath, status: response.status }));
         }
         
         const text = await response.text();
@@ -117,44 +120,34 @@ export function DocsPage({ docName, navigate }: DocsPageProps) {
           text.includes('<meta');
 
         if (looksLikeHtml) {
-          throw new Error(
-            `Expected markdown but received HTML for ${filePath}. ` +
-              `EN: This usually means the doc file is not being served (SPA fallback). ` +
-              `Restart the dev server so /docs syncs into client/public/docs. ` +
-              `ES: Se esperaba markdown pero se recibió HTML (fallback de SPA). ` +
-              `Reinicia el servidor de desarrollo para que /docs se sincronice en client/public/docs.`
-          );
+          throw new Error(t('docs.errors.markdownExpectedHtml', { filePath }));
         }
-        console.log(`Received markdown content (first 50 chars): ${text.substring(0, 50)}...`);
         
         // Parse the markdown to HTML
         const html = await marked.parse(text);
         
         // Make sure html is a string
         if (typeof html === 'string') {
-          console.log(`Parsed HTML (first 50 chars): ${html.substring(0, 50)}...`);
           setContent(html);
         } else {
-          console.error('Marked returned a non-string value:', html);
-          setError('Error parsing markdown content');
+          setError(t('docs.errors.parsing'));
         }
       } catch (e) {
-        const message = e instanceof Error ? e.message : 'An unknown error occurred.';
+        const message = e instanceof Error ? e.message : t('docs.errors.unknown');
         setError(message);
-        console.error("Error fetching doc:", e);
       } finally {
         setLoading(false);
       }
     };
 
     fetchDoc();
-  }, [docName]);
+  }, [docName, t]);
 
   return (
     <DocsLayout navigate={navigate} activeDoc={docName}>
       <article className="prose prose-base md:prose-lg dark:prose-invert max-w-none bg-white dark:bg-gray-800/50 p-4 md:p-6 lg:p-8 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800">
-        {loading && <p>Loading document...</p>}
-        {error && <p className="text-red-500">Error: {error}</p>}
+        {loading && <p>{t('docs.loading')}</p>}
+        {error && <p className="text-red-500">{t('docs.errorPrefix', { message: error })}</p>}
         {!loading && !error && (
           <div dangerouslySetInnerHTML={{ __html: content }} />
         )}

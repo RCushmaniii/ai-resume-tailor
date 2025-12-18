@@ -1,23 +1,26 @@
 import { Bot, Target, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function ProblemSection() {
+  const { t } = useTranslation();
+
   const problems = [
     {
       icon: Bot,
-      title: 'ATS Rejection',
-      description: '75% of resumes get auto-rejected by applicant tracking systems before a human ever sees them.',
+      title: t('landing.problem.cards.atsRejection.title'),
+      description: t('landing.problem.cards.atsRejection.description'),
       color: 'text-red-600 bg-red-100',
     },
     {
       icon: Target,
-      title: 'Missing Keywords',
-      description: 'Recruiters scan for specific terms. Without them, your resume goes straight to the "no" pile.',
+      title: t('landing.problem.cards.missingKeywords.title'),
+      description: t('landing.problem.cards.missingKeywords.description'),
       color: 'text-amber-600 bg-amber-100',
     },
     {
       icon: Clock,
-      title: 'Takes Too Long',
-      description: 'Customizing your resume for each job posting wastes hours you could spend networking.',
+      title: t('landing.problem.cards.takesTooLong.title'),
+      description: t('landing.problem.cards.takesTooLong.description'),
       color: 'text-blue-600 bg-blue-100',
     },
   ];
@@ -28,10 +31,10 @@ export function ProblemSection() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Why Aren't You Getting Interviews?
+            {t('landing.problem.heading')}
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Even qualified candidates struggle to get past the first filter
+            {t('landing.problem.subheading')}
           </p>
         </div>
 

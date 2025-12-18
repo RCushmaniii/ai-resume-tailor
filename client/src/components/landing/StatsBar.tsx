@@ -1,20 +1,24 @@
+import { useTranslation } from 'react-i18next';
+
 export function StatsBar() {
+  const { t } = useTranslation();
+
   const stats = [
     {
       value: '10,000+',
-      label: 'Resumes Analyzed',
+      label: t('landing.stats.resumesAnalyzed'),
     },
     {
       value: '85%',
-      label: 'Average Match Score',
+      label: t('landing.stats.averageMatchScore'),
     },
     {
       value: '60 sec',
-      label: 'Average Analysis Time',
+      label: t('landing.stats.averageAnalysisTime'),
     },
     {
       value: '100%',
-      label: 'Free Forever',
+      label: t('landing.stats.freeForever'),
     },
   ];
 

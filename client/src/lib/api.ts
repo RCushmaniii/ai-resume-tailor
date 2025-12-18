@@ -25,8 +25,11 @@ export const api = {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      const errorCode = (errorData as { error_code?: string }).error_code;
       throw new Error(
-        errorData.error || `API error: ${response.status} ${response.statusText}`
+        (errorCode ? `apiErrors.${errorCode}` : null) ||
+          (errorData as { error?: string }).error ||
+          `API error: ${response.status} ${response.statusText}`
       );
     }
 
