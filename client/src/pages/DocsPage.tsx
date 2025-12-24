@@ -70,7 +70,7 @@ export function DocsPage({ docName, navigate }: DocsPageProps) {
       let filePath = '/docs/README.md';
       
       if (docName === 'index') {
-        filePath = '/docs/README.md';
+        filePath = '/README.md';
       } else if (docName === 'quick_start') {
         filePath = '/docs/development/QUICK_START.md';
       } else if (docName === 'prd') {

@@ -4,7 +4,7 @@
 **Repository:** [github.com/RCushmaniii/ai-resume-tailor](https://github.com/RCushmaniii/ai-resume-tailor)
 
 **Release:** v1.0.0  
-**Docs:** [/docs/README.md](./docs/README.md)
+**Documentation:** See sections below for complete documentation index
 
 A full-stack web application that analyzes resumes against job descriptions using OpenAI's GPT-4, providing quantified match scores, missing keyword detection, and actionable improvement suggestions. Built to demonstrate production-ready deployment, API integration, and modern frontend architecture.
 
@@ -241,6 +241,60 @@ ai-resume-tailor/
     ├── development/         # Development workflows
     └── backend/             # API documentation
 ```
+
+---
+
+## 📚 Documentation Index
+
+### 🧭 Start Here
+
+- **[Quick Start](./docs/setup/SETUP.md)** - Run the app locally
+- **[Setup Guide](./docs/setup/SETUP.md)** - Complete setup instructions
+
+### 📦 Product
+
+- **[PRD](./docs/product/PRD.md)** - Product requirements
+- **[Roadmap](./docs/product/ROADMAP.md)** - Planned enhancements
+- **[Monetization & Abuse Controls](./docs/product/MONETIZATION_AND_ABUSE_CONTROLS.md)** - Quotas, feature gating, and anti-abuse strategy
+
+### 💻 Development
+
+- **[Security](./docs/development/SECURITY.md)** - Security measures and validation
+- **[Testing](./docs/development/TESTING.md)** - Consolidated testing guide
+- **[Deployment Guide](./docs/development/DEPLOYMENT.md)** - Backend deployment instructions
+- **[Supabase & Postgres Best Practices](./docs/development/SUPABASE_POSTGRES_BEST_PRACTICES.md)**
+- **[Coding Principles](./docs/development/CODING_PRINCIPLES.md)**
+- **[Changelog](./docs/development/CHANGELOG.md)**
+
+### 🚀 Operations
+
+- **[Deployment](./docs/operations/DEPLOYMENT.md)** - Brief deployment overview
+
+### 🔧 Backend Documentation
+
+- **[Backend API Reference](./docs/backend/API_REFERENCE.md)** - Backend API documentation
+- **[AI Engine](./docs/backend/AI_ENGINE.md)** - AI analysis engine documentation
+
+### 📋 Project Phases
+
+- **[PHASE_0](./docs/phases/PHASE_0.md)** - Project scaffold and FE/BE connectivity
+- **[PHASE_1](./docs/phases/PHASE_1.md)** - Core analysis engine implementation
+- **[PHASE_2](./docs/phases/PHASE_2.md)** - User-facing Analyze experience with validation
+- **[Phase 0 Complete](./docs/phases/PHASE_0_COMPLETE.md)** - Phase 0 completion details
+- **[Phase 0 Success](./docs/phases/PHASE_0_SUCCESS.md)** - Phase 0 success criteria
+- **[Phase 2 Complete](./docs/phases/PHASE_2_COMPLETE.md)** - Phase 2 completion details
+- **[Phase 2 Summary](./docs/phases/PHASE_2_SUMMARY.md)** - Phase 2 overview
+- **[Phase 2 Testing Guide](./docs/phases/PHASE_2_TESTING_GUIDE.md)** - Phase 2 testing procedures
+- **[Cleanup Summary](./docs/phases/CLEANUP_SUMMARY.md)** - Project cleanup summary
+
+---
+
+## 📊 Project Status
+
+✅ **Phase 0 Complete** - Project scaffold with FE/BE round-trip  
+🔄 **Phase 1 Planned** - Core analysis engine implementation  
+✅ **Phase 2 Complete** - Form validation and security  
+🚀 **Ready for MVP Deployment**
 
 ---
 

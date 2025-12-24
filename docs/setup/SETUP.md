@@ -3,6 +3,7 @@
 ## Phase 0 Complete ✅
 
 The project scaffold is ready with:
+
 - ✅ `/client` - React + Vite + Tailwind + Zustand + TanStack Query + React Router
 - ✅ `/server` - Flask backend with CORS
 - ✅ API proxy configured in Vite
@@ -10,79 +11,35 @@ The project scaffold is ready with:
 
 ---
 
-## Quick Setup
+## Quick Start (Running Locally)
 
-### 1. Install Frontend Dependencies
-
-Already done! ✅
+### 1. Install Dependencies
 
 ```bash
 pnpm install
 ```
 
-### 2. Set Up Backend
+### 2. Start Backend
 
-#### Option A: Automated Setup (Windows)
-
-```bash
-cd server
-setup.bat
-```
-
-#### Option B: Manual Setup
-
-```bash
-cd server
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-venv\Scripts\activate  # Windows
-# source venv/bin/activate  # Mac/Linux
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Download spaCy model
-python -m spacy download en_core_web_sm
-
-# Create .env file
-copy .env.example .env  # Windows
-# cp .env.example .env  # Mac/Linux
-```
-
-### 3. Configure Environment Variables
-
-Edit `server/.env` and add your OpenAI API key:
-
-```env
-OPENAI_API_KEY=sk-your-actual-key-here
-FLASK_ENV=development
-FLASK_DEBUG=True
-```
-
----
-
-## Running the Application
-
-### Development Mode (Two Terminals)
-
-**Terminal 1 - Backend (Flask on port 5000):**
 ```bash
 pnpm dev:server
 ```
 
-**Terminal 2 - Frontend (Vite on port 3000):**
+Backend runs at `http://localhost:5000`
+
+### 3. Start Frontend
+
 ```bash
 pnpm dev:client
 ```
 
-### Test the Connection
+Frontend runs at `http://localhost:3000`
 
-1. Open `http://localhost:3000/test-api`
-2. Click "Test Health Endpoint" - should return `{"status": "ok"}`
-3. Click "Test Analyze Endpoint" - should return mock analysis data
+### 4. Test the End-to-End Flow
+
+- Open `http://localhost:3000/analyze`
+- Paste resume + job description
+- Click **Analyze Match**
 
 ---
 
@@ -157,9 +114,11 @@ ai-resume-tailor/
 ## API Endpoints
 
 ### GET `/api/health`
+
 Health check endpoint to verify backend is running.
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -168,9 +127,11 @@ Health check endpoint to verify backend is running.
 ```
 
 ### POST `/api/analyze`
+
 Analyze resume against job description (Phase 0: returns mock data).
 
 **Request:**
+
 ```json
 {
   "resume": "Your resume text...",
@@ -179,6 +140,7 @@ Analyze resume against job description (Phase 0: returns mock data).
 ```
 
 **Response:**
+
 ```json
 {
   "match_score": 67,
@@ -197,23 +159,27 @@ Analyze resume against job description (Phase 0: returns mock data).
 ## Troubleshooting
 
 ### Frontend won't start
+
 - Check if port 3000 is available
 - Run `pnpm install` in root directory
 - Check for TypeScript errors: `pnpm typecheck`
 
 ### Backend won't start
+
 - Verify Python 3.9+ is installed: `python --version`
 - Check if port 5000 is available
 - Activate virtual environment first
 - Verify all dependencies installed: `pip list`
 
 ### API calls failing
+
 - Ensure both frontend AND backend are running
 - Check browser console for CORS errors
 - Verify Vite proxy config in `client/vite.config.ts`
 - Test backend directly: `http://localhost:5000/api/health`
 
 ### spaCy model not found
+
 ```bash
 cd server
 venv\Scripts\activate
@@ -240,6 +206,7 @@ python -m spacy download en_core_web_sm
 ## Support
 
 For issues or questions:
+
 - Check the [README.md](./README.md)
 - Review server logs in terminal
 - Check browser console for frontend errors

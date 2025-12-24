@@ -31,9 +31,10 @@ All documentation files have been moved to `/docs` folder:
 - ✅ `PHASE_0_COMPLETE.md` → `docs/PHASE_0_COMPLETE.md`
 - ✅ `GITHUB_SETUP.md` → `docs/GITHUB_SETUP.md`
 - ✅ `SEO_SETUP.md` → `docs/SEO_SETUP.md`
-- ✅ Created `docs/README.md` - Documentation index
+- ✅ Created documentation index in main README.md
 
 **Kept in root:**
+
 - `README.md` - Main project documentation
 - `LICENSE` - Project license
 - `.gitignore` - Git ignore rules
@@ -93,6 +94,7 @@ ai-resume-tailor/
 ## 🎯 Next Steps
 
 With cleanup complete, the project is ready for:
+
 - ✅ Phase 0 testing (COMPLETE - API endpoints working!)
 - 🔄 Phase 1 development (Core analysis)
 - 📝 Git commit and push

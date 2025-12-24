@@ -41,7 +41,7 @@ function App() {
     // If docs page, check if the subpage is valid
     let isValidSubpage = true;
     if (page === 'docs') {
-      const validSubpages = ['index', 'quick_start', 'prd', 'roadmap', 'setup', 'security', 'testing', 'deployment', 'template_usage', 'mobile_responsiveness', 'coding_principles', 'changelog', 'phase_0', 'phase_2'];
+      const validSubpages = ['index', 'quick_start', 'prd', 'roadmap', 'setup', 'security', 'testing', 'deployment', 'template_usage', 'mobile_responsiveness', 'coding_principles', 'changelog', 'phase_0', 'phase_1', 'phase_2'];
       isValidSubpage = !subpage || validSubpages.includes(subpage);
     }
     
