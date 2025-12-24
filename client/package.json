@@ -12,6 +12,7 @@
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "format": "prettier --write .",
     "verify": "pnpm typecheck && pnpm lint && pnpm build",
+    "health-check": "node ../scripts/dev-health-check.js",
     "init:template": "tsx scripts/init.ts",
     "msw:init": "node scripts/msw-init.mjs"
   },
