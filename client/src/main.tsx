@@ -2,6 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { initI18n } from '@/lib/i18n'
+
+initI18n()
 
 async function enableMocking() {
   // Only enable MSW in development mode

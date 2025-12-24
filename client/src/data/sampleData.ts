@@ -1,7 +1,14 @@
-export const SAMPLE_ROLES = [
+export interface SampleData {
+  id: string;
+  label: string;
+  resume: string;
+  job: string;
+}
+
+export const SAMPLE_ROLES: SampleData[] = [
   { 
-    id: 1, 
-    title: "Frontend Dev", 
+    id: 'frontend-dev',
+    label: 'Frontend Developer', 
     resume: `Jane Doe
 Frontend Developer
 
@@ -44,8 +51,8 @@ Responsibilities:
 We offer competitive salary, remote work options, and professional development opportunities.`
   },
   { 
-    id: 2, 
-    title: "Marketing Mgr", 
+    id: 'marketing-manager',
+    label: 'Marketing Manager', 
     resume: `Carlos Ruiz
 Marketing Manager
 
@@ -93,8 +100,8 @@ Responsibilities:
 Ideal candidate has experience in SaaS or technology companies with a track record of scaling marketing operations.`
   },
   { 
-    id: 3, 
-    title: "Project Manager", 
+    id: 'project-manager',
+    label: 'Project Manager', 
     resume: `Sarah Smith
 Project Manager
 
@@ -143,8 +150,8 @@ Responsibilities:
 Experience with cloud infrastructure projects or enterprise software implementations preferred.`
   },
   { 
-    id: 4, 
-    title: "Data Analyst", 
+    id: 'data-analyst',
+    label: 'Data Analyst', 
     resume: `Mike Chen
 Data Analyst
 
@@ -192,8 +199,8 @@ Responsibilities:
 Experience in e-commerce or SaaS analytics is a plus. Strong problem-solving skills and attention to detail required.`
   },
   { 
-    id: 5, 
-    title: "Customer Success", 
+    id: 'customer-success',
+    label: 'Customer Success', 
     resume: `Lisa Ray
 Customer Success Manager
 

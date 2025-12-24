@@ -1,5 +1,8 @@
 // File: src/components/layout/Footer.tsx
 import logoImage from '@/assets/images/logo.jpg';
+import logoImageES from '@/assets/images/ai resume tailor logo es.jpg';
+import { Github, Twitter, Linkedin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 type FooterProps = {
   navigate: (page: string) => void;
@@ -7,9 +10,56 @@ type FooterProps = {
 
 export function Footer({ navigate }: FooterProps) {
   const currentYear = new Date().getFullYear();
+  const { t, i18n } = useTranslation();
+
+  // Select appropriate logo based on current language
+  const currentLogoImage = i18n.language === 'es' ? logoImageES : logoImage;
 
   const linkStyles = "text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200";
   const headingStyles = "text-sm font-semibold text-gray-900 dark:text-white tracking-wider uppercase mb-3";
+
+  // Footer links configuration following DRY principle
+  const footerLinks = {
+    product: [
+      { key: 'analyze', href: '/analyze', page: 'analyze' },
+      { key: 'howItWorks', href: '/#how-it-works', page: 'home#how-it-works' },
+      { key: 'features', href: '/#features', page: 'home#features' },
+      { key: 'faq', href: '/#faq', page: 'home#faq' },
+    ],
+    resources: [
+      { key: 'documentation', href: '/docs', page: 'docs/index' },
+      { key: 'resumeTips', href: '/', page: 'home' },
+      { key: 'atsGuide', href: '/', page: 'home' },
+      { key: 'support', href: '/', page: 'home' },
+    ],
+    legal: [
+      { key: 'privacy', href: '/privacy', page: 'privacy' },
+      { key: 'terms', href: '/terms', page: 'terms' },
+      { key: 'cookiePolicy', href: '/cookie', page: 'cookie' },
+    ],
+  };
+
+  // Social media links
+  const socialLinks = [
+    { 
+      name: 'GitHub', 
+      href: 'https://github.com/RCushmaniii/ai-resume-tailor', 
+      icon: Github,
+      ariaLabel: 'GitHub'
+    },
+    { 
+      name: 'X (Twitter)', 
+      href: 'https://twitter.com', 
+      icon: Twitter,
+      ariaLabel: 'X (Twitter)'
+    },
+    { 
+      name: 'LinkedIn', 
+      href: 'https://linkedin.com', 
+      icon: Linkedin,
+      ariaLabel: 'LinkedIn'
+    },
+  ];
 
   const handleNavClick = (page: string) => {
     // Handle anchor links (e.g., "home#how-it-works")
@@ -36,67 +86,83 @@ export function Footer({ navigate }: FooterProps) {
     }
   };
 
+  const renderLinkColumn = (links: typeof footerLinks.product, columnKey: string) => (
+    <nav role="navigation" aria-label={`${t(`footer.columns.${columnKey}`)} links`}>
+      <ul className="space-y-2">
+        {links.map((link) => (
+          <li key={link.key}>
+            <a 
+              href={link.href} 
+              onClick={(e) => { e.preventDefault(); handleNavClick(link.page); }} 
+              className={linkStyles}
+            >
+              {t(`footer.links.${link.key}`)}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+
   return (
     <footer className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-auto">
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Logo for mobile - centered at the top */}
-        <div className="flex justify-center mb-8 sm:hidden">
-          <div className="flex flex-col items-center">
-            <a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }}>
-              <img className="h-16 w-auto" src={logoImage} alt="AI Resume Tailor logo" />
-            </a>
-          </div>
-        </div>
-        
-        {/* Main footer content */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-4 sm:gap-x-6 md:gap-x-8">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        {/* Main footer content - 4 column grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           
           {/* Column 1: Product */}
           <div className="space-y-2">
-            <h3 className={headingStyles}>Product</h3>
-            <ul className="space-y-2">
-              <li><a href="/analyze" onClick={(e) => { e.preventDefault(); handleNavClick('analyze'); }} className={linkStyles}>Analyze Resume</a></li>
-              <li><a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className={linkStyles}>How It Works</a></li>
-              <li><a href="/#features" onClick={(e) => { e.preventDefault(); handleNavClick('home#features'); }} className={linkStyles}>Features</a></li>
-              <li><a href="/#faq" onClick={(e) => { e.preventDefault(); handleNavClick('home#faq'); }} className={linkStyles}>FAQ</a></li>
-            </ul>
+            <h3 className={headingStyles}>{t('footer.columns.product')}</h3>
+            {renderLinkColumn(footerLinks.product, 'product')}
           </div>
 
           {/* Column 2: Resources */}
           <div className="space-y-2">
-            <h3 className={headingStyles}>Resources</h3>
-            <ul className="space-y-2">
-              <li><a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className={linkStyles}>Documentation</a></li>
-              <li><a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }} className={linkStyles}>Resume Tips</a></li>
-              <li><a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }} className={linkStyles}>ATS Guide</a></li>
-              <li><a href="https://github.com/RCushmaniii/ai-resume-tailor" target="_blank" rel="noopener noreferrer" className={linkStyles}>GitHub</a></li>
-            </ul>
+            <h3 className={headingStyles}>{t('footer.columns.resources')}</h3>
+            {renderLinkColumn(footerLinks.resources, 'resources')}
           </div>
           
           {/* Column 3: Legal */}
           <div className="space-y-2">
-            <h3 className={headingStyles}>Legal</h3>
-            <ul className="space-y-2">
-              <li><a href="/privacy" onClick={(e) => { e.preventDefault(); handleNavClick('privacy'); }} className={linkStyles}>Privacy Policy</a></li>
-              <li><a href="/terms" onClick={(e) => { e.preventDefault(); handleNavClick('terms'); }} className={linkStyles}>Terms of Service</a></li>
-            </ul>
+            <h3 className={headingStyles}>{t('footer.columns.legal')}</h3>
+            {renderLinkColumn(footerLinks.legal, 'legal')}
           </div>
 
-          {/* Column 4: Branding/Logo - Hidden on mobile, shown on tablet and up */}
-          <div className="hidden sm:flex items-start justify-end">
-            <div className="flex flex-col items-center">
+          {/* Column 4: Brand & Social */}
+          <div className="space-y-4">
+            {/* Logo */}
+            <div className="flex flex-col items-center lg:items-start">
               <a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }}>
-                <img className="h-16 w-auto mb-2" src={logoImage} alt="AI Resume Tailor logo" />
+                <img className="h-16 w-auto mb-4" src={currentLogoImage} alt={t('footer.logoAlt')} />
               </a>
-              <span className="text-sm text-slate-500 text-center">Powered by AI<br/>Free Forever</span>
+            </div>
+
+            {/* Social Media Icons */}
+            <div className="flex items-center justify-center lg:justify-start space-x-4">
+              {socialLinks.map((social) => {
+                const IconComponent = social.icon;
+                return (
+                  <a 
+                    key={social.name}
+                    href={social.href} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    aria-label={social.ariaLabel}
+                    className="text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                  >
+                    <IconComponent className="w-5 h-5" />
+                  </a>
+                );
+              })}
             </div>
           </div>
-
         </div>
         
         {/* Copyright notice */}
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">&copy; {currentYear} AI Resume Tailor. All Rights Reserved.</p>
+        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+            {t('footer.copyright', { year: currentYear })}
+          </p>
         </div>
       </div>
     </footer>

@@ -1,33 +1,35 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const { t } = useTranslation();
 
   const faqs = [
     {
-      question: 'Do I need to create an account?',
-      answer: 'No! Simply paste your resume and job description to get instant results. No signup, no email required.',
+      question: t('landing.faq.items.q1.question'),
+      answer: t('landing.faq.items.q1.answer'),
     },
     {
-      question: 'Is my data stored or shared?',
-      answer: 'Never. Analysis happens in real-time and nothing is saved to our servers. Your resume and personal information remain completely private.',
+      question: t('landing.faq.items.q2.question'),
+      answer: t('landing.faq.items.q2.answer'),
     },
     {
-      question: 'What AI model powers this?',
-      answer: 'We use GPT-4 Turbo, the same advanced AI that powers ChatGPT Plus. It\'s trained on thousands of successful resumes and job descriptions.',
+      question: t('landing.faq.items.q3.question'),
+      answer: t('landing.faq.items.q3.answer'),
     },
     {
-      question: 'Does it work for all industries?',
-      answer: 'Yes! Our AI analyzes any resume against any job description, from tech and finance to healthcare and creative fields.',
+      question: t('landing.faq.items.q4.question'),
+      answer: t('landing.faq.items.q4.answer'),
     },
     {
-      question: 'How accurate is the analysis?',
-      answer: 'Our AI provides objective analysis based on keyword matching, semantic similarity, and professional writing standards. While no tool is perfect, our users report 85% average match scores.',
+      question: t('landing.faq.items.q5.question'),
+      answer: t('landing.faq.items.q5.answer'),
     },
     {
-      question: 'Can I analyze multiple resumes?',
-      answer: 'Absolutely! There\'s no limit. Analyze as many resume-job combinations as you need, completely free.',
+      question: t('landing.faq.items.q6.question'),
+      answer: t('landing.faq.items.q6.answer'),
     },
   ];
 
@@ -37,10 +39,10 @@ export function FAQ() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Frequently Asked Questions
+            {t('landing.faq.heading')}
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Everything you need to know about AI Resume Tailor
+            {t('landing.faq.subheading')}
           </p>
         </div>
 

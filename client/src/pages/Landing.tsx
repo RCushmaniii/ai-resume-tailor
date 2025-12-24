@@ -6,15 +6,18 @@ import { HowItWorks } from '@/components/landing/HowItWorks';
 import { StatsBar } from '@/components/landing/StatsBar';
 import { FAQ } from '@/components/landing/FAQ';
 import { FinalCTA } from '@/components/landing/FinalCTA';
+import { useTranslation } from 'react-i18next';
 
 export function Landing() {
+  const { t } = useTranslation();
+
   return (
     <>
       <SEO
-        title="AI Resume Tailor - Get Your Resume Past ATS in 60 Seconds"
-        description="Free AI-powered resume analysis tool. Get instant match scores, missing keywords, and actionable suggestions to optimize your resume for any job. No signup required."
-        keywords="resume analyzer, ATS checker, resume optimization, AI resume tool, job application, resume keywords, free resume checker, resume match score"
-        canonical="https://airesumatailor.com"
+        title={t('seo.landing.title')}
+        description={t('seo.landing.description')}
+        keywords={t('seo.landing.keywords')}
+        canonical={t('seo.landing.canonical')}
       />
       <div className="min-h-screen">
         <Hero />

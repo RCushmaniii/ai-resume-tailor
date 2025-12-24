@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import ExampleComponent from '../examples/ExampleComponent';
 import MswAlert from '../components/ui/MswAlert';
+import { useTranslation } from 'react-i18next';
 
 interface User {
   id: string;
@@ -17,6 +18,7 @@ interface ExampleUser {
 }
 
 export function ExamplesPage() {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [users, setUsers] = useState<ExampleUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,9 +29,7 @@ export function ExamplesPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        console.log('Fetching user data from /api/user');
         const response = await fetch('/api/user');
-        console.log('Response status:', response.status);
         
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
@@ -41,25 +41,21 @@ export function ExamplesPage() {
         }
         
         const data = await response.json();
-        console.log('User data received:', data);
         setUser(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        console.error('Error fetching user:', err);
+        setError(err instanceof Error ? err.message : t('markdown.errors.unknown'));
       }
     };
 
     fetchUser();
-  }, []);
+  }, [t]);
 
   // Fetch example users data from the API
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        console.log('Fetching users data from /api/users');
         const response = await fetch('/api/users');
-        console.log('Response status:', response.status);
         
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
@@ -71,18 +67,16 @@ export function ExamplesPage() {
         }
         
         const data = await response.json();
-        console.log('Users data received:', data);
         setUsers(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        console.error('Error fetching users:', err);
+        setError(err instanceof Error ? err.message : t('markdown.errors.unknown'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [t]);
 
   // Define the cobalt blue color for use in styles
   const cobaltBlue = '#0047ab';
@@ -90,64 +84,64 @@ export function ExamplesPage() {
   return (
     <div className="space-y-12">
       <div>
-        <h1 className="text-3xl font-bold mb-2" style={{ color: cobaltBlue }}>React Vite Tailwind Examples</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">This page demonstrates various features of the template.</p>
+        <h1 className="text-3xl font-bold mb-2" style={{ color: cobaltBlue }}>{t('examples.title')}</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">{t('examples.description')}</p>
       </div>
       
       {/* MSW Status Banner */}
       <MswAlert />
       
       <section className="space-y-6 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <h2 className="text-2xl font-semibold border-b pb-2" style={{ color: cobaltBlue }}>UI Component Demonstration</h2>
-        <p className="text-gray-600">This example shows a reusable React component with TypeScript props and Tailwind CSS styling.</p>
+        <h2 className="text-2xl font-semibold border-b pb-2" style={{ color: cobaltBlue }}>{t('examples.sections.uiDemo.title')}</h2>
+        <p className="text-gray-600">{t('examples.sections.uiDemo.description')}</p>
         <ExampleComponent 
-          title="Example Component" 
-          description="This is an example component with TypeScript props and Tailwind styling"
+          title={t('examples.sections.uiDemo.exampleTitle')} 
+          description={t('examples.sections.uiDemo.exampleDescription')}
         />
       </section>
       
       <section className="space-y-6 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <h2 className="text-2xl font-semibold border-b pb-2" style={{ color: cobaltBlue }}>Basic API Integration</h2>
-        <p className="text-gray-600">This example demonstrates fetching a single user from a mock API endpoint using MSW.</p>
-        {error && <p className="text-red-500">Error: {error}</p>}
+        <h2 className="text-2xl font-semibold border-b pb-2" style={{ color: cobaltBlue }}>{t('examples.sections.apiSingle.title')}</h2>
+        <p className="text-gray-600">{t('examples.sections.apiSingle.description')}</p>
+        {error && <p className="text-red-500">{t('examples.errorPrefix', { message: error })}</p>}
         {user ? (
           <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-            <h3 className="text-lg font-medium mb-3" style={{ color: cobaltBlue }}>User Profile</h3>
+            <h3 className="text-lg font-medium mb-3" style={{ color: cobaltBlue }}>{t('examples.sections.apiSingle.userProfile')}</h3>
             <div className="space-y-2">
               <div className="flex items-center">
-                <p className="text-gray-500 w-20">ID:</p>
+                <p className="text-gray-500 w-20">{t('examples.sections.apiSingle.id')}</p>
                 <p className="font-medium">{user.id}</p>
               </div>
               <div className="flex items-center">
-                <p className="text-gray-500 w-20">Name:</p>
+                <p className="text-gray-500 w-20">{t('examples.sections.apiSingle.name')}</p>
                 <p className="font-medium">{user.firstName} {user.lastName}</p>
               </div>
             </div>
           </div>
         ) : (
           <div className="flex items-center justify-center h-32 bg-gray-50 rounded-md">
-            <p className="text-gray-500">Loading user data...</p>
+            <p className="text-gray-500">{t('examples.sections.apiSingle.loadingUser')}</p>
           </div>
         )}
       </section>
       
       <section className="space-y-6 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <h2 className="text-2xl font-semibold border-b pb-2" style={{ color: cobaltBlue }}>Data Table with Mock API</h2>
-        <p className="text-gray-600">This example shows how to fetch and display a collection of users from a mock API endpoint.</p>
-        {error && <p className="text-red-500">Error: {error}</p>}
+        <h2 className="text-2xl font-semibold border-b pb-2" style={{ color: cobaltBlue }}>{t('examples.sections.apiTable.title')}</h2>
+        <p className="text-gray-600">{t('examples.sections.apiTable.description')}</p>
+        {error && <p className="text-red-500">{t('examples.errorPrefix', { message: error })}</p>}
         {loading ? (
           <div className="flex items-center justify-center h-32 bg-gray-50 rounded-md">
-            <p className="text-gray-500">Loading users data...</p>
+            <p className="text-gray-500">{t('examples.sections.apiTable.loadingUsers')}</p>
           </div>
         ) : (
           <div className="rounded-md overflow-hidden border border-gray-200">
             <table className="min-w-full divide-y divide-gray-200">
               <thead style={{ backgroundColor: '#f8fafc' }}>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: cobaltBlue }}>ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: cobaltBlue }}>Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: cobaltBlue }}>Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: cobaltBlue }}>Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: cobaltBlue }}>{t('examples.sections.apiTable.headers.id')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: cobaltBlue }}>{t('examples.sections.apiTable.headers.name')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: cobaltBlue }}>{t('examples.sections.apiTable.headers.email')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: cobaltBlue }}>{t('examples.sections.apiTable.headers.role')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">

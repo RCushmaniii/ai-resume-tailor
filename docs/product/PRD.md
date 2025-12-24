@@ -67,6 +67,8 @@ A web app where the user pastes resume text and a job description, then receives
 ### 4.4 Planned Enhancement: Bilingual UX (en/es)
 
 - The app must support a language toggle between English (`en`) and Spanish (`es`).
+- The UI uses a single active language at a time; user-facing labels do not need to display both EN/ES simultaneously.
+- The language toggle itself may display both language names (e.g., English/Español) to improve discoverability.
 - All user-facing UI copy (labels, buttons, headings, toasts, dialogs, empty states, errors) must be localizable.
 - Language selection must persist per user (local storage for guests; later extend to profile for signed-in users).
 - A default language should be selected using browser preferences (e.g., `navigator.language`) with a deterministic fallback to English.
@@ -237,7 +239,7 @@ A web app where the user pastes resume text and a job description, then receives
 
 ### 15.3 Content & UX Impact
 
-- Spanish copy quality must be consistent and professional (avoid machine-translation-only).
+- Spanish copy quality must be consistent and brand-aligned (friendly/casual tone is acceptable), and should not rely on machine-translation-only.
 - Ensure critical conversion CTAs are translated (signup prompt, credits messaging).
 
 ### 15.4 QA / Testing Impact

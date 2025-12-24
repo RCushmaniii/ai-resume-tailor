@@ -8,6 +8,8 @@ import type { DisplayAnalysisResult } from '@/types/analysis';
 import { transformAnalysisResult, type AnalysisResult } from '@/types/analysis';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
 import { useAuth } from '@/lib/useAuth';
+import { useTranslation } from 'react-i18next';
+import { useSignInPrompt } from '@/contexts/SignInPromptContext';
 
 const GUEST_CREDITS_TOTAL = Number(import.meta.env.VITE_GUEST_CREDITS_TOTAL ?? 3);
 const GUEST_CREDITS_STORAGE_KEY = 'guest_analyses_used';
@@ -39,19 +41,43 @@ export function Analyze() {
   const [results, setResults] = useState<DisplayAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const { t } = useTranslation();
+  const { promptSignIn } = useSignInPrompt();
   
   const resumeInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const getApiErrorMessage = (payload: unknown): string | null => {
+    if (!payload || typeof payload !== 'object') return null;
+    const data = payload as {
+      error_code?: string;
+      details?: Record<string, unknown>;
+      error?: string;
+      message?: string;
+    };
+
+    if (!data.error_code) return null;
+
+    const key = `apiErrors.${data.error_code}`;
+    const translated = t(key, {
+      defaultValue: '',
+      ...(data.details ?? {}),
+    });
+
+    if (translated) return translated;
+    return data.error || data.message || null;
+  };
 
   const handleAnalyze = async () => {
     if (!user) {
       const used = getGuestAnalysesUsed();
       if (used >= GUEST_CREDITS_TOTAL) {
-        const message = `You’ve used your ${GUEST_CREDITS_TOTAL} free analyses. Please create a free account to continue. / Has usado tus ${GUEST_CREDITS_TOTAL} análisis gratis. Crea una cuenta gratis para continuar.`;
-        toast.error('Free limit reached', {
+        const message = t('analyze.messages.freeLimitReached', { total: GUEST_CREDITS_TOTAL });
+        toast.error(t('analyze.toasts.freeLimitReachedTitle'), {
           description: message,
           duration: 8000,
         });
         setError(message);
+        promptSignIn(); // Show sign-in button in header
         return;
       }
     }
@@ -65,7 +91,6 @@ export function Analyze() {
     
     try {
       const API_URL = import.meta.env.VITE_API_URL || '/api';
-      console.log('🔍 API URL:', API_URL); // Debug: verify environment variable
       const response = await fetchWithAuth(`${API_URL}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,7 +105,10 @@ export function Analyze() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server error: ${response.status}`);
+        const localized = getApiErrorMessage(errorData);
+        throw new Error(localized || (typeof (errorData as { error?: string }).error === 'string'
+          ? (errorData as { error?: string }).error
+          : `Server error: ${response.status}`));
       }
 
       const apiResult: AnalysisResult & {
@@ -100,13 +128,16 @@ export function Analyze() {
       if (!user) {
         const nextUsed = incrementGuestAnalysesUsed();
         const remaining = Math.max(0, GUEST_CREDITS_TOTAL - nextUsed);
-        toast.message('Analysis complete', {
-          description: `Free analyses remaining: ${remaining} / ${GUEST_CREDITS_TOTAL}. / Análisis gratis restantes: ${remaining} / ${GUEST_CREDITS_TOTAL}.`,
+        toast.message(t('analyze.toasts.analysisCompleteTitle'), {
+          description: t('analyze.messages.freeRemaining', { remaining, total: GUEST_CREDITS_TOTAL }),
           duration: 5000,
         });
       } else if (typeof apiResult.credits_remaining === 'number' && typeof apiResult.credits_total === 'number') {
-        toast.message('Analysis complete', {
-          description: `Credits remaining: ${apiResult.credits_remaining} / ${apiResult.credits_total}. / Créditos restantes: ${apiResult.credits_remaining} / ${apiResult.credits_total}.`,
+        toast.message(t('analyze.toasts.analysisCompleteTitle'), {
+          description: t('analyze.messages.creditsRemaining', {
+            remaining: apiResult.credits_remaining,
+            total: apiResult.credits_total,
+          }),
           duration: 5000,
         });
       }
@@ -122,18 +153,18 @@ export function Analyze() {
     } catch (err) {
       clearTimeout(timeoutId);
       
-      let message = 'Analysis failed. Please try again.';
+      let message = t('analyze.messages.analysisFailedGeneric');
       
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
-          message = 'Request timed out. Please try again.';
+          message = t('analyze.messages.requestTimedOut');
         } else {
           message = err.message;
         }
       }
       
       // Show error toast
-      toast.error('Analysis Failed', {
+      toast.error(t('analyze.toasts.analysisFailedTitle'), {
         description: message,
         duration: 5000,
       });
@@ -161,18 +192,16 @@ export function Analyze() {
   return (
     <>
       <SEO
-        title="Analyze Your Resume - AI Resume Tailor"
-        description="Get instant AI-powered analysis of your resume against any job description. See your match score, missing keywords, and improvement suggestions in 60 seconds."
-        keywords="resume analysis, ATS score, resume checker, job match, resume keywords, AI analysis"
-        canonical="https://airesumatailor.com/analyze"
+        title={t('seo.analyze.title')}
+        description={t('seo.analyze.description')}
+        keywords={t('seo.analyze.keywords')}
+        canonical={t('seo.analyze.canonical')}
       />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">AI Resume Tailor</h1>
-          <p className="text-muted-foreground text-lg">
-            Analyze how well your resume matches the job description
-          </p>
+          <h1 className="text-4xl font-bold mb-2">{t('analyze.heading')}</h1>
+          <p className="text-muted-foreground text-lg">{t('analyze.subheading')}</p>
         </div>
 
       {/* Input Section - Always visible but grayed out when analyzing/showing results */}

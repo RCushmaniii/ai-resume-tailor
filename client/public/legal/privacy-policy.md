@@ -1,43 +1,67 @@
-# Introduction
+# Privacy Policy for AI Resume Tailor
 
-Welcome to [Your Company/App Name] ("we," "our," or "us"). We respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our application.
+Last Updated: December 24, 2025
+
+## Introduction
+
+Welcome to AI Resume Tailor ("we," "our," or "us"). We respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our resume analysis service.
+
+## What We Don't Do (Our Privacy Promise)
+
+Before we explain what we do collect, here's what we don't do:
+
+❌ We don't store your resumes - Your resume text is processed once and discarded
+❌ No mandatory accounts - You can use the tool without a profile
+❌ We don't track your job search - We don't monitor which jobs you're applying for
+❌ We don't sell your data - We have no data to sell because we don't keep it
+❌ No advertising cookies - We use anonymous analytics, but no retargeting pixels
 
 ## Information We Collect
 
 ### Information You Provide
 
-- **Account Information:** Name, email address, and other details you provide when creating an account
-- **User Content:** Any data, files, or content you upload or create within the application
-- **Communications:** Messages you send to us or through our platform
+- **Resume Text:** The content of your resume that you paste for analysis
+- **Job Descriptions:** The job posting text you provide for comparison
+- **Optional Account Information:** If you choose to create an account, we collect your email address
 
 ### Automatically Collected Information
 
-- **Usage Data:** Information about how you interact with our application
-- **Device Information:** IP address, browser type, operating system, and device identifiers
-- **Cookies and Tracking:** We use cookies and similar technologies to enhance your experience
+- **Usage Data:** Number of analyses performed, general usage patterns
+- **Device Information:** IP address, browser type, operating system
+- **Analytics Data:** Anonymous usage statistics via Google Analytics
 
 ## How We Use Your Information
 
 We use the collected information to:
 
-- Provide, maintain, and improve our services
-- Process your requests and transactions
-- Send you technical notices and support messages
-- Respond to your comments and questions
-- Monitor and analyze usage patterns and trends
-- Detect and prevent fraud or abuse
+- Provide resume analysis and comparison services
+- Improve our AI algorithms and service quality
+- Monitor service performance and uptime
+- Respond to your support requests
+- Send service updates (only if you have an account)
+
+## Data Storage and Retention
+
+**Resume Data:** Your resume and job description texts are processed in real-time and are not permanently stored on our servers after the analysis is complete.
+
+**Account Data:** If you create an account, we store your email and analysis history until you delete your account.
+
+**Analytics Data:** Anonymous usage data is retained for 26 months as per Google Analytics standard retention.
 
 ## Data Sharing and Disclosure
 
 We do not sell your personal information. We may share your data with:
 
-- **Service Providers:** Third-party vendors who help us operate our services
+- **Service Providers:** Google Analytics for anonymous usage tracking
 - **Legal Requirements:** When required by law or to protect our rights
-- **Business Transfers:** In connection with a merger, acquisition, or sale of assets
 
-## Data Security
+## Cookies and Tracking
 
-We implement appropriate technical and organizational measures to protect your personal data. However, no method of transmission over the internet is 100% secure.
+We use the following types of cookies:
+
+- **Essential Cookies:** Required for the service to function
+- **Analytics Cookies:** Google Analytics (\_ga, \_gid) for anonymous usage statistics
+- **No Advertising Cookies:** We do not use tracking pixels for advertising
 
 ## Your Rights
 
@@ -52,7 +76,7 @@ Depending on your location, you may have the right to:
 
 ## Children's Privacy
 
-Our service is not intended for children under 13 (or 16 in the EU). We do not knowingly collect data from children.
+Our service is not directed to children under 13. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and you are aware that your child has provided us with personal information, please contact us so that we will be able to take necessary actions.
 
 ## International Data Transfers
 
@@ -64,12 +88,10 @@ We may update this privacy policy from time to time. We will notify you of any c
 
 ## Contact Us
 
-If you have questions about this privacy policy, please contact us at:
+If you have any questions about this Privacy Policy, please contact us at:
 
-- **Email:** [your-email@example.com]
-- **Address:** [Your Physical Address]
-- **Phone:** [Your Phone Number]
+- **Email:** support@airesumatailor.com
 
 ---
 
-_This is a template privacy policy. Please consult with a legal professional to ensure compliance with applicable laws and regulations in your jurisdiction._
+_This document was last updated on December 24, 2025._

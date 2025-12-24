@@ -1,27 +1,30 @@
 import { FileText, Sparkles, CheckCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 
 export function HowItWorks() {
+  const { t } = useTranslation();
+
   const steps = [
     {
       number: '1',
       icon: FileText,
-      title: 'Paste Resume',
-      description: 'Copy your resume and the job posting you\'re applying to.',
+      title: t('landing.howItWorks.steps.step1.title'),
+      description: t('landing.howItWorks.steps.step1.description'),
       color: 'from-blue-500 to-blue-600',
     },
     {
       number: '2',
       icon: Sparkles,
-      title: 'AI Analyzes',
-      description: 'GPT-4 compares your resume to job requirements in 60 seconds.',
+      title: t('landing.howItWorks.steps.step2.title'),
+      description: t('landing.howItWorks.steps.step2.description'),
       color: 'from-purple-500 to-purple-600',
     },
     {
       number: '3',
       icon: CheckCircle,
-      title: 'Apply Changes',
-      description: 'Update with missing keywords and actionable improvement tips.',
+      title: t('landing.howItWorks.steps.step3.title'),
+      description: t('landing.howItWorks.steps.step3.description'),
       color: 'from-green-500 to-green-600',
     },
   ];
@@ -37,10 +40,10 @@ export function HowItWorks() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Get Hired Faster in 3 Simple Steps
+            {t('landing.howItWorks.heading')}
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            From resume to interview-ready in under a minute
+            {t('landing.howItWorks.subheading')}
           </p>
         </div>
 
@@ -95,7 +98,7 @@ export function HowItWorks() {
             onClick={handleCTA}
             className="text-lg px-10 py-6 bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all"
           >
-            Try It Now Free
+            {t('landing.howItWorks.cta')}
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
         </div>

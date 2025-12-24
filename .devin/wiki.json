@@ -1,0 +1,88 @@
+{
+  "repo_notes": [
+    {
+      "content": "AI Resume Tailor is a full-stack web application that analyzes resumes against job descriptions using OpenAI's GPT-4. The frontend is built with React + TypeScript + Vite, and the backend is a Flask API. The project demonstrates production deployment with Vercel (frontend) and Render (backend).",
+      "author": "Project Lead"
+    },
+    {
+      "content": "Main application logic is in the client/ folder with React components, pages, and utilities. The server/ folder contains the Flask API with OpenAI integration. Documentation has been consolidated in the docs/ folder with clear phase-based organization.",
+      "author": "Project Lead"
+    },
+    {
+      "content": "Key features include real-time resume analysis, match scoring, keyword extraction, and actionable suggestions. The app is privacy-first with no data storage and includes bilingual support (EN/ES).",
+      "author": "Project Lead"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Project Overview",
+      "purpose": "High-level introduction to AI Resume Tailor, its purpose, and key features",
+      "parent": null
+    },
+    {
+      "title": "Architecture Overview",
+      "purpose": "Document the full-stack architecture with React frontend, Flask backend, and OpenAI integration",
+      "parent": null
+    },
+    {
+      "title": "Frontend Structure",
+      "purpose": "Document the client/ folder structure, React components, and TypeScript setup",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Backend API",
+      "purpose": "Document the Flask API endpoints, OpenAI integration, and server configuration",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Core Features",
+      "purpose": "Document the resume analysis workflow, scoring algorithms, and user experience",
+      "parent": null
+    },
+    {
+      "title": "Resume Analysis Engine",
+      "purpose": "Detailed documentation of how resume analysis works, from text input to AI-powered suggestions",
+      "parent": "Core Features"
+    },
+    {
+      "title": "Deployment Guide",
+      "purpose": "Document the production deployment setup with Vercel and Render, including environment variables",
+      "parent": null
+    },
+    {
+      "title": "Development Setup",
+      "purpose": "Local development environment setup instructions for both frontend and backend",
+      "parent": "Deployment Guide"
+    },
+    {
+      "title": "Internationalization",
+      "purpose": "Document the bilingual support implementation with i18n and language switching",
+      "parent": "Frontend Structure"
+    },
+    {
+      "title": "Security & Validation",
+      "purpose": "Document input validation, XSS prevention, and CORS configuration",
+      "parent": "Backend API"
+    },
+    {
+      "title": "Project Phases",
+      "purpose": "Document the development phases from Phase 0 (scaffold) through Phase 2 (validation)",
+      "parent": null
+    },
+    {
+      "title": "Phase 0 - Project Scaffold",
+      "purpose": "Documentation of the initial project setup and basic FE/BE connectivity",
+      "parent": "Project Phases"
+    },
+    {
+      "title": "Phase 1 - Analysis Engine",
+      "purpose": "Core resume analysis engine implementation with OpenAI integration",
+      "parent": "Project Phases"
+    },
+    {
+      "title": "Phase 2 - User Experience",
+      "purpose": "Form validation, error handling, and polished user interface",
+      "parent": "Project Phases"
+    }
+  ]
+}

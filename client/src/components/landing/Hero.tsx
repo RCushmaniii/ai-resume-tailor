@@ -1,11 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import heroImage from '@/assets/images/hero.jpg';
+import { useTranslation } from 'react-i18next';
 
 export function Hero() {
+  const { t } = useTranslation();
+
   const handleCTA = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('Hero CTA clicked!');
     // Update URL and trigger navigation
     window.history.pushState({}, '', '/analyze');
     // Force a re-render by dispatching popstate
@@ -31,21 +33,21 @@ export function Hero() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
               <Sparkles className="w-4 h-4" />
-              AI-Powered Analysis
+              {t('landing.hero.badge')}
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
-              Get Your Resume Past the{' '}
-              <span className="text-blue-600">ATS</span>
+              {t('landing.hero.headlinePrefix')}{' '}
+              <span className="text-blue-600">{t('landing.hero.headlineAts')}</span>
               <br />
-              In 60 Seconds
+              {t('landing.hero.headlineSuffix')}
             </h1>
 
             {/* Subheadline */}
             <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-2xl">
-              AI-powered analysis shows exactly what recruiters want to see.{' '}
-              <span className="font-semibold text-slate-900">No signup required.</span>
+              {t('landing.hero.subheadlinePrefix')}{' '}
+              <span className="font-semibold text-slate-900">{t('landing.hero.subheadlineEmphasis')}</span>
             </p>
 
             {/* CTA Buttons */}
@@ -56,14 +58,16 @@ export function Hero() {
                 className="text-lg px-8 py-6 bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all relative z-10 cursor-pointer"
                 type="button"
               >
-                Analyze My Resume Free
+                {t('landing.hero.cta')}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
 
             {/* Social Proof */}
             <p className="text-sm text-slate-500">
-              ✨ Used by <span className="font-semibold text-slate-700">10,000+</span> job seekers
+              ✨ {t('landing.hero.socialProofPrefix')}{' '}
+              <span className="font-semibold text-slate-700">{t('landing.hero.socialProofHighlight')}</span>{' '}
+              {t('landing.hero.socialProofSuffix')}
             </p>
           </div>
 
@@ -72,7 +76,7 @@ export function Hero() {
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border-8 border-white">
               <img
                 src={heroImage}
-                alt="Professional resume analysis"
+                alt={t('landing.hero.heroImageAlt')}
                 className="w-full h-auto object-cover"
                 onError={(e) => {
                   // Fallback gradient if image doesn't load
@@ -91,8 +95,8 @@ export function Hero() {
                   <span className="text-2xl">✓</span>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">85% Match</p>
-                  <p className="text-xs text-slate-500">Average Score</p>
+                  <p className="text-sm font-semibold text-slate-900">{t('landing.hero.floatingBadgeMatch')}</p>
+                  <p className="text-xs text-slate-500">{t('landing.hero.floatingBadgeLabel')}</p>
                 </div>
               </div>
             </div>

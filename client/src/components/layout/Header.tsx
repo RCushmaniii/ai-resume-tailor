@@ -1,10 +1,15 @@
 // File: src/components/layout/Header.tsx
-import { useState } from 'react';
-import logoImage from '@/assets/images/logo.jpg';
-import { toast } from 'sonner';
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { AuthDialog } from '@/components/auth/AuthDialog';
+import { LanguageToggle } from '@/components/layout/LanguageToggle';
 import { useAuth } from '@/lib/useAuth';
+import { toast } from 'sonner';
+import logoImage from '@/assets/images/logo.jpg';
+import logoNoTextImage from '@/assets/images/ai resume tailor notext logo .jpg';
+import logoImageES from '@/assets/images/ai resume tailor logo es.jpg';
+import { useSignInPrompt } from '@/contexts/SignInPromptContext';
+import { AuthDialog } from '@/components/auth/AuthDialog';
 
 type HeaderProps = {
   navigate: (page: string) => void;
@@ -12,19 +17,26 @@ type HeaderProps = {
 
 export function Header({ navigate }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { enabled: authEnabled, user, supabase } = useAuth();
+  const { t, i18n } = useTranslation();
+  const { showSignIn } = useSignInPrompt();
+
+  // Select appropriate logos based on current language
+  const currentLogoImage = i18n.language === 'es' ? logoImageES : logoImage;
+  // No-text logo is the same for both languages (no text to translate)
 
   const handleSignOut = async () => {
     if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast.error('Sign out failed / Error al cerrar sesión', {
+      toast.error(t('header.toasts.signOutFailed'), {
         description: error.message,
         duration: 8000,
       });
       return;
     }
-    toast.success('Signed out / Sesión cerrada');
+    toast.success(t('header.toasts.signedOut'));
   };
 
   const handleNavClick = (page: string) => {
@@ -54,41 +66,72 @@ export function Header({ navigate }: HeaderProps) {
     }
   };
 
+  // Add scroll effect with throttling
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleScroll = () => {
+      const shouldShowScrolled = window.scrollY > 20;
+      
+      // Clear existing timeout
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      
+      // Throttle the state update
+      timeoutId = setTimeout(() => {
+        setIsScrolled(shouldShowScrolled);
+      }, 100);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, []);
+
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50">
+    <header className={`bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4'}`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-24">
+        <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-16' : 'h-24'}`}>
           {/* Logo and Branding */}
           <div className="flex-shrink-0">
             <a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }}>
-              <img className="h-24 w-auto" src={logoImage} alt="AI Resume Tailor Logo" />
+              <img className={`transition-all duration-300 ${isScrolled ? 'h-16' : 'h-24'} w-auto`} src={isScrolled ? logoNoTextImage : currentLogoImage} alt={t('header.logoAlt')} />
             </a>
           </div>
 
           {/* Desktop Branding - Hidden on mobile */}
-          <div className="hidden lg:flex items-center">
-            <span className="text-sm text-slate-500 dark:text-slate-400">Powered by AI • Free Forever</span>
+          <div className={`hidden lg:flex items-center transition-all duration-300 ${isScrolled ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
+            <span className="text-sm text-slate-500 dark:text-slate-400">{t('header.tagline')}</span>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-6">
-            <a href="/analyze" onClick={(e) => { e.preventDefault(); handleNavClick('analyze'); }} className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">Analyze Resume</a>
-            <a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">How It Works</a>
-            <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">Docs</a>
-            <a href="/privacy" onClick={(e) => { e.preventDefault(); handleNavClick('privacy'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">Privacy</a>
+            <Button onClick={() => handleNavClick('analyze')} className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
+              {t('header.nav.analyze')}
+            </Button>
+            <a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('header.nav.howItWorks')}</a>
+            <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('header.nav.docs')}</a>
 
-            {authEnabled ? (
+            <LanguageToggle variant="ghost" />
+
+            {authEnabled && showSignIn ? (
               user ? (
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-slate-500 dark:text-slate-400 max-w-[180px] truncate" title={user.email ?? undefined}>
-                    {user.email ?? 'Signed in'}
+                    {user.email ?? t('header.auth.signedIn')}
                   </span>
                   <Button variant="outline" onClick={handleSignOut}>
-                    Sign out
+                    {t('header.auth.signOut')}
                   </Button>
                 </div>
               ) : (
-                <AuthDialog triggerLabel="Sign in" />
+                <AuthDialog triggerLabel={t('header.auth.signIn')} />
               )
             ) : null}
           </div>
@@ -117,35 +160,36 @@ export function Header({ navigate }: HeaderProps) {
           {/* Mobile Branding Header */}
           <div className="px-4 pt-3 pb-2 border-b border-gray-200 dark:border-gray-700">
             <div className="text-center">
-              <span className="text-sm text-slate-500 dark:text-slate-400">Powered by AI • Free Forever</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">{t('header.tagline')}</span>
+            </div>
+            <div className="mt-2 flex justify-center">
+              <LanguageToggle variant="ghost" />
             </div>
           </div>
           {/* Mobile Nav Links */}
           <div className="px-2 pt-2 pb-3 space-y-1">
-            <a href="/analyze" onClick={(e) => { e.preventDefault(); handleNavClick('analyze'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">Analyze Resume</a>
-            <a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">How It Works</a>
-            <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">Documentation</a>
-            <a href="/privacy" onClick={(e) => { e.preventDefault(); handleNavClick('privacy'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">Privacy</a>
+            <a href="/analyze" onClick={(e) => { e.preventDefault(); handleNavClick('analyze'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.analyze')}</a>
+            <a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.howItWorks')}</a>
+            <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.documentation')}</a>
 
-            {authEnabled ? (
-              user ? (
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800"
-                >
-                  Sign out
-                </button>
-              ) : (
-                <div className="px-3 py-2">
-                  <AuthDialog triggerLabel="Sign in" />
-                </div>
-              )
-            ) : null}
+            {authEnabled && showSignIn && (
+              <div className="px-2 py-2">
+                {user ? (
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800"
+                  >
+                    {t('header.auth.signOut')}
+                  </button>
+                ) : (
+                  <AuthDialog triggerLabel={t('header.auth.signIn')} />
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
     </header>
   );
 }
-

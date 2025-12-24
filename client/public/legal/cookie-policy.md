@@ -188,7 +188,7 @@ This cookie policy is designed to comply with:
 
 If you have any questions about this Cookie Policy, please contact us.
 
-**Email:** privacy@ai-resume-tailor.com  
+**Email:** support@airesumatailor.com
 **Response Time:** We respond to cookie inquiries within 7 days  
 **Languages:** We respond in English and Spanish
 

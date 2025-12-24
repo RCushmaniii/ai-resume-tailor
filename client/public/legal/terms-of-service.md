@@ -1,10 +1,20 @@
 # Agreement to Terms
 
-By accessing or using [Your Company/App Name] ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the Service.
+By accessing or using AI Resume Tailor ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the Service.
+
+## Eligibility
+
+You must be at least 18 years of age (or the age of legal majority in your jurisdiction) to use the Service. By agreeing to these Terms, you represent and warrant that you have the legal capacity to enter into a binding contract.
 
 ## Description of Service
 
-[Your Company/App Name] provides [brief description of what your application does]. We reserve the right to modify, suspend, or discontinue the Service at any time without notice.
+AI Resume Tailor provides a resume analysis service that compares your resume against job descriptions using AI technology. Our service:
+
+- Analyzes resume compatibility with job requirements
+- Provides keyword matching and optimization suggestions
+- Generates compatibility scores and improvement recommendations
+
+We currently offer a free tier of the Service, but we reserve the right to introduce paid features or subscriptions in the future. We reserve the right to modify, suspend, or discontinue the Service at any time.
 
 ## User Accounts
 
@@ -12,7 +22,7 @@ By accessing or using [Your Company/App Name] ("the Service"), you agree to be b
 
 - You must provide accurate and complete information when creating an account
 - You are responsible for maintaining the confidentiality of your account credentials
-- You must be at least 13 years old (or 16 in the EU) to create an account
+- You must meet the eligibility requirements above to create an account
 
 ### Account Responsibilities
 
@@ -113,7 +123,7 @@ We may suspend or terminate your account if:
 
 ## Governing Law
 
-These Terms shall be governed by and construed in accordance with the laws of [Your Jurisdiction], without regard to its conflict of law provisions.
+These Terms shall be governed by and construed in accordance with the laws of the State of Delaware and applicable federal laws of the United States, without regard to conflict of law provisions.
 
 ## Dispute Resolution
 
@@ -121,7 +131,7 @@ Any disputes arising from these Terms or your use of the Service shall be resolv
 
 - **Informal Resolution:** Contact us first to resolve the issue informally
 - **Arbitration:** [Optional: Include arbitration clause if applicable]
-- **Jurisdiction:** Any legal action must be brought in the courts of [Your Jurisdiction]
+- **Jurisdiction:** Any legal action must be brought in the courts of Delaware
 
 ## General Provisions
 
@@ -145,10 +155,8 @@ You may not assign or transfer these Terms without our consent. We may assign ou
 
 If you have any questions about these Terms, please contact us at:
 
-- **Email:** [your-email@example.com]
-- **Address:** [Your Physical Address]
-- **Phone:** [Your Phone Number]
+- **Email:** support@airesumatailor.com
 
 ---
 
-_This is a template Terms of Service. Please consult with a legal professional to ensure compliance with applicable laws and regulations in your jurisdiction._
+_This document was last updated on December 24, 2025._
