@@ -150,12 +150,18 @@ export function Analyze() {
         incrementGuestAnalysesUsed();
       }
       
-      // Smooth scroll to results
+      // Smooth scroll to results with offset for header
       setTimeout(() => {
-        document.getElementById('results')?.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'start'
-        });
+        const resultsElement = document.getElementById('results');
+        if (resultsElement) {
+          const headerOffset = 120; // Account for sticky header + breathing room
+          const elementPosition = resultsElement.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
       }, 100);
       
     } catch (err) {

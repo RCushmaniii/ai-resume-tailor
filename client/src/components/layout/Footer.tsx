@@ -28,8 +28,8 @@ export function Footer({ navigate }: FooterProps) {
     ],
     resources: [
       { key: 'documentation', href: '/docs', page: 'docs/index' },
+      { key: 'methodology', href: '/methodology', page: 'methodology' },
       { key: 'resumeTips', href: '/', page: 'home' },
-      { key: 'atsGuide', href: '/', page: 'home' },
       { key: 'support', href: '/', page: 'home' },
     ],
     legal: [

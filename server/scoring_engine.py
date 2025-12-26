@@ -101,10 +101,18 @@ class EvaluationResult:
     readability_label: str  # "Strong", "Good", "Needs Work"
     readability_notes: List[str]
     
-    # 6. Final Verdict (Hard stop)
-    ready_to_submit: bool
-    verdict_message: str
-    stop_optimizing: bool  # True if score >= 80 and ATS = PASS
+    # 6. Role Misalignment Detection (NEW)
+    has_role_misalignment: bool = False
+    misalignment_severity: str = "none"  # "none", "moderate", "significant"
+    misalignment_reasons: List[str] = field(default_factory=list)
+    rewriting_can_help: List[str] = field(default_factory=list)
+    rewriting_cannot_fix: List[str] = field(default_factory=list)
+    alternative_roles: List[str] = field(default_factory=list)
+    
+    # 7. Final Verdict (Hard stop)
+    ready_to_submit: bool = False
+    verdict_message: str = ""
+    stop_optimizing: bool = False  # True if score >= 80 and ATS = PASS
 
 
 @dataclass
@@ -702,9 +710,9 @@ def generate_evaluation(
         ats_summary = "This resume passes enterprise ATS screening and would advance to recruiter review."
     else:
         ats_status = "FAIL"
-        ats_checks.append(f"Missing {len(missing_critical)} critical keyword(s)")
-        ats_checks.append(f"Keyword coverage: {int(match_rate)}%")
-        ats_summary = "This resume may not pass ATS screening. Add missing critical keywords."
+        ats_checks.append(f"{len(missing_critical)} required keywords missing")
+        ats_checks.append(f"Required keyword coverage: {int(match_rate)}%")
+        ats_summary = "This resume is unlikely to pass ATS screening until the missing keywords are added."
     
     # 2. RECRUITER SEARCH VISIBILITY (DISCOVERABLE / LIMITED / LOW)
     searchable_terms = matched_critical[:5]
@@ -720,10 +728,10 @@ def generate_evaluation(
         search_summary = "Recruiters searching for this role are likely to find your resume."
     elif match_rate >= 60:
         search_status = "LIMITED"
-        search_summary = "You may appear in some recruiter searches. Adding key terms would help."
+        search_summary = "You may appear in limited recruiter searches. Adding the missing criteria will improve visibility."
     else:
         search_status = "LOW_VISIBILITY"
-        search_summary = "Recruiters may have difficulty finding you with current keyword coverage."
+        search_summary = "Recruiters are unlikely to find your resume with current keyword coverage."
     
     # 3. ALIGNMENT SCORE (ONLY numeric score - for optimization)
     alignment_strengths = []
@@ -743,7 +751,7 @@ def generate_evaluation(
     for skill in weak_matches[:3]:
         alignment_refinements.append({
             "skill": skill,
-            "suggested": f"Add 1 short example demonstrating {skill.lower()} impact.",
+            "suggested": "Add one bullet demonstrating hands-on experience with this skill.",
             "impact": "Optional polish, not required",
         })
     
@@ -764,13 +772,79 @@ def generate_evaluation(
         readability_label = "Strong"
         readability_notes = ["Clear accomplishments", "Metrics included", "Easy to scan"]
     elif quality_score >= 60:
-        readability_label = "Good"
-        readability_notes = ["Readable format", "Could add more metrics"]
+        readability_label = "Clear"
+        readability_notes = ["Readable format", "Recruiter-friendly structure"]
     else:
         readability_label = "Needs Work"
         readability_notes = ["Add quantified achievements", "Include specific outcomes"]
     
-    # 5. HIRING READINESS (Derived from ATS + Search + Alignment)
+    # 5. ROLE MISALIGNMENT DETECTION
+    # Triggers when gaps cannot be resolved by rewriting alone
+    has_role_misalignment = False
+    misalignment_severity = "none"
+    misalignment_reasons: List[str] = []
+    rewriting_can_help: List[str] = []
+    rewriting_cannot_fix: List[str] = []
+    alternative_roles: List[str] = []
+    
+    # Thresholds for misalignment detection:
+    # - Experience ratio < 0.5 (less than half required experience)
+    # - Score < 40 with ATS FAIL
+    # - Missing 4+ critical skills (tier 1)
+    # - Tier 1 match rate < 30%
+    
+    tier1_match_rate = (tier1_matched / tier1_total * 100) if tier1_total > 0 else 0
+    severe_experience_gap = experience_ratio < 0.5
+    severe_skill_gap = len(missing_critical) >= 4
+    very_low_alignment = score < 40 and ats_status == "FAIL"
+    low_tier1_coverage = tier1_match_rate < 30
+    
+    # Determine severity
+    severity_signals = sum([
+        severe_experience_gap,
+        severe_skill_gap,
+        very_low_alignment,
+        low_tier1_coverage,
+    ])
+    
+    if severity_signals >= 2:
+        has_role_misalignment = True
+        misalignment_severity = "significant"
+    elif severity_signals == 1 and (severe_experience_gap or severe_skill_gap):
+        has_role_misalignment = True
+        misalignment_severity = "moderate"
+    
+    if has_role_misalignment:
+        # Build reasons list - concise, no redundancy
+        if severe_skill_gap:
+            misalignment_reasons.append(f"{len(missing_critical)} core requirements for this role are not reflected in your resume")
+        if severe_experience_gap:
+            misalignment_reasons.append("This role requires senior ownership, depth, or leadership experience that is not currently evident")
+        # Note: removed low_tier1_coverage bullet to avoid redundancy with severe_skill_gap
+        
+        # What rewriting CAN help with
+        rewriting_can_help = [
+            "Clarifying existing experience",
+            "Improving ATS keyword visibility",
+            "Highlighting transferable skills",
+        ]
+        
+        # What rewriting CANNOT fix - direct and honest
+        if severe_experience_gap:
+            rewriting_cannot_fix.append("Experience you haven't worked with")
+        if severe_skill_gap:
+            rewriting_cannot_fix.append("Deep expertise in required tools or strategies")
+        if len(missing_critical) >= 2:
+            rewriting_cannot_fix.append("Senior ownership or leadership responsibilities")
+        
+        # Suggest alternative roles - actionable guidance with guardrails
+        alternative_roles = [
+            "Consider roles aligned to your current experience level",
+            "Explore positions that match your existing skill set",
+            "Apply to this role only if you can clearly demonstrate hands-on experience with the missing requirements listed above",
+        ]
+    
+    # 6. HIRING READINESS (Derived from ATS + Search + Alignment)
     # Logic: READY if ATS=PASS AND Search=DISCOVERABLE/LIMITED AND Alignment>=80
     stop_optimizing = False
     
@@ -793,11 +867,11 @@ def generate_evaluation(
     ready_to_submit = hiring_status == "READY"
     
     if ready_to_submit and stop_optimizing:
-        verdict_message = "This resume is ready to submit. Further changes are optional polish, not requirements."
+        verdict_message = "You've met all submission requirements. Further changes are optional polish and may not affect outcomes."
     elif ready_to_submit:
         verdict_message = "This resume can be submitted. Consider applying rather than continuing to optimize."
     else:
-        verdict_message = "Address the items above before submitting to maximize your chances."
+        verdict_message = "Address the ATS and search gaps above before submitting to improve eligibility."
     
     return EvaluationResult(
         hiring_status=hiring_status,
@@ -817,6 +891,12 @@ def generate_evaluation(
         alignment_refinements=alignment_refinements,
         readability_label=readability_label,
         readability_notes=readability_notes,
+        has_role_misalignment=has_role_misalignment,
+        misalignment_severity=misalignment_severity,
+        misalignment_reasons=misalignment_reasons,
+        rewriting_can_help=rewriting_can_help,
+        rewriting_cannot_fix=rewriting_cannot_fix,
+        alternative_roles=alternative_roles,
         ready_to_submit=ready_to_submit,
         verdict_message=verdict_message,
         stop_optimizing=stop_optimizing,

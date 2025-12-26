@@ -17,9 +17,10 @@ const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage').then(
 const CookiesPolicyPage = lazy(() => import('./pages/CookiesPolicyPage').then(m => ({ default: m.CookiesPolicyPage })));
 const TestApiPage = lazy(() => import('./pages/TestApiPage'));
 const Analyze = lazy(() => import('./pages/Analyze').then(m => ({ default: m.Analyze })));
+const MethodologyPage = lazy(() => import('./pages/MethodologyPage'));
 
 // Define the possible pages in our application
-export type Page = 'home' | 'components' | 'docs' | 'examples' | 'privacy' | 'terms' | 'cookie' | 'test-api' | 'analyze' | 'not-found';
+export type Page = 'home' | 'components' | 'docs' | 'examples' | 'privacy' | 'terms' | 'cookie' | 'test-api' | 'analyze' | 'methodology' | 'not-found';
 
 function App() {
   const { t } = useTranslation();
@@ -37,6 +38,7 @@ function App() {
       'terms',
       'cookie',
       'analyze',
+      'methodology',
       ...(import.meta.env.DEV ? (['components', 'examples', 'test-api'] as const) : []),
     ];
     const isValidPage = validPages.includes(page);
@@ -121,6 +123,8 @@ function App() {
         return <TestApiPage />;
       case 'analyze':
         return <Analyze />;
+      case 'methodology':
+        return <MethodologyPage />;
       case 'not-found':
         return <NotFoundPage />;
       default:

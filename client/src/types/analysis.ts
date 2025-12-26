@@ -109,6 +109,14 @@ export interface EvaluationData {
     label: string;  // "Strong", "Good", "Needs Work"
     notes: string[];
   };
+  roleMisalignment?: {
+    detected: boolean;
+    severity: 'none' | 'moderate' | 'significant';
+    reasons: string[];
+    rewritingCanHelp: string[];
+    rewritingCannotFix: string[];
+    alternativeRoles: string[];
+  };
   verdict: {
     ready_to_submit: boolean;
     message: string;
@@ -139,12 +147,50 @@ export interface DisplayAnalysisResult {
 
 // Transform backend response to frontend format
 export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalysisResult | HybridV2Result): DisplayAnalysisResult {
-  console.log('🔍 Raw API Result:', apiResult); // Debug log
+  console.log('🔄 Transform: Raw API Result:', apiResult);
   
-  // Check if it's the old format or new format
+  // Check for gate-based evaluation system (new format with evaluation.hiring.status)
+  if ('evaluation' in apiResult && apiResult.evaluation?.hiring?.status) {
+    console.log('✅ Transform: Using gate-based evaluation system');
+    const v2Result = apiResult as HybridV2Result;
+    
+    // Extract keywords
+    const missing: string[] = [];
+    const present: string[] = [];
+    
+    if (v2Result.keyword_analysis) {
+      if (Array.isArray(v2Result.keyword_analysis.missing)) {
+        v2Result.keyword_analysis.missing.forEach((item) => {
+          missing.push(typeof item === 'string' ? item : item.keyword);
+        });
+      }
+      if (Array.isArray(v2Result.keyword_analysis.present)) {
+        v2Result.keyword_analysis.present.forEach((item) => {
+          present.push(typeof item === 'string' ? item : item.keyword);
+        });
+      }
+    }
+    
+    const dimensions = v2Result.dimensions || {};
+    console.log('📊 Transform: Evaluation data:', v2Result.evaluation);
+    
+    return {
+      score: v2Result.score || 0,
+      breakdown: {
+        keywords: dimensions.keyword_presence?.score || 0,
+        semantic: dimensions.job_alignment?.score || 0,
+        tone: dimensions.resume_quality?.score || 0,
+      },
+      keywords: { missing: missing.slice(0, 10), present: present.slice(0, 10) },
+      suggestions: [],
+      summary: v2Result.summary || 'Analysis completed.',
+      evaluation: v2Result.evaluation,
+    };
+  }
+  
+  // Legacy format check
   if ('score_breakdown' in apiResult && 'keywords' in apiResult) {
-    // Old format - return as-is
-    console.log('📊 Using old format');
+    console.log('📊 Transform: Using legacy format');
     const legacyResult = apiResult as LegacyAnalysisResult;
     return {
       score: legacyResult.score,
@@ -159,9 +205,9 @@ export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalys
     };
   }
   
-  // Check for hybrid_v2 format (new scoring engine)
+  // Hybrid_v2 format (scoring engine without new evaluation)
   if ('scoring_method' in apiResult || 'breakdown' in apiResult) {
-    console.log('📊 Using hybrid_v2 scoring engine format');
+    console.log('📊 Transform: Using hybrid_v2 format (no evaluation)');
     const v2Result = apiResult as HybridV2Result;
     
     // Extract keywords from the new format
@@ -233,8 +279,7 @@ export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalys
     const resumeQuality = dimensions.resume_quality?.score || 50;
     const jobAlignment = dimensions.job_alignment?.score || 50;
     
-    console.log('📊 New dimensions:', { keywordPresence, resumeQuality, jobAlignment });
-    console.log('📊 Suggestions built:', suggestions.length);
+    console.log('📊 Transform: Dimensions (no eval):', { keywordPresence, resumeQuality, jobAlignment });
     
     return {
       score: v2Result.score || 0,
@@ -253,8 +298,8 @@ export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalys
     };
   }
   
-  // New enterprise ATS format (original)
-  console.log('📊 Using new enterprise ATS format');
+  // Fallback: Original enterprise ATS format
+  console.log('⚠️ Transform: Fallback to original ATS format');
   const newResult = apiResult as AnalysisResult;
   
   // Extract missing and present keywords from the new structure

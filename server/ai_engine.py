@@ -288,7 +288,7 @@ def analyze_resume(
             experience_ratio=scoring_result.experience_ratio,
             resume_text=resume_text,
         )
-        logger.info(f"Evaluation: Hiring Readiness={evaluation.hiring_readiness}, ATS={evaluation.ats_status}")
+        logger.info(f"Evaluation: Hiring={evaluation.hiring_status}, ATS={evaluation.ats_status}")
         
         # ─────────────────────────────────────────────────────────────────
         # STEP 4: Transform to Frontend Format
@@ -410,6 +410,14 @@ def analyze_resume(
             "readability": {
                 "label": evaluation.readability_label,
                 "notes": evaluation.readability_notes,
+            },
+            "roleMisalignment": {
+                "detected": evaluation.has_role_misalignment,
+                "severity": evaluation.misalignment_severity,
+                "reasons": evaluation.misalignment_reasons,
+                "rewritingCanHelp": evaluation.rewriting_can_help,
+                "rewritingCannotFix": evaluation.rewriting_cannot_fix,
+                "alternativeRoles": evaluation.alternative_roles,
             },
             "verdict": {
                 "ready_to_submit": evaluation.ready_to_submit,

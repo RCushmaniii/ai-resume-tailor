@@ -31,6 +31,7 @@ export const en = {
     },
     nav: {
       analyze: "Analyze Resume",
+      forRecruiters: "For Recruiters",
       howItWorks: "How It Works",
       docs: "Docs",
       privacy: "Privacy",
@@ -301,6 +302,7 @@ export const en = {
       features: "Features",
       faq: "FAQ",
       documentation: "Documentation",
+      methodology: "Our Methodology",
       resumeTips: "Resume Tips",
       atsGuide: "ATS Guide",
       github: "GitHub",
@@ -309,7 +311,7 @@ export const en = {
       cookiePolicy: "Cookie Policy",
       support: "Support",
     },
-    copyright: "© {{year}} AI Resume Tailor. All Rights Reserved.",
+    copyright: " 2023 AI Resume Tailor. All Rights Reserved.",
   },
   docs: {
     nav: {

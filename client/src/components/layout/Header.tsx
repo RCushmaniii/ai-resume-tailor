@@ -124,7 +124,7 @@ export function Header({ navigate }: HeaderProps) {
             <Button onClick={() => handleNavClick('analyze')} className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
               {t('header.nav.analyze')}
             </Button>
-            <a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('header.nav.howItWorks')}</a>
+            <a href="/methodology" onClick={(e) => { e.preventDefault(); handleNavClick('methodology'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('header.nav.forRecruiters')}</a>
             <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('header.nav.docs')}</a>
 
             <LanguageToggle variant="ghost" />
@@ -178,7 +178,7 @@ export function Header({ navigate }: HeaderProps) {
           {/* Mobile Nav Links */}
           <div className="px-2 pt-2 pb-3 space-y-1">
             <a href="/analyze" onClick={(e) => { e.preventDefault(); handleNavClick('analyze'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.analyze')}</a>
-            <a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavClick('home#how-it-works'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.howItWorks')}</a>
+            <a href="/methodology" onClick={(e) => { e.preventDefault(); handleNavClick('methodology'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.forRecruiters')}</a>
             <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.documentation')}</a>
 
             {authEnabled && showSignIn && (
