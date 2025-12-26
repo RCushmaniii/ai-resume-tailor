@@ -7,12 +7,12 @@ import { initI18n } from '@/lib/i18n'
 initI18n()
 
 async function enableMocking() {
-  // Only enable MSW in development mode
-  const shouldEnableMocking = import.meta.env.DEV;
+  // Check if MSW is explicitly enabled via environment variable
+  const shouldEnableMocking = import.meta.env.VITE_ENABLE_MSW === 'true';
   
-  // Skip MSW initialization if it's disabled (production)
+  // Skip MSW initialization if it's disabled
   if (!shouldEnableMocking) {
-    console.info('API mocking is disabled (production mode).');
+    console.info('API mocking is disabled (VITE_ENABLE_MSW=false).');
     return;
   }
   

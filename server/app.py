@@ -5,6 +5,7 @@ import time
 import os
 import re
 import requests
+from datetime import datetime
 from dotenv import load_dotenv
 
 # Import AI engine
@@ -120,6 +121,333 @@ def health():
         "message": "Flask backend is running",
         "version": VERSION
     })
+
+@app.route("/api/dev/debug", methods=["GET"])
+def dev_debug():
+    """Debug endpoint to check localStorage content"""
+    if os.getenv("FLASK_ENV") != "development":
+        return jsonify({"error": "Not available in production"}), 403
+    
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Debug localStorage</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .info { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+            button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        </style>
+    </head>
+    <body>
+        <h1>localStorage Debug</h1>
+        <div id="info"></div>
+        <button onclick="checkStorage()">Check Storage</button>
+        <button onclick="clearStorage()">Clear guest_analyses_used</button>
+        <button onclick="clearAll()">Clear All</button>
+        
+        <script>
+            function checkStorage() {
+                const info = document.getElementById('info');
+                let html = '<h2>Current localStorage contents:</h2>';
+                
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+                    html += `<div class="info"><strong>${key}:</strong> ${value}</div>`;
+                }
+                
+                const analyses = localStorage.getItem('guest_analyses_used');
+                html += `<div class="info"><strong>guest_analyses_used parsed:</strong> ${analyses ? parseInt(analyses) : 'null'}</div>`;
+                
+                info.innerHTML = html;
+            }
+            
+            function clearStorage() {
+                localStorage.removeItem('guest_analyses_used');
+                checkStorage();
+            }
+            
+            function clearAll() {
+                localStorage.clear();
+                checkStorage();
+            }
+            
+            // Auto-check on load
+            checkStorage();
+        </script>
+    </body>
+    </html>
+    """
+    
+    return html_content, 200, {'Content-Type': 'text/html'}
+
+
+@app.route("/api/dev/reset", methods=["GET", "POST"])
+def dev_reset():
+    """Development-only endpoint to reset application state"""
+    if os.getenv("FLASK_ENV") != "development":
+        return jsonify({"error": "Not available in production"}), 403
+    
+    logger.info("Development reset requested")
+    
+    # Reset server-side usage counters
+    global _usage_counts_guest, _usage_counts_user
+    _usage_counts_guest.clear()
+    _usage_counts_user.clear()
+    logger.info("Server-side usage counters reset")
+    
+    # Check if this is an API request (JSON) or a browser request
+    if request.headers.get('Content-Type') == 'application/json' or request.headers.get('Accept') == 'application/json':
+        # Return JSON for API calls
+        return jsonify({
+            "success": True,
+            "message": "Development state reset. Use the browser interface at http://localhost:5000/api/dev/reset to clear localStorage.",
+            "timestamp": datetime.utcnow().isoformat()
+        })
+    
+    # Return HTML page with cross-domain localStorage clearing
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset Development State - AI Resume Tailor</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            
+            .container {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                padding: 40px;
+                max-width: 600px;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .icon {
+                width: 64px;
+                height: 64px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 24px;
+            }
+            
+            .icon svg {
+                width: 32px;
+                height: 32px;
+                color: white;
+            }
+            
+            h1 {
+                font-size: 28px;
+                font-weight: 700;
+                color: #1f2937;
+                margin-bottom: 12px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+                color: #6b7280;
+                margin-bottom: 32px;
+                line-height: 1.5;
+            }
+            
+            .button {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 14px 32px;
+                font-size: 16px;
+                font-weight: 600;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin: 8px;
+            }
+            
+            .button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            
+            .button:active {
+                transform: translateY(0);
+            }
+            
+            .button.secondary {
+                background: #6b7280;
+            }
+            
+            .message {
+                margin-top: 24px;
+                padding: 16px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                display: none;
+                animation: slideIn 0.3s ease-out;
+            }
+            
+            .message.success {
+                background: #d1fae5;
+                color: #065f46;
+                border: 1px solid #a7f3d0;
+            }
+            
+            .message.error {
+                background: #fee2e2;
+                color: #991b1b;
+                border: 1px solid #fecaca;
+            }
+            
+            .message.show {
+                display: block;
+            }
+            
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .footer {
+                margin-top: 32px;
+                font-size: 12px;
+                color: #9ca3af;
+            }
+            
+            .instructions {
+                background: #f3f4f6;
+                border-radius: 8px;
+                padding: 16px;
+                margin: 20px 0;
+                text-align: left;
+            }
+            
+            .instructions h3 {
+                font-size: 14px;
+                font-weight: 600;
+                margin-bottom: 8px;
+                color: #1f2937;
+            }
+            
+            .instructions ol {
+                font-size: 13px;
+                color: #6b7280;
+                margin-left: 20px;
+            }
+            
+            .instructions li {
+                margin: 4px 0;
+            }
+            
+            .code {
+                background: #1f2937;
+                color: #f9fafb;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-family: monospace;
+                font-size: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </div>
+            
+            <h1>Development Reset</h1>
+            <p class="subtitle">Reset your free analysis counter to continue testing</p>
+            
+            <div class="instructions">
+                <h3>⚠️ Important: localStorage is per-domain</h3>
+                <p>Your frontend runs on a different port than this server, so you need to clear it on the frontend domain.</p>
+                <ol>
+                    <li>Open your frontend application (http://localhost:3000)</li>
+                    <li>Open browser console (F12)</li>
+                    <li>Run: <span class="code">localStorage.removeItem('guest_analyses_used')</span></li>
+                    <li>Refresh the frontend page</li>
+                </ol>
+            </div>
+            
+            <button class="button" onclick="tryDirectReset()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Open Frontend & Reset
+            </button>
+            
+            <button class="button secondary" onclick="copyInstructions()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                Copy Reset Code
+            </button>
+            
+            <div id="message" class="message"></div>
+            
+            <div class="footer">
+                Development tool • Not available in production
+            </div>
+        </div>
+        
+        <script>
+            function tryDirectReset() {
+                // Open the frontend on port 3000
+                const url = "http://localhost:3000";
+                window.open(url, '_blank');
+                
+                document.getElementById('message').className = 'message success show';
+                document.getElementById('message').innerHTML = '✓ Frontend opened in new tab. Use the console to reset localStorage.';
+            }
+            
+            function copyInstructions() {
+                const code = "localStorage.removeItem('guest_analyses_used')";
+                navigator.clipboard.writeText(code).then(() => {
+                    document.getElementById('message').className = 'message success show';
+                    document.getElementById('message').innerHTML = '✓ Reset code copied to clipboard!';
+                }).catch(() => {
+                    document.getElementById('message').className = 'message error show';
+                    document.getElementById('message').innerHTML = '✗ Failed to copy to clipboard.';
+                });
+            }
+        </script>
+    </body>
+    </html>
+    """
+    
+    return html_content, 200, {'Content-Type': 'text/html'}
 
 
 @app.route("/api/me", methods=["GET"])

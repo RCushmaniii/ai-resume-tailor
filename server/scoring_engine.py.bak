@@ -1,0 +1,570 @@
+"""
+Resume-Job Matching Scoring Engine
+
+Deterministic scoring calculation - same inputs ALWAYS produce same outputs.
+Use with AI extraction layer that provides structured requirement matches.
+
+File: server/scoring_engine.py
+"""
+
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ENUMS & DATA CLASSES
+# ═══════════════════════════════════════════════════════════════════════════
+
+class MatchType(str, Enum):
+    EXACT = "EXACT"
+    VARIANT = "VARIANT"
+    CONTEXTUAL = "CONTEXTUAL"
+    NONE = "NONE"
+
+
+class Tier(int, Enum):
+    TIER_1 = 1  # Critical/Required
+    TIER_2 = 2  # Important/Preferred
+    TIER_3 = 3  # Bonus/Nice-to-have
+
+
+class ScoreInterpretation(str, Enum):
+    STRONG_MATCH = "STRONG MATCH"
+    GOOD_MATCH = "GOOD MATCH"
+    BORDERLINE = "BORDERLINE"
+    BELOW_THRESHOLD = "BELOW THRESHOLD"
+    POOR_FIT = "POOR FIT"
+
+
+@dataclass
+class Requirement:
+    text: str
+    tier: int
+    match_type: str
+    evidence: Optional[str] = None
+
+
+@dataclass
+class ExperienceData:
+    required_years: int
+    candidate_years: int
+    is_senior_role: bool = False
+    seniority_signals_found: int = 0
+
+
+@dataclass
+class TierBreakdown:
+    earned: float
+    possible: float
+    percentage: int
+    matched_count: int
+    total_count: int
+
+
+@dataclass
+class ScoringResult:
+    score: int
+    raw_score: float
+    interpretation: str
+    tier1: TierBreakdown
+    tier2: TierBreakdown
+    tier3: TierBreakdown
+    total_earned: float
+    total_possible: float
+    caps_applied: list
+    experience_adjustment: int
+    experience_ratio: float
+    missing_critical: list
+    matched_critical: list
+
+
+@dataclass
+class OptimizationItem:
+    priority: str  # HIGH, MEDIUM, LOW
+    category: str  # missing_skill, weak_match, experience, enhancement
+    issue: str
+    suggestion: str
+    potential_impact: str
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CONFIGURATION - Adjust these to tune scoring sensitivity
+# ═══════════════════════════════════════════════════════════════════════════
+
+CONFIG = {
+    "tier_points": {
+        1: 15,  # Critical requirements worth most
+        2: 8,   # Important requirements
+        3: 4,   # Bonus items
+    },
+    "match_credit": {
+        "EXACT": 1.0,       # 100% credit
+        "VARIANT": 0.85,    # 85% credit
+        "CONTEXTUAL": 0.5,  # 50% credit
+        "NONE": 0.0,        # 0% credit
+    },
+    "hard_caps": {
+        "missing_1_tier1": 75,
+        "missing_2_tier1": 60,
+        "missing_3_tier1": 45,
+        "experience_below_50pct": 55,
+        "zero_tier1_matches": 30,
+    },
+    "experience_penalties": {
+        "below_50pct": -15,
+        "below_75pct": -8,
+        "meets_or_exceeds": 0,
+    },
+    "seniority_bonus": 5,
+    "seniority_penalty": -10,
+    "score_bands": {
+        "strong_match": 85,
+        "good_match": 70,
+        "borderline": 55,
+        "below_threshold": 40,
+    },
+}
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SCORING ENGINE
+# ═══════════════════════════════════════════════════════════════════════════
+
+def calculate_score(
+    requirements: list[dict],
+    required_years: int,
+    candidate_years: int,
+    is_senior_role: bool = False,
+    seniority_signals_found: int = 0
+) -> ScoringResult:
+    """
+    Deterministic scoring calculation.
+    Same inputs ALWAYS produce same outputs.
+    
+    Args:
+        requirements: List of dicts with keys: text, tier, match_type, evidence
+        required_years: Years of experience required by job
+        candidate_years: Years of experience candidate has
+        is_senior_role: Whether this is a senior/lead/manager position
+        seniority_signals_found: Count of leadership/mentoring signals in resume
+    
+    Returns:
+        ScoringResult with score, breakdown, and analysis
+    """
+    
+    # ─────────────────────────────────────────────────────────────────────
+    # STEP 1: Calculate points per tier
+    # ─────────────────────────────────────────────────────────────────────
+    
+    tier_scores = {
+        1: {"earned": 0.0, "possible": 0.0, "matched": 0, "total": 0},
+        2: {"earned": 0.0, "possible": 0.0, "matched": 0, "total": 0},
+        3: {"earned": 0.0, "possible": 0.0, "matched": 0, "total": 0},
+    }
+    
+    tier1_missing = 0
+    tier1_none_count = 0
+    missing_critical = []
+    matched_critical = []
+    
+    for req in requirements:
+        tier = req.get("tier", 2)
+        match_type = req.get("match_type", "NONE")
+        text = req.get("text", "")
+        
+        points_possible = CONFIG["tier_points"].get(tier, 8)
+        credit = CONFIG["match_credit"].get(match_type, 0.0)
+        points_earned = points_possible * credit
+        
+        tier_scores[tier]["possible"] += points_possible
+        tier_scores[tier]["earned"] += points_earned
+        tier_scores[tier]["total"] += 1
+        
+        if match_type != "NONE":
+            tier_scores[tier]["matched"] += 1
+        
+        # Track Tier 1 misses for hard caps
+        if tier == 1:
+            if match_type == "NONE":
+                tier1_missing += 1
+                tier1_none_count += 1
+                missing_critical.append(text)
+            elif match_type == "CONTEXTUAL":
+                tier1_missing += 0.5  # Partial miss
+                matched_critical.append(text)
+            else:
+                matched_critical.append(text)
+    
+    # ─────────────────────────────────────────────────────────────────────
+    # STEP 2: Calculate experience adjustment
+    # ─────────────────────────────────────────────────────────────────────
+    
+    experience_adjustment = 0
+    experience_ratio = candidate_years / required_years if required_years > 0 else 1.0
+    
+    if experience_ratio < 0.5:
+        experience_adjustment = CONFIG["experience_penalties"]["below_50pct"]
+    elif experience_ratio < 0.75:
+        experience_adjustment = CONFIG["experience_penalties"]["below_75pct"]
+    
+    # Seniority adjustment for senior roles
+    if is_senior_role:
+        if seniority_signals_found >= 2:
+            experience_adjustment += CONFIG["seniority_bonus"]
+        elif seniority_signals_found == 0:
+            experience_adjustment += CONFIG["seniority_penalty"]
+    
+    # ─────────────────────────────────────────────────────────────────────
+    # STEP 3: Calculate raw score
+    # ─────────────────────────────────────────────────────────────────────
+    
+    total_earned = sum(t["earned"] for t in tier_scores.values())
+    total_possible = sum(t["possible"] for t in tier_scores.values())
+    
+    if total_possible == 0:
+        raw_score = 0
+    else:
+        raw_score = (total_earned / total_possible) * 100
+    
+    raw_score += experience_adjustment
+    raw_score = max(0, min(100, raw_score))  # Clamp to 0-100
+    
+    # ─────────────────────────────────────────────────────────────────────
+    # STEP 4: Apply hard caps
+    # ─────────────────────────────────────────────────────────────────────
+    
+    caps_applied = []
+    final_score = raw_score
+    
+    # Check for zero Tier 1 matches first (most severe)
+    tier1_total = tier_scores[1]["total"]
+    if tier1_total > 0 and tier1_none_count == tier1_total:
+        final_score = min(final_score, CONFIG["hard_caps"]["zero_tier1_matches"])
+        caps_applied.append("No critical requirements matched")
+    
+    # Check progressive Tier 1 caps
+    elif tier1_missing >= 3:
+        final_score = min(final_score, CONFIG["hard_caps"]["missing_3_tier1"])
+        caps_applied.append(f"Missing {int(tier1_missing)}+ critical requirements")
+    elif tier1_missing >= 2:
+        final_score = min(final_score, CONFIG["hard_caps"]["missing_2_tier1"])
+        caps_applied.append(f"Missing {int(tier1_missing)} critical requirements")
+    elif tier1_missing >= 1:
+        final_score = min(final_score, CONFIG["hard_caps"]["missing_1_tier1"])
+        caps_applied.append(f"Missing {int(tier1_missing)} critical requirement(s)")
+    
+    # Experience cap
+    if experience_ratio < 0.5:
+        final_score = min(final_score, CONFIG["hard_caps"]["experience_below_50pct"])
+        if "experience" not in str(caps_applied):
+            caps_applied.append("Experience below 50% of requirement")
+    
+    final_score = round(final_score)
+    
+    # ─────────────────────────────────────────────────────────────────────
+    # STEP 5: Determine interpretation
+    # ─────────────────────────────────────────────────────────────────────
+    
+    bands = CONFIG["score_bands"]
+    if final_score >= bands["strong_match"]:
+        interpretation = ScoreInterpretation.STRONG_MATCH.value
+    elif final_score >= bands["good_match"]:
+        interpretation = ScoreInterpretation.GOOD_MATCH.value
+    elif final_score >= bands["borderline"]:
+        interpretation = ScoreInterpretation.BORDERLINE.value
+    elif final_score >= bands["below_threshold"]:
+        interpretation = ScoreInterpretation.BELOW_THRESHOLD.value
+    else:
+        interpretation = ScoreInterpretation.POOR_FIT.value
+    
+    # ─────────────────────────────────────────────────────────────────────
+    # Build tier breakdowns
+    # ─────────────────────────────────────────────────────────────────────
+    
+    def build_tier_breakdown(tier: int) -> TierBreakdown:
+        t = tier_scores[tier]
+        return TierBreakdown(
+            earned=round(t["earned"], 1),
+            possible=t["possible"],
+            percentage=round((t["earned"] / t["possible"]) * 100) if t["possible"] > 0 else 0,
+            matched_count=t["matched"],
+            total_count=t["total"],
+        )
+    
+    return ScoringResult(
+        score=final_score,
+        raw_score=round(raw_score, 1),
+        interpretation=interpretation,
+        tier1=build_tier_breakdown(1),
+        tier2=build_tier_breakdown(2),
+        tier3=build_tier_breakdown(3),
+        total_earned=round(total_earned, 1),
+        total_possible=total_possible,
+        caps_applied=caps_applied if caps_applied else [],
+        experience_adjustment=experience_adjustment,
+        experience_ratio=round(experience_ratio, 2),
+        missing_critical=missing_critical,
+        matched_critical=matched_critical,
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPTIMIZATION PLAN GENERATOR
+# ═══════════════════════════════════════════════════════════════════════════
+
+def generate_optimization_plan(
+    result: ScoringResult,
+    gaps: list[dict],
+    requirements: list[dict]
+) -> list[OptimizationItem]:
+    """
+    Generate actionable optimization suggestions.
+    ALWAYS returns suggestions, even for high scores.
+    """
+    plan = []
+    
+    # HIGH PRIORITY: Missing Tier 1 requirements
+    for missing in result.missing_critical:
+        gap = next(
+            (g for g in gaps if missing.lower() in g.get("requirement", "").lower()),
+            None
+        )
+        plan.append(OptimizationItem(
+            priority="HIGH",
+            category="missing_skill",
+            issue=f"Missing critical requirement: {missing}",
+            suggestion=gap["suggestion"] if gap else f'Add experience or certification related to "{missing}"',
+            potential_impact="+8-12 points if added with evidence",
+        ))
+    
+    # MEDIUM PRIORITY: Contextual matches that could be stronger
+    contextual_matches = [
+        r for r in requirements 
+        if r.get("tier") == 1 and r.get("match_type") == "CONTEXTUAL"
+    ]
+    for match in contextual_matches:
+        plan.append(OptimizationItem(
+            priority="MEDIUM",
+            category="weak_match",
+            issue=f'"{match["text"]}" is inferred but not explicit',
+            suggestion=f'Add the exact term "{match["text"]}" to your resume with specific examples',
+            potential_impact="+3-5 points if made explicit",
+        ))
+    
+    # MEDIUM PRIORITY: Missing Tier 2 requirements
+    missing_tier2 = [
+        r for r in requirements 
+        if r.get("tier") == 2 and r.get("match_type") == "NONE"
+    ]
+    for missing in missing_tier2[:3]:  # Limit to top 3
+        plan.append(OptimizationItem(
+            priority="MEDIUM",
+            category="missing_skill",
+            issue=f'Missing preferred skill: {missing["text"]}',
+            suggestion=f'Consider adding "{missing["text"]}" if you have relevant experience',
+            potential_impact="+4-6 points",
+        ))
+    
+    # Experience-related suggestions
+    if result.experience_ratio < 1:
+        priority = "HIGH" if result.experience_ratio < 0.75 else "MEDIUM"
+        plan.append(OptimizationItem(
+            priority=priority,
+            category="experience",
+            issue=f"Experience ({round(result.experience_ratio * 100)}% of requirement)",
+            suggestion="Highlight all relevant experience including internships, freelance, and project work",
+            potential_impact="Currently capping your score" if result.experience_ratio < 0.5 else "+5-8 points",
+        ))
+    
+    # ALWAYS provide enhancement suggestions, even for high scores
+    if result.score >= 85:
+        plan.append(OptimizationItem(
+            priority="LOW",
+            category="enhancement",
+            issue="Strong match - focus on standing out",
+            suggestion="Add quantified achievements (%, $, time saved) to strengthen your application",
+            potential_impact="Differentiation from other qualified candidates",
+        ))
+        
+        if result.tier3.matched_count < result.tier3.total_count:
+            plan.append(OptimizationItem(
+                priority="LOW",
+                category="enhancement",
+                issue="Bonus skills not fully matched",
+                suggestion="Consider adding bonus/preferred skills to maximize your match",
+                potential_impact="+2-4 points and stronger positioning",
+            ))
+    
+    # Sort by priority
+    priority_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
+    plan.sort(key=lambda x: priority_order.get(x.priority, 99))
+    
+    return plan
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# API RESPONSE FORMATTER
+# ═══════════════════════════════════════════════════════════════════════════
+
+def format_api_response(
+    result: ScoringResult,
+    requirements: list[dict],
+    gaps: list[dict]
+) -> dict:
+    """
+    Format scoring result for API response.
+    Matches the structure expected by your React frontend.
+    """
+    optimization_plan = generate_optimization_plan(result, gaps, requirements)
+    
+    # Calculate sub-scores for display
+    hard_skills_score = result.tier1.percentage
+    semantic_score = round(
+        result.tier1.percentage * 0.5 + 
+        result.tier2.percentage * 0.3 + 
+        result.tier3.percentage * 0.2
+    )
+    experience_score = min(100, round(result.experience_ratio * 100))
+    
+    # Build found/missing keywords
+    found = [r["text"] for r in requirements if r.get("match_type") != "NONE"]
+    missing = [r["text"] for r in requirements if r.get("match_type") == "NONE"]
+    
+    # Generate summary
+    if result.score >= 85:
+        summary = (
+            f"Excellent match for this role. Your resume meets "
+            f"{result.tier1.matched_count}/{result.tier1.total_count} critical requirements. "
+            f"{f'Consider addressing: {result.missing_critical[0]}.' if result.missing_critical else 'Focus on quantifying achievements to stand out.'}"
+        )
+    elif result.score >= 70:
+        summary = (
+            f"Good match with room for improvement. "
+            f"{len(result.missing_critical)} critical skill(s) missing. "
+            "Addressing these could significantly improve your chances."
+        )
+    elif result.score >= 55:
+        summary = (
+            f"Borderline match. Missing {len(result.missing_critical)} critical requirements. "
+            "ATS may filter this application. Review optimization plan for specific improvements."
+        )
+    else:
+        summary = (
+            f"Below threshold for this role. Missing {len(result.missing_critical)}+ critical requirements. "
+            "Consider if this role aligns with your current experience, or significantly update your resume."
+        )
+    
+    return {
+        "score": result.score,
+        "interpretation": result.interpretation,
+        "breakdown": {
+            "hardSkills": {"score": hard_skills_score, "label": "Hard Skills"},
+            "semanticMatch": {"score": semantic_score, "label": "Semantic Match"},
+            "toneAnalysis": {"score": experience_score, "label": "Experience Fit"},
+        },
+        "keywords": {
+            "found": found,
+            "missing": missing,
+        },
+        "tier1Analysis": [
+            {
+                "skill": r["text"],
+                "match": r["match_type"],
+                "evidence": r.get("evidence"),
+            }
+            for r in requirements if r.get("tier") == 1
+        ],
+        "optimizationPlan": [
+            {
+                "priority": item.priority,
+                "category": item.category,
+                "issue": item.issue,
+                "suggestion": item.suggestion,
+                "potentialImpact": item.potential_impact,
+            }
+            for item in optimization_plan
+        ],
+        "capsApplied": result.caps_applied,
+        "summary": summary,
+        "_debug": {
+            "rawScore": result.raw_score,
+            "tier1": {"earned": result.tier1.earned, "possible": result.tier1.possible},
+            "tier2": {"earned": result.tier2.earned, "possible": result.tier2.possible},
+            "tier3": {"earned": result.tier3.earned, "possible": result.tier3.possible},
+            "experienceRatio": result.experience_ratio,
+            "experienceAdjustment": result.experience_adjustment,
+        },
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CONVENIENCE FUNCTION FOR DIRECT AI OUTPUT PROCESSING
+# ═══════════════════════════════════════════════════════════════════════════
+
+def score_from_ai_output(ai_result: dict) -> dict:
+    """
+    Process AI extraction output directly into final API response.
+    
+    Args:
+        ai_result: Dict from AI with keys: requirements, experience, gaps
+    
+    Returns:
+        Formatted dict ready for JSON response to frontend
+    """
+    requirements = ai_result.get("requirements", [])
+    experience = ai_result.get("experience", {})
+    gaps = ai_result.get("gaps", [])
+    
+    result = calculate_score(
+        requirements=requirements,
+        required_years=experience.get("required_years", 0),
+        candidate_years=experience.get("candidate_years", 0),
+        is_senior_role=experience.get("is_senior_role", False),
+        seniority_signals_found=len(experience.get("seniority_signals", [])),
+    )
+    
+    return format_api_response(result, requirements, gaps)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EXAMPLE / TEST
+# ═══════════════════════════════════════════════════════════════════════════
+
+if __name__ == "__main__":
+    # Test with sample data
+    sample_ai_output = {
+        "requirements": [
+            {"text": "5+ years technical PM experience", "tier": 1, "match_type": "EXACT", "evidence": "6 years of experience"},
+            {"text": "PMP certification", "tier": 1, "match_type": "EXACT", "evidence": "PMP Certification | PMI | 2018"},
+            {"text": "Agile methodologies", "tier": 1, "match_type": "EXACT", "evidence": "Implemented Agile methodologies"},
+            {"text": "JIRA experience", "tier": 1, "match_type": "EXACT", "evidence": "JIRA"},
+            {"text": "Confluence", "tier": 1, "match_type": "EXACT", "evidence": "Confluence expert"},
+            {"text": "Stakeholder management", "tier": 1, "match_type": "EXACT", "evidence": "stakeholder meetings"},
+            {"text": "Software development lifecycle", "tier": 2, "match_type": "CONTEXTUAL", "evidence": "development teams"},
+            {"text": "Cloud infrastructure projects", "tier": 3, "match_type": "NONE", "evidence": None},
+        ],
+        "experience": {
+            "required_years": 5,
+            "candidate_years": 6,
+            "is_senior_role": True,
+            "seniority_signals": ["Managed portfolio of 15+ projects", "Led cross-functional teams"],
+        },
+        "gaps": [
+            {"requirement": "cloud infrastructure", "suggestion": "Add any AWS/Azure/GCP project experience"},
+        ],
+    }
+    
+    response = score_from_ai_output(sample_ai_output)
+    
+    print(f"Score: {response['score']}")
+    print(f"Interpretation: {response['interpretation']}")
+    print(f"Summary: {response['summary']}")
+    print(f"\nBreakdown:")
+    for key, val in response["breakdown"].items():
+        print(f"  {val['label']}: {val['score']}/100")
+    print(f"\nKeywords Found: {len(response['keywords']['found'])}")
+    print(f"Keywords Missing: {len(response['keywords']['missing'])}")
+    print(f"\nOptimization Plan ({len(response['optimizationPlan'])} items):")
+    for item in response["optimizationPlan"]:
+        print(f"  [{item['priority']}] {item['issue']}")

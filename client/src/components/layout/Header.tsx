@@ -66,25 +66,34 @@ export function Header({ navigate }: HeaderProps) {
     }
   };
 
-  // Add scroll effect with throttling
+  // Add scroll effect with proper debouncing
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
+    let lastScrollY = window.scrollY;
+    let lastIsScrolled = window.scrollY > 50;
     
     const handleScroll = () => {
-      const shouldShowScrolled = window.scrollY > 20;
+      const currentScrollY = window.scrollY;
+      const currentIsScrolled = currentScrollY > 50;
       
-      // Clear existing timeout
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+      // Only update if the scrolled state actually changes
+      if (currentIsScrolled !== lastIsScrolled) {
+        // Clear existing timeout
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        
+        // Debounce to prevent rapid changes
+        timeoutId = setTimeout(() => {
+          setIsScrolled(currentIsScrolled);
+          lastIsScrolled = currentIsScrolled;
+        }, 150);
+        
+        lastScrollY = currentScrollY;
       }
-      
-      // Throttle the state update
-      timeoutId = setTimeout(() => {
-        setIsScrolled(shouldShowScrolled);
-      }, 100);
     };
     
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
       window.removeEventListener('scroll', handleScroll);

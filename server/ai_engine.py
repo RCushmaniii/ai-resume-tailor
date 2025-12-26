@@ -1,17 +1,39 @@
 """
-AI Engine for Resume Analysis
+AI Engine for Resume Analysis v2.0
 
-This module handles the OpenAI API integration for analyzing resumes against job descriptions.
-It uses GPT-4 to extract keywords, calculate match scores, and provide improvement suggestions.
+Hybrid approach:
+1. AI extracts and classifies requirements (semantic understanding)
+2. Python calculates deterministic scores (consistent math)
+3. Modular analyzers provide additional insights
+
+File: server/ai_engine.py
 """
 
 import os
 import json
 import logging
+import hashlib
 from typing import Dict, Any, Optional, List
 from openai import OpenAI
 from dotenv import load_dotenv
 import time
+
+# Core scoring
+from scoring_engine import (
+    calculate_score,
+    generate_optimization_plan,
+    transform_to_legacy_format
+)
+
+# Modular analyzers
+from analyzers.resume_quality import analyze_resume_quality, format_quality_report
+from analyzers.interview_prep import generate_interview_questions, format_interview_prep
+from analyzers.cover_letter import (
+    generate_cover_letter, 
+    format_cover_letter_response, 
+    extract_resume_data_for_cover_letter,
+    ToneStyle
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -23,240 +45,497 @@ load_dotenv()
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Define the system prompt template
-SYSTEM_PROMPT = """
-You are an expert resume analyzer and career coach. Your task is to analyze a resume against a job description and provide:
-1. A match score (0-100)
-2. A breakdown of the match score by categories
-3. A list of missing keywords/skills from the resume that are important for the job
-4. Improvement suggestions for the resume
+# ═══════════════════════════════════════════════════════════════════════════
+# CACHING FOR CONSISTENCY
+# ═══════════════════════════════════════════════════════════════════════════
 
-Provide your analysis in a structured JSON format with the following schema:
+# In-memory cache for extraction results (same input = same output)
+_extraction_cache: Dict[str, Dict[str, Any]] = {}
+
+def _get_cache_key(resume_text: str, job_text: str) -> str:
+    """Generate a cache key from resume and job text."""
+    combined = f"{resume_text.strip()}|||{job_text.strip()}"
+    return hashlib.sha256(combined.encode()).hexdigest()
+
+def _get_cached_extraction(cache_key: str) -> Optional[Dict[str, Any]]:
+    """Get cached extraction result if available."""
+    return _extraction_cache.get(cache_key)
+
+def _cache_extraction(cache_key: str, result: Dict[str, Any]) -> None:
+    """Cache extraction result. Limit cache size to prevent memory issues."""
+    if len(_extraction_cache) > 100:  # Simple LRU-ish behavior
+        # Remove oldest entries
+        keys_to_remove = list(_extraction_cache.keys())[:50]
+        for key in keys_to_remove:
+            del _extraction_cache[key]
+    _extraction_cache[cache_key] = result
+
+def clear_cache() -> None:
+    """Clear the extraction cache (for testing)."""
+    _extraction_cache.clear()
+    logger.info("Extraction cache cleared")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AI EXTRACTION PROMPT (extraction only - no scoring)
+# ═══════════════════════════════════════════════════════════════════════════
+
+EXTRACTION_PROMPT = """You are a DETERMINISTIC resume analysis engine. Extract and match keywords consistently.
+
+CRITICAL: Same input MUST produce identical output. When uncertain, use these tie-breakers:
+- If skill name appears anywhere in resume → EXACT or VARIANT (never NONE)
+- If related work is described → CONTEXTUAL (never NONE)
+- Only use NONE if absolutely no connection exists
+
+TASK 1: Parse job description requirements into tiers
+- TIER 1: Explicitly required ("Required", "Must have", "X+ years", mentioned 2+ times)
+- TIER 2: Preferred/important ("Preferred", "Nice to have", mentioned once)
+- TIER 3: Bonus items ("Plus", "a plus", secondary tools)
+
+TASK 2: For each requirement, find resume evidence (BE GENEROUS - favor matches)
+Match types (in order of preference):
+- EXACT: Term found verbatim OR common abbreviation (Python/Py, JavaScript/JS)
+- VARIANT: Recognized equivalent (React.js = ReactJS, AWS = Amazon Web Services)
+- CONTEXTUAL: Skill is demonstrated through described work (cite specific evidence)
+- NONE: Absolutely no evidence in resume (use sparingly)
+
+MATCHING GUIDANCE:
+- "Communication skills" → Match if ANY client/team interaction described
+- "Technical understanding" → Match if ANY technical work described
+- "Problem solving" → Match if ANY achievement/improvement described
+- Soft skills → Almost always CONTEXTUAL if person held relevant job
+- Years experience → Calculate from employment dates, round UP
+
+TASK 3: Extract experience data
+- required_years: From job description (e.g., "3+ years" → 3)
+- candidate_years: From resume dates (round UP partial years)
+- seniority_signals: Leadership, mentoring, "led", "managed", "senior"
+
+TASK 4: Identify gaps (only for TRUE NONE matches)
+Provide specific, actionable suggestions.
+
+OUTPUT FORMAT (JSON only):
 {
-  "match_score": int,  // Overall match score (0-100)
-  "score_breakdown": {
-    "keyword_overlap": int,  // Score based on matching keywords (0-100)
-    "semantic_match": int,   // Score based on overall relevance (0-100)
-    "structure": int         // Score based on resume structure and completeness (0-100)
-  },
-  "missing_keywords": [
-    {
-      "keyword": string,     // Missing skill or keyword
-      "priority": string     // "high", "medium", or "low" based on importance
-    }
+  "requirements": [
+    {"text": "skill name", "tier": 1, "match_type": "EXACT", "evidence": "quote from resume"}
   ],
-  "improvement_suggestions": [
-    string  // 3-5 specific suggestions to improve the resume for this job
-  ]
+  "experience": {
+    "required_years": 3,
+    "candidate_years": 5,
+    "seniority_signals": ["Led team of 3"]
+  },
+  "gaps": [
+    {"requirement": "Missing Skill", "suggestion": "Add X experience"}
+  ],
+  "job_title": "extracted title",
+  "company_name": "company if mentioned",
+  "summary": "2-3 sentence assessment"
 }
 
-Be objective and analytical in your assessment. Focus on technical skills, experience, and qualifications.
+RULES:
+1. BE CONSISTENT - same resume+job = same classification every time
+2. FAVOR MATCHES over NONE when evidence is ambiguous
+3. Extract ALL requirements from job description
+4. Always cite evidence for CONTEXTUAL matches
 """
 
-# Define the user prompt template
 USER_PROMPT_TEMPLATE = """
-## Resume:
-{resume_text}
+RESUME TEXT:
+"{resume_text}"
 
-## Job Description:
-{job_text}
+JOB DESCRIPTION:
+"{job_text}"
 
-Analyze the resume against the job description and provide a detailed assessment in the JSON format specified.
+Extract requirements, match them to the resume, and identify gaps. Return JSON only.
 """
 
 
-def analyze_resume(resume_text: str, job_text: str) -> Dict[str, Any]:
+# ═══════════════════════════════════════════════════════════════════════════
+# MAIN ANALYSIS FUNCTION
+# ═══════════════════════════════════════════════════════════════════════════
+
+def analyze_resume(
+    resume_text: str, 
+    job_text: str,
+    include_quality_analysis: bool = True,
+    include_interview_prep: bool = False,
+    include_cover_letter: bool = False,
+    cover_letter_tone: str = "professional",
+) -> Dict[str, Any]:
     """
-    Analyze a resume against a job description using OpenAI's GPT-4.
+    Analyze a resume against a job description.
+    
+    Uses a hybrid approach:
+    1. AI extracts and classifies requirements (semantic understanding)
+    2. Python calculates deterministic scores (consistent math)
+    3. Optional: Additional analyzers for quality, interview prep, cover letter
     
     Args:
-        resume_text (str): The resume text
-        job_text (str): The job description text
+        resume_text: The resume text
+        job_text: The job description text
+        include_quality_analysis: Include resume quality analysis
+        include_interview_prep: Generate interview questions
+        include_cover_letter: Generate tailored cover letter
+        cover_letter_tone: Tone for cover letter (professional/confident/conversational)
         
     Returns:
-        Dict[str, Any]: Analysis results including match score, breakdown, and suggestions
+        Dict with analysis results
     """
     start_time = time.time()
-    logger.info("Starting AI-powered resume analysis")
+    logger.info("Starting AI-powered resume analysis (hybrid mode v2)")
     
     try:
-        # Prepare the prompt
+        # ─────────────────────────────────────────────────────────────────
+        # STEP 1: AI Extraction
+        # ─────────────────────────────────────────────────────────────────
+        
         user_prompt = USER_PROMPT_TEMPLATE.format(
             resume_text=resume_text,
             job_text=job_text
         )
         
-        # Log the prompt in debug mode
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f"Prompt to OpenAI:\n{user_prompt}")
+        # Check cache first for consistency
+        cache_key = _get_cache_key(resume_text, job_text)
+        cached_result = _get_cached_extraction(cache_key)
         
-        # Call OpenAI API
-        response = client.chat.completions.create(
-            model="gpt-4-turbo",
-            response_format={"type": "json_object"},
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.2,  # Lower temperature for more consistent results
-            max_tokens=2000   # Limit response size
+        if cached_result:
+            logger.info("Using cached extraction (ensuring consistent results)")
+            ai_extraction = cached_result
+        else:
+            # Call OpenAI with deterministic settings
+            response = client.chat.completions.create(
+                model=os.getenv("OPENAI_MODEL", "gpt-4o"),
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system", "content": EXTRACTION_PROMPT},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0,      # Maximum determinism
+                max_tokens=3000,
+                seed=42,            # Fixed seed for reproducibility
+            )
+            
+            ai_extraction = parse_extraction_response(response)
+            _cache_extraction(cache_key, ai_extraction)  # Cache for future requests
+            logger.info("AI extraction completed and cached")
+        
+        # ─────────────────────────────────────────────────────────────────
+        # STEP 2: Deterministic Scoring
+        # ─────────────────────────────────────────────────────────────────
+        
+        requirements = ai_extraction.get("requirements", [])
+        experience = ai_extraction.get("experience", {})
+        gaps = ai_extraction.get("gaps", [])
+        
+        # Detect senior role
+        job_lower = job_text.lower()
+        is_senior_role = any(term in job_lower for term in [
+            "senior", "lead", "principal", "staff", "architect", "manager", "director"
+        ])
+        
+        scoring_result = calculate_score(
+            requirements=requirements,
+            required_years=experience.get("required_years", 0),
+            candidate_years=experience.get("candidate_years", 0),
+            is_senior_role=is_senior_role,
+            seniority_signals_found=len(experience.get("seniority_signals", [])),
+            resume_text=resume_text,
+        )
+        logger.info(f"Deterministic score: {scoring_result.score}")
+        
+        # ─────────────────────────────────────────────────────────────────
+        # STEP 3: Optimization Plan
+        # ─────────────────────────────────────────────────────────────────
+        
+        optimization_plan = generate_optimization_plan(
+            score=scoring_result.score,
+            gaps=gaps,
+            requirements=requirements,
+            resume_text=resume_text,
         )
         
-        # Log the raw response in debug mode
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f"Raw OpenAI response:\n{response}")
+        # ─────────────────────────────────────────────────────────────────
+        # STEP 4: Transform to Frontend Format
+        # ─────────────────────────────────────────────────────────────────
         
-        # Extract and parse the JSON response
-        result = parse_openai_response(response)
+        result = transform_to_legacy_format(
+            scoring_result=scoring_result,
+            ai_extraction=ai_extraction,
+            optimization_plan=optimization_plan
+        )
+        
+        # ─────────────────────────────────────────────────────────────────
+        # STEP 5: Optional - Resume Quality Analysis
+        # ─────────────────────────────────────────────────────────────────
+        
+        if include_quality_analysis:
+            try:
+                quality_result = analyze_resume_quality(resume_text)
+                result["resume_quality"] = format_quality_report(quality_result)
+                logger.info(f"Quality analysis: {quality_result.overall_score}/100")
+            except Exception as e:
+                logger.warning(f"Quality analysis failed: {e}")
+                result["resume_quality"] = None
+        
+        # ─────────────────────────────────────────────────────────────────
+        # STEP 6: Optional - Interview Questions
+        # ─────────────────────────────────────────────────────────────────
+        
+        if include_interview_prep:
+            try:
+                job_title = ai_extraction.get("job_title", "this role")
+                interview_result = generate_interview_questions(
+                    job_title=job_title,
+                    requirements=requirements,
+                    gaps=gaps,
+                    num_questions=12,
+                )
+                result["interview_prep"] = format_interview_prep(interview_result)
+                logger.info(f"Generated {interview_result.question_count} interview questions")
+            except Exception as e:
+                logger.warning(f"Interview prep failed: {e}")
+                result["interview_prep"] = None
+        
+        # ─────────────────────────────────────────────────────────────────
+        # STEP 7: Optional - Cover Letter
+        # ─────────────────────────────────────────────────────────────────
+        
+        if include_cover_letter:
+            try:
+                # Map tone string to enum
+                tone_map = {
+                    "professional": ToneStyle.PROFESSIONAL,
+                    "confident": ToneStyle.CONFIDENT,
+                    "conversational": ToneStyle.CONVERSATIONAL,
+                    "executive": ToneStyle.EXECUTIVE,
+                }
+                tone = tone_map.get(cover_letter_tone, ToneStyle.PROFESSIONAL)
+                
+                # Extract resume data for cover letter
+                resume_data = extract_resume_data_for_cover_letter(resume_text, result)
+                
+                job_title = ai_extraction.get("job_title", "this position")
+                company_name = ai_extraction.get("company_name", "your company")
+                
+                cover_result = generate_cover_letter(
+                    job_title=job_title,
+                    company_name=company_name,
+                    requirements=requirements,
+                    resume_data=resume_data,
+                    gaps=gaps,
+                    tone=tone,
+                    include_gap_acknowledgment=False,
+                    target_length="medium",
+                )
+                result["cover_letter"] = format_cover_letter_response(cover_result)
+                logger.info(f"Generated cover letter: {cover_result.word_count} words")
+            except Exception as e:
+                logger.warning(f"Cover letter generation failed: {e}")
+                result["cover_letter"] = None
+        
+        # ─────────────────────────────────────────────────────────────────
+        # Finalize
+        # ─────────────────────────────────────────────────────────────────
         
         elapsed_time = time.time() - start_time
-        logger.info(f"AI analysis completed in {elapsed_time:.2f} seconds")
-        
-        # Add processing time to result
         result["processing_time_seconds"] = round(elapsed_time, 2)
+        result["scoring_method"] = "hybrid_v2"
+        result["features_enabled"] = {
+            "quality_analysis": include_quality_analysis,
+            "interview_prep": include_interview_prep,
+            "cover_letter": include_cover_letter,
+        }
         
+        logger.info(f"Analysis completed in {elapsed_time:.2f}s")
         return result
         
     except Exception as e:
         logger.error(f"Error in AI analysis: {str(e)}")
-        return {
-            "error": f"AI analysis failed: {str(e)}",
-            "match_score": 0,
-            "score_breakdown": {
-                "keyword_overlap": 0,
-                "semantic_match": 0,
-                "structure": 0
-            },
-            "missing_keywords": [],
-            "improvement_suggestions": [
-                "Analysis could not be completed. Please try again later."
-            ]
-        }
+        return create_error_response(str(e))
 
 
-def parse_openai_response(response) -> Dict[str, Any]:
+# ═══════════════════════════════════════════════════════════════════════════
+# INDIVIDUAL FEATURE FUNCTIONS (for separate API endpoints)
+# ═══════════════════════════════════════════════════════════════════════════
+
+def get_resume_quality(resume_text: str) -> Dict[str, Any]:
     """
-    Parse the OpenAI API response and extract the analysis results.
+    Get resume quality analysis only.
     
     Args:
-        response: The OpenAI API response
+        resume_text: The resume text
         
     Returns:
-        Dict[str, Any]: Parsed analysis results
+        Quality analysis result
     """
     try:
-        # Extract the content from the response
-        content = response.choices[0].message.content
-        
-        # Parse the JSON
-        result = json.loads(content)
-        
-        # Validate the required fields
-        validate_response(result)
-        
-        return result
-        
-    except json.JSONDecodeError as e:
-        logger.error(f"Failed to parse OpenAI response as JSON: {str(e)}")
-        raise ValueError(f"Invalid JSON response from OpenAI: {str(e)}")
-        
-    except KeyError as e:
-        logger.error(f"Missing key in OpenAI response: {str(e)}")
-        raise ValueError(f"Incomplete response from OpenAI: missing {str(e)}")
+        result = analyze_resume_quality(resume_text)
+        return format_quality_report(result)
+    except Exception as e:
+        logger.error(f"Quality analysis error: {e}")
+        return {"error": str(e)}
 
 
-def validate_response(result: Dict[str, Any]) -> None:
+def get_interview_questions(
+    job_title: str,
+    requirements: List[Dict[str, Any]],
+    gaps: List[Dict[str, Any]],
+    num_questions: int = 12,
+) -> Dict[str, Any]:
     """
-    Validate that the OpenAI response contains all required fields.
+    Get interview questions only.
     
     Args:
-        result (Dict[str, Any]): The parsed response
+        job_title: Target job title
+        requirements: Job requirements with match info
+        gaps: Identified skill gaps
+        num_questions: Number of questions to generate
         
-    Raises:
-        ValueError: If the response is missing required fields
+    Returns:
+        Interview prep result
     """
-    # Check for required top-level fields
-    required_fields = ["match_score", "score_breakdown", "missing_keywords"]
+    try:
+        result = generate_interview_questions(
+            job_title=job_title,
+            requirements=requirements,
+            gaps=gaps,
+            num_questions=num_questions,
+        )
+        return format_interview_prep(result)
+    except Exception as e:
+        logger.error(f"Interview prep error: {e}")
+        return {"error": str(e)}
+
+
+def get_cover_letter(
+    job_title: str,
+    company_name: str,
+    requirements: List[Dict[str, Any]],
+    resume_text: str,
+    gaps: Optional[List[Dict[str, Any]]] = None,
+    tone: str = "professional",
+) -> Dict[str, Any]:
+    """
+    Get cover letter only.
+    
+    Args:
+        job_title: Target job title
+        company_name: Target company
+        requirements: Job requirements with match info
+        resume_text: Resume text for context
+        gaps: Optional skill gaps
+        tone: Writing tone (professional/confident/conversational/executive)
+        
+    Returns:
+        Cover letter result
+    """
+    try:
+        tone_map = {
+            "professional": ToneStyle.PROFESSIONAL,
+            "confident": ToneStyle.CONFIDENT,
+            "conversational": ToneStyle.CONVERSATIONAL,
+            "executive": ToneStyle.EXECUTIVE,
+        }
+        tone_style = tone_map.get(tone, ToneStyle.PROFESSIONAL)
+        
+        resume_data = extract_resume_data_for_cover_letter(resume_text)
+        
+        result = generate_cover_letter(
+            job_title=job_title,
+            company_name=company_name,
+            requirements=requirements,
+            resume_data=resume_data,
+            gaps=gaps or [],
+            tone=tone_style,
+        )
+        return format_cover_letter_response(result)
+    except Exception as e:
+        logger.error(f"Cover letter error: {e}")
+        return {"error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# HELPER FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════
+
+def parse_extraction_response(response) -> Dict[str, Any]:
+    """Parse the OpenAI API extraction response."""
+    try:
+        content = response.choices[0].message.content
+        result = json.loads(content)
+        validate_extraction_response(result)
+        return result
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse OpenAI response: {e}")
+        raise ValueError(f"Invalid JSON from OpenAI: {e}")
+
+
+def validate_extraction_response(result: Dict[str, Any]) -> None:
+    """Validate AI extraction response has required fields."""
+    required_fields = ["requirements", "experience", "gaps"]
     for field in required_fields:
         if field not in result:
-            raise ValueError(f"Response missing required field: {field}")
+            logger.warning(f"Missing field: {field}, using default")
+            if field == "requirements":
+                result["requirements"] = []
+            elif field == "experience":
+                result["experience"] = {
+                    "required_years": 0, 
+                    "candidate_years": 0, 
+                    "seniority_signals": []
+                }
+            elif field == "gaps":
+                result["gaps"] = []
     
-    # Check score_breakdown fields
-    required_breakdown = ["keyword_overlap", "semantic_match", "structure"]
-    for field in required_breakdown:
-        if field not in result["score_breakdown"]:
-            raise ValueError(f"Score breakdown missing required field: {field}")
-    
-    # Ensure match_score is within range
-    if not (0 <= result["match_score"] <= 100):
-        logger.warning(f"Match score out of range: {result['match_score']}, clamping to 0-100")
-        result["match_score"] = max(0, min(100, result["match_score"]))
-    
-    # Ensure score breakdown values are within range
-    for field in required_breakdown:
-        score = result["score_breakdown"][field]
-        if not (0 <= score <= 100):
-            logger.warning(f"{field} score out of range: {score}, clamping to 0-100")
-            result["score_breakdown"][field] = max(0, min(100, score))
-    
-    # Ensure missing_keywords is a list
-    if not isinstance(result["missing_keywords"], list):
-        raise ValueError("missing_keywords must be a list")
-    
-    # Ensure improvement_suggestions exists and is a list
-    if "improvement_suggestions" not in result:
-        result["improvement_suggestions"] = []
-    elif not isinstance(result["improvement_suggestions"], list):
-        raise ValueError("improvement_suggestions must be a list")
+    # Validate requirements structure
+    for req in result.get("requirements", []):
+        if "text" not in req:
+            req["text"] = "Unknown requirement"
+        if "tier" not in req:
+            req["tier"] = 2
+        if "match_type" not in req:
+            req["match_type"] = "NONE"
 
+
+def create_error_response(error_message: str) -> Dict[str, Any]:
+    """Create standardized error response."""
+    return {
+        "error": f"Analysis failed: {error_message}",
+        "score": 0,
+        "interpretation": "ERROR",
+        "summary": "Analysis failed due to a technical error.",
+        "points_summary": {
+            "tier1_earned": 0, "tier1_possible": 0,
+            "tier2_earned": 0, "tier2_possible": 0,
+            "tier3_earned": 0, "tier3_possible": 0,
+            "total_earned": 0, "total_possible": 0,
+        },
+        "experience_analysis": {
+            "required_years": 0,
+            "candidate_years": 0,
+            "seniority_signals": [],
+        },
+        "keyword_analysis": {"missing": [], "present": []},
+        "critical_gaps": [],
+        "quick_wins": [{
+            "type": "critical",
+            "title": "Analysis Failed",
+            "description": "Please try again later."
+        }],
+        "requirements_breakdown": [],
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TEST
+# ═══════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    # Enable debug logging for testing
     logger.setLevel(logging.DEBUG)
     
-    # Test with sample data
-    sample_resume = """
-    John Doe
-    Software Engineer
-    
-    Experience:
-    - Senior Developer at Tech Corp (2018-Present)
-      * Developed and maintained Python web applications using Flask
-      * Implemented RESTful APIs and integrated with third-party services
-      * Led a team of 3 junior developers
-    
-    - Junior Developer at StartUp Inc (2016-2018)
-      * Built frontend components with React.js
-      * Worked with PostgreSQL databases
-    
-    Skills:
-    Python, Flask, JavaScript, React, SQL, Git, Agile methodology
-    
-    Education:
-    Bachelor of Science in Computer Science, University of Technology (2016)
-    """
-    
-    sample_job = """
-    Senior Software Engineer
-    
-    We are looking for a Senior Software Engineer to join our team. The ideal candidate will have:
-    
-    - 5+ years of experience in software development
-    - Strong knowledge of Python and web frameworks (Django preferred)
-    - Experience with AWS cloud infrastructure
-    - Familiarity with Docker and Kubernetes
-    - Strong SQL and database design skills
-    - Experience leading small development teams
-    
-    Responsibilities:
-    - Design and implement new features for our SaaS platform
-    - Mentor junior developers
-    - Collaborate with product managers to define requirements
-    - Ensure code quality through testing and code reviews
-    """
-    
-    # Run the analysis
-    result = analyze_resume(sample_resume, sample_job)
-    
-    # Print the result
-    print(json.dumps(result, indent=2))
+    print("AI Engine v2.0 loaded successfully")
+    print("Available functions:")
+    print("  - analyze_resume(resume, job, include_quality=True, include_interview=False, include_cover=False)")
+    print("  - get_resume_quality(resume)")
+    print("  - get_interview_questions(job_title, requirements, gaps)")
+    print("  - get_cover_letter(job_title, company, requirements, resume)")

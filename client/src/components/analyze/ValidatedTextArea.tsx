@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Trash2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'; // 1. Import Hook
 import { VALIDATION_RULES } from '@/lib/validation';
 
 interface ValidatedTextAreaProps {
@@ -32,7 +32,7 @@ export function ValidatedTextArea({
   maxLength = VALIDATION_RULES.MAX_LENGTH,
   onBlur,
 }: ValidatedTextAreaProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(); // 2. Initialize Hook
   const [characterCount, setCharacterCount] = useState(value.length);
   const [isNearLimit, setIsNearLimit] = useState(false);
   const [isAtLimit, setIsAtLimit] = useState(false);
@@ -57,17 +57,20 @@ export function ValidatedTextArea({
         </Label>
         <div className="flex items-center gap-2">
           <span className={`text-xs ${getCharacterCountColor()} transition-colors duration-300`}>
-            {characterCount.toLocaleString()} / {maxLength.toLocaleString()} {t('analyze.input.characters')}
+            {/* 3. Localize 'characters' */}
+            {characterCount.toLocaleString()} / {maxLength.toLocaleString()} {t('analyze.characters')}
           </span>
           {value && onClear && (
             <button
               onClick={onClear}
               disabled={disabled}
               className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              title={t('analyze.input.clearText')}
+              // 4. Localize tooltip
+              title={t('analyze.clearText')}
             >
               <Trash2 className="w-3 h-3" />
-              {t('analyze.input.clear')}
+              {/* 5. Localize button text */}
+              {t('analyze.clear')}
             </button>
           )}
         </div>

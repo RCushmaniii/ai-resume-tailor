@@ -1,44 +1,53 @@
 import { Button } from '@/components/ui/button';
-import { MatchScoreCard } from './MatchScoreCard';
-import { BreakdownBars } from './BreakdownBars';
-import { MissingKeywordsList } from './MissingKeywordsList';
-import { SuggestionsList } from './SuggestionsList';
-import type { AnalysisResult } from '@/mocks/analysisResult';
+import { useTranslation } from 'react-i18next';
+import { ArrowUpCircle } from 'lucide-react'; // Icon for "Go back up"
+import AnalysisReport from './AnalysisReport';
+import type { DisplayAnalysisResult } from '@/types/analysis';
 
 interface ResultsSectionProps {
-  results: AnalysisResult;
+  results: DisplayAnalysisResult;
   onAnalyzeAgain: () => void;
+  onEditAndOptimize: () => void;
 }
 
-export function ResultsSection({ results, onAnalyzeAgain }: ResultsSectionProps) {
+export function ResultsSection({ results, onAnalyzeAgain, onEditAndOptimize }: ResultsSectionProps) {
+  const { t } = useTranslation();
+  
   return (
-    <div id="results" className="space-y-6">
-      {/* Match Score */}
-      <MatchScoreCard score={results.match_score} />
+    <div id="results" className="space-y-8 pb-12">
+      {/* World-Class Analysis Report */}
+      <AnalysisReport data={results} />
 
-      {/* Score Breakdown */}
-      <BreakdownBars breakdown={results.breakdown} />
+      {/* Primary Action Bar */}
+      <div className="flex flex-col items-center justify-center gap-4 pt-8 border-t border-gray-100">
+        <div className="text-center space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900">
+                {t('analyze.results.nextStepTitle', 'Ready to improve your score?')}
+            </h3>
+            <p className="text-sm text-gray-500 max-w-md">
+                {t('analyze.results.nextStepDesc', 'Edit your resume based on these suggestions and analyze again.')}
+            </p>
+        </div>
 
-      {/* Missing Keywords */}
-      {results.missing_keywords.length > 0 && (
-        <MissingKeywordsList keywords={results.missing_keywords} />
-      )}
-
-      {/* Suggestions */}
-      {results.suggestions.length > 0 && (
-        <SuggestionsList suggestions={results.suggestions} />
-      )}
-
-      {/* Analyze Again Button */}
-      <div className="flex justify-center pt-4">
-        <Button
-          onClick={onAnalyzeAgain}
-          variant="outline"
-          size="lg"
-          className="px-12"
-        >
-          Analyze Again
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button
+            onClick={onEditAndOptimize}
+            size="lg"
+            className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all bg-blue-600 hover:bg-blue-700"
+          >
+            <ArrowUpCircle className="w-5 h-5 mr-2" />
+            {t('analyze.results.editButton', 'Edit & Optimize')}
+          </Button>
+          
+          <Button
+            onClick={onAnalyzeAgain}
+            variant="outline"
+            size="lg"
+            className="px-8 py-6 text-lg rounded-full"
+          >
+            {t('analyze.results.analyzeAgain', 'Analyze Again')}
+          </Button>
+        </div>
       </div>
     </div>
   );

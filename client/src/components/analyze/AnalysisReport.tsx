@@ -1,6 +1,7 @@
 import React from 'react';
 import { 
   CheckCircle, 
+  CheckCircle2,
   XCircle, 
   AlertTriangle, 
   Info, 
@@ -15,6 +16,9 @@ interface AnalysisReportProps {
 
 const AnalysisReport: React.FC<AnalysisReportProps> = ({ data }) => {
   const { t } = useTranslation();
+  
+  // Debug log for suggestions
+  console.log('🔍 Suggestions in AnalysisReport:', data.suggestions);
   // Helper to determine badge color for suggestions
   const getSuggestionStyle = (type: 'critical' | 'warning' | 'tip') => {
     switch (type) {
@@ -59,7 +63,7 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({ data }) => {
           </svg>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
             <span className="text-4xl font-bold text-gray-800">{data.score}</span>
-            <span className="block text-xs text-gray-400 uppercase tracking-wide">Match</span>
+            <span className="block text-xs text-gray-400 uppercase tracking-wide">Score</span>
           </div>
         </div>
 
@@ -71,7 +75,7 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({ data }) => {
           {/* Metadata Badge */}
           <div className="mt-4 flex items-center gap-2 text-xs text-gray-400">
             <Clock className="w-3 h-3" />
-            <span>{t('analyze.results.analyzedIn', { seconds: data.processing_time_seconds?.toFixed(2) })}</span>
+            <span>Analysis completed</span>
           </div>
         </div>
       </div>
@@ -122,9 +126,9 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({ data }) => {
           <h3 className="text-lg font-bold text-gray-800 mb-6">{t('analyze.results.detailedScoring')}</h3>
           <div className="space-y-6">
             {[
-              { label: t('analyze.results.metrics.hardSkills'), val: data.score_breakdown.keywords },
-              { label: t('analyze.results.metrics.semantic'), val: data.score_breakdown.semantic },
-              { label: t('analyze.results.metrics.tone'), val: data.score_breakdown.tone }
+              { label: t('analyze.results.metrics.hardSkills'), val: data.breakdown.keywords },
+              { label: t('analyze.results.metrics.semantic'), val: data.breakdown.semantic },
+              { label: t('analyze.results.metrics.tone'), val: data.breakdown.tone }
             ].map((metric, idx) => (
               <div key={idx}>
                 <div className="flex justify-between text-sm mb-1 font-medium text-gray-700">
@@ -147,24 +151,38 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({ data }) => {
       <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
         <h3 className="text-xl font-bold text-gray-800 mb-6">{t('analyze.results.optimizationPlan')}</h3>
         <div className="space-y-4">
-          {data.suggestions.map((suggestion, idx) => (
-            <div 
-              key={idx} 
-              className={`p-4 rounded-lg border flex gap-4 ${getSuggestionStyle(suggestion.type)}`}
-            >
-              <div className="flex-shrink-0 mt-1">
-                {getSuggestionIcon(suggestion.type)}
+          {data.suggestions.length > 0 ? (
+            data.suggestions.map((suggestion, idx) => (
+              <div 
+                key={idx} 
+                className={`p-4 rounded-lg border flex gap-4 ${getSuggestionStyle(suggestion.type)}`}
+              >
+                <div className="flex-shrink-0 mt-1">
+                  {getSuggestionIcon(suggestion.type)}
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 text-sm md:text-base">
+                    {suggestion.title}
+                  </h4>
+                  <p className="text-sm text-gray-700 mt-1 leading-relaxed">
+                    {suggestion.description}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-bold text-gray-900 text-sm md:text-base">
-                  {suggestion.title}
-                </h4>
-                <p className="text-sm text-gray-700 mt-1 leading-relaxed">
-                  {suggestion.description}
-                </p>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="h-8 w-8 text-green-600" />
               </div>
+              <h4 className="text-lg font-semibold text-green-900 mb-2">
+                {t('analyze.results.noGapsTitle', 'Excellent Match!')}
+              </h4>
+              <p className="text-green-700 max-w-md mx-auto">
+                {t('analyze.results.noGapsDescription', 'Your resume strongly matches the job requirements. No critical gaps were identified.')}
+              </p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
