@@ -4,46 +4,11 @@ import {
   XCircle, 
   Search, 
   Target, 
-  Star, 
-  FileCheck,
   TrendingUp,
   Shield,
-  Eye
+  FileText
 } from 'lucide-react';
-
-interface EvaluationData {
-  hiring_readiness: 'HIGH' | 'MEDIUM' | 'LOW';
-  hiring_readiness_summary: string;
-  ats_compatibility: {
-    status: 'STRONG' | 'PASS' | 'RISK';
-    details: string[];
-    summary: string;
-  };
-  search_visibility: {
-    level: 'HIGH' | 'MEDIUM' | 'LOW';
-    searchable_terms: string[];
-    summary: string;
-  };
-  alignment: {
-    score: number;
-    strengths: string[];
-    refinements: Array<{
-      skill: string;
-      current: string;
-      suggested: string;
-      impact: string;
-      blocking: string;
-    }>;
-  };
-  human_readability: {
-    stars: number;
-    notes: string[];
-  };
-  verdict: {
-    ready_to_submit: boolean;
-    message: string;
-  };
-}
+import type { EvaluationData } from '@/types/analysis';
 
 interface EvaluationReportProps {
   evaluation: EvaluationData;
@@ -54,130 +19,149 @@ const StatusBadge = ({
   type 
 }: { 
   status: string; 
-  type: 'readiness' | 'ats' | 'visibility' 
+  type: 'hiring' | 'ats' | 'search' 
 }) => {
   const getConfig = () => {
-    if (type === 'readiness') {
-      if (status === 'HIGH') return { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircle };
-      if (status === 'MEDIUM') return { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: AlertTriangle };
-      return { bg: 'bg-red-100', text: 'text-red-800', icon: XCircle };
+    if (type === 'hiring') {
+      if (status === 'READY') return { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircle, label: 'READY TO SUBMIT' };
+      return { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: AlertTriangle, label: 'NEEDS ATTENTION' };
     }
     if (type === 'ats') {
-      if (status === 'STRONG') return { bg: 'bg-green-100', text: 'text-green-800', icon: Shield };
-      if (status === 'PASS') return { bg: 'bg-blue-100', text: 'text-blue-800', icon: CheckCircle };
-      return { bg: 'bg-red-100', text: 'text-red-800', icon: AlertTriangle };
+      if (status === 'PASS') return { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircle, label: 'PASS' };
+      return { bg: 'bg-red-100', text: 'text-red-800', icon: XCircle, label: 'FAIL' };
     }
-    // visibility
-    if (status === 'HIGH') return { bg: 'bg-green-100', text: 'text-green-800', icon: Eye };
-    if (status === 'MEDIUM') return { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: Eye };
-    return { bg: 'bg-red-100', text: 'text-red-800', icon: Eye };
+    // search
+    if (status === 'DISCOVERABLE') return { bg: 'bg-green-100', text: 'text-green-800', icon: Search, label: 'DISCOVERABLE' };
+    if (status === 'LIMITED') return { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: Search, label: 'LIMITED' };
+    return { bg: 'bg-red-100', text: 'text-red-800', icon: Search, label: 'LOW VISIBILITY' };
   };
 
   const config = getConfig();
   const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold ${config.bg} ${config.text}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold ${config.bg} ${config.text}`}>
       <Icon className="w-4 h-4" />
-      {status}
+      {config.label}
     </span>
-  );
-};
-
-const StarRating = ({ stars }: { stars: number }) => {
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Star
-          key={i}
-          className={`w-5 h-5 ${i <= stars ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-        />
-      ))}
-    </div>
   );
 };
 
 export function EvaluationReport({ evaluation }: EvaluationReportProps) {
   return (
     <div className="space-y-6">
-      {/* Header with Hiring Readiness */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Target className="w-6 h-6 text-indigo-600" />
-            Resume Evaluation Results
-          </h2>
-          <StatusBadge status={evaluation.hiring_readiness} type="readiness" />
+      {/* Primary Status Banner */}
+      <div className={`rounded-xl shadow-sm border-2 p-6 ${
+        evaluation.hiring.status === 'READY' 
+          ? 'bg-green-50 border-green-300' 
+          : 'bg-yellow-50 border-yellow-300'
+      }`}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <Target className={`w-8 h-8 ${
+              evaluation.hiring.status === 'READY' ? 'text-green-600' : 'text-yellow-600'
+            }`} />
+            <div>
+              <h2 className={`text-xl font-bold ${
+                evaluation.hiring.status === 'READY' ? 'text-green-800' : 'text-yellow-800'
+              }`}>
+                STATUS: {evaluation.hiring.status === 'READY' ? 'READY TO SUBMIT' : 'NEEDS ATTENTION'}
+              </h2>
+            </div>
+          </div>
         </div>
-        <p className="text-gray-600 text-lg">{evaluation.hiring_readiness_summary}</p>
+        <p className={`text-lg ${
+          evaluation.hiring.status === 'READY' ? 'text-green-700' : 'text-yellow-700'
+        }`}>
+          {evaluation.hiring.summary}
+        </p>
+        <p className={`text-sm mt-2 ${
+          evaluation.hiring.status === 'READY' ? 'text-green-600' : 'text-yellow-600'
+        }`}>
+          {evaluation.hiring.reassurance}
+        </p>
       </div>
 
-      {/* Section 1: ATS Compatibility */}
+      {/* ATS Compatibility - Binary Gate */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Shield className="w-5 h-5 text-blue-600" />
-            ATS Compatibility
+            ATS STATUS
           </h3>
-          <StatusBadge status={evaluation.ats_compatibility.status} type="ats" />
+          <StatusBadge status={evaluation.ats.status} type="ats" />
         </div>
         
         <ul className="space-y-2 mb-4">
-          {evaluation.ats_compatibility.details.map((detail, i) => (
+          {evaluation.ats.checks.map((check, i) => (
             <li key={i} className="flex items-center gap-2 text-gray-600">
-              <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-              {detail}
+              {evaluation.ats.status === 'PASS' ? (
+                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+              ) : (
+                <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              )}
+              {check}
             </li>
           ))}
         </ul>
         
-        <p className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
-          {evaluation.ats_compatibility.summary}
+        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg font-medium">
+          {evaluation.ats.summary}
         </p>
       </div>
 
-      {/* Section 2: Recruiter Search Visibility */}
+      {/* Recruiter Search Visibility - Gate with Count */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Search className="w-5 h-5 text-purple-600" />
-            Recruiter Search Visibility
+            <Search className="w-5 h-5 text-slate-700" />
+            SEARCH STATUS
           </h3>
-          <StatusBadge status={evaluation.search_visibility.level} type="visibility" />
+          <StatusBadge status={evaluation.search.status} type="search" />
         </div>
         
-        <p className="text-gray-600 mb-4">You are discoverable when recruiters search for:</p>
+        <p className="text-gray-600 mb-3">{evaluation.search.summary}</p>
         
-        <div className="flex flex-wrap gap-2 mb-4">
-          {evaluation.search_visibility.searchable_terms.map((term, i) => (
-            <span
-              key={i}
-              className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm font-medium"
-            >
-              {term}
-            </span>
-          ))}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-sm text-gray-500">Search criteria matched:</span>
+          <span className="font-bold text-slate-800">
+            {evaluation.search.matched} / {evaluation.search.total}
+          </span>
         </div>
         
-        <p className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
-          {evaluation.search_visibility.summary}
-        </p>
+        {evaluation.search.terms.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {evaluation.search.terms.map((term, i) => (
+              <span
+                key={i}
+                className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-medium"
+              >
+                {term}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Section 3: Resume-Job Alignment */}
+      {/* Resume Optimization Alignment - ONLY numeric score */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-indigo-600" />
-            Resume-Job Alignment
+            Resume Optimization Alignment
           </h3>
-          <div className="flex items-center gap-2">
-            <span className="text-3xl font-bold text-indigo-600">{evaluation.alignment.score}</span>
-            <span className="text-gray-400">/ 100</span>
+          <div className="text-right">
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold text-indigo-600">{evaluation.alignment.score}</span>
+              <span className="text-gray-400">/ 100</span>
+              <span className="text-indigo-500 font-medium ml-2">— {evaluation.alignment.label}</span>
+            </div>
           </div>
         </div>
         
-        <p className="text-sm text-gray-500 mb-4">(Optimization metric — not a hiring decision)</p>
+        <p className="text-sm text-gray-500 mb-4">
+          This score reflects wording alignment, not hiring eligibility. Scores above 80 are typically competitive.
+        </p>
         
         {evaluation.alignment.strengths.length > 0 && (
           <div className="mb-4">
@@ -193,14 +177,16 @@ export function EvaluationReport({ evaluation }: EvaluationReportProps) {
           </div>
         )}
         
-        {evaluation.alignment.refinements.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-medium text-yellow-800 mb-2">Optional refinements (non-blocking):</h4>
+        {evaluation.alignment.refinements.length > 0 && !evaluation.verdict.stop_optimizing && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <h4 className="font-medium text-gray-700 mb-2">Optional polish (not required)</h4>
+            <p className="text-sm text-gray-500 mb-3">
+              These suggestions may slightly improve alignment, but your resume already meets hiring requirements.
+            </p>
             <ul className="space-y-2">
               {evaluation.alignment.refinements.map((refinement, i) => (
-                <li key={i} className="text-sm text-yellow-700">
+                <li key={i} className="text-sm text-gray-600">
                   <span className="font-medium">{refinement.skill}:</span> {refinement.suggested}
-                  <span className="text-yellow-600 ml-2">• {refinement.impact}</span>
                 </li>
               ))}
             </ul>
@@ -208,18 +194,26 @@ export function EvaluationReport({ evaluation }: EvaluationReportProps) {
         )}
       </div>
 
-      {/* Section 4: Human Readability */}
+      {/* Human Readability - Qualitative Only */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <FileCheck className="w-5 h-5 text-orange-600" />
-            Human Readability
+            <FileText className="w-5 h-5 text-orange-600" />
+            Readability
           </h3>
-          <StarRating stars={evaluation.human_readability.stars} />
+          <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+            evaluation.readability.label === 'Strong' 
+              ? 'bg-green-100 text-green-800'
+              : evaluation.readability.label === 'Good'
+              ? 'bg-blue-100 text-blue-800'
+              : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {evaluation.readability.label}
+          </span>
         </div>
         
         <div className="flex flex-wrap gap-2">
-          {evaluation.human_readability.notes.map((note, i) => (
+          {evaluation.readability.notes.map((note, i) => (
             <span
               key={i}
               className="px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-sm"
@@ -230,7 +224,7 @@ export function EvaluationReport({ evaluation }: EvaluationReportProps) {
         </div>
       </div>
 
-      {/* Section 5: Final Verdict */}
+      {/* Final Verdict - Hard Stop */}
       <div className={`rounded-xl shadow-sm border-2 p-6 ${
         evaluation.verdict.ready_to_submit 
           ? 'bg-green-50 border-green-300' 
@@ -246,8 +240,8 @@ export function EvaluationReport({ evaluation }: EvaluationReportProps) {
             evaluation.verdict.ready_to_submit ? 'text-green-800' : 'text-yellow-800'
           }`}>
             {evaluation.verdict.ready_to_submit 
-              ? '✅ This resume is ready to submit.' 
-              : '⚠️ Consider improvements before submitting.'}
+              ? '✅ Ready to submit' 
+              : '⚠️ Review before submitting'}
           </h3>
         </div>
         <p className={`text-lg ${
@@ -255,6 +249,12 @@ export function EvaluationReport({ evaluation }: EvaluationReportProps) {
         }`}>
           {evaluation.verdict.message}
         </p>
+        
+        {evaluation.verdict.stop_optimizing && (
+          <p className="text-sm text-green-600 mt-3 font-medium">
+            Improving this score further is optional and may not affect hiring outcomes.
+          </p>
+        )}
       </div>
     </div>
   );

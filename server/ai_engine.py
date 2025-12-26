@@ -382,32 +382,39 @@ def analyze_resume(
             "cover_letter": include_cover_letter,
         }
         
-        # Add truthful evaluation data
+        # Add gate-based evaluation data
         result["evaluation"] = {
-            "hiring_readiness": evaluation.hiring_readiness,
-            "hiring_readiness_summary": evaluation.hiring_readiness_summary,
-            "ats_compatibility": {
+            "hiring": {
+                "status": evaluation.hiring_status,
+                "summary": evaluation.hiring_summary,
+                "reassurance": evaluation.hiring_reassurance,
+            },
+            "ats": {
                 "status": evaluation.ats_status,
-                "details": evaluation.ats_details,
+                "checks": evaluation.ats_checks,
                 "summary": evaluation.ats_summary,
             },
-            "search_visibility": {
-                "level": evaluation.search_visibility,
-                "searchable_terms": evaluation.searchable_terms,
+            "search": {
+                "status": evaluation.search_status,
+                "matched": evaluation.search_matched,
+                "total": evaluation.search_total,
+                "terms": evaluation.searchable_terms,
                 "summary": evaluation.search_summary,
             },
             "alignment": {
                 "score": evaluation.alignment_score,
+                "label": evaluation.alignment_label,
                 "strengths": evaluation.alignment_strengths,
                 "refinements": evaluation.alignment_refinements,
             },
-            "human_readability": {
-                "stars": evaluation.human_readability_stars,
-                "notes": evaluation.human_readability_notes,
+            "readability": {
+                "label": evaluation.readability_label,
+                "notes": evaluation.readability_notes,
             },
             "verdict": {
                 "ready_to_submit": evaluation.ready_to_submit,
                 "message": evaluation.verdict_message,
+                "stop_optimizing": evaluation.stop_optimizing,
             },
         }
         

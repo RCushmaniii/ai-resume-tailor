@@ -72,34 +72,39 @@ class DimensionScore:
 
 @dataclass
 class EvaluationResult:
-    """New truthful output format - separates eligibility from optimization."""
+    """Gate-based evaluation - separates eligibility (pass/fail) from optimization (numeric)."""
     
-    # 1. Hiring Readiness (HIGH / MEDIUM / LOW)
-    hiring_readiness: str
-    hiring_readiness_summary: str
+    # 1. Hiring Readiness (READY / NEEDS_ATTENTION) - Derived, not scored
+    hiring_status: str  # "READY" or "NEEDS_ATTENTION"
+    hiring_summary: str
+    hiring_reassurance: str  # "No further changes required" or action needed
     
-    # 2. ATS Compatibility (STRONG / PASS / RISK)
-    ats_status: str
-    ats_details: List[str]
+    # 2. ATS Compatibility (PASS / FAIL) - Binary gate
+    ats_status: str  # "PASS" or "FAIL"
+    ats_checks: List[str]  # Checklist items
     ats_summary: str
     
-    # 3. Recruiter Search Visibility (HIGH / MEDIUM / LOW)
-    search_visibility: str
+    # 3. Recruiter Search Visibility (DISCOVERABLE / LIMITED / LOW) - Gate with count
+    search_status: str  # "DISCOVERABLE", "LIMITED", or "LOW_VISIBILITY"
+    search_matched: int  # e.g., 6
+    search_total: int    # e.g., 6
     searchable_terms: List[str]
     search_summary: str
     
-    # 4. Resume-Job Alignment (numeric score - optimization metric)
+    # 4. Resume-Job Alignment (ONLY numeric score in system)
     alignment_score: int
+    alignment_label: str  # "Competitive", "Excellent", etc.
     alignment_strengths: List[str]
-    alignment_refinements: List[Dict[str, str]]  # Optional, non-blocking
+    alignment_refinements: List[Dict[str, str]]  # Optional polish
     
-    # 5. Human Readability (1-5 stars)
-    human_readability_stars: int
-    human_readability_notes: List[str]
+    # 5. Human Readability (Qualitative only - NO numbers)
+    readability_label: str  # "Strong", "Good", "Needs Work"
+    readability_notes: List[str]
     
-    # 6. Final Verdict
+    # 6. Final Verdict (Hard stop)
     ready_to_submit: bool
     verdict_message: str
+    stop_optimizing: bool  # True if score >= 80 and ATS = PASS
 
 
 @dataclass
@@ -677,76 +682,51 @@ def generate_evaluation(
     - Educates without overwhelming
     """
     
-    # ─────────────────────────────────────────────────────────────────────
-    # 1. HIRING READINESS (HIGH / MEDIUM / LOW)
-    # ─────────────────────────────────────────────────────────────────────
-    tier1_total = tier_scores[1]["total"]
+    # Calculate base metrics
     tier1_matched = tier_scores[1]["matched"]
-    
-    if len(missing_critical) == 0 and experience_ratio >= 0.75:
-        hiring_readiness = "HIGH"
-        hiring_summary = "You meet all required qualifications and are competitive for this role."
-    elif len(missing_critical) <= 1 and experience_ratio >= 0.5:
-        hiring_readiness = "MEDIUM"
-        hiring_summary = "You meet most requirements. Address the gaps below to strengthen your application."
-    else:
-        hiring_readiness = "LOW"
-        hiring_summary = "There are significant gaps between your resume and this role's requirements."
-    
-    # ─────────────────────────────────────────────────────────────────────
-    # 2. ATS COMPATIBILITY (STRONG / PASS / RISK)
-    # ─────────────────────────────────────────────────────────────────────
+    tier1_total = tier_scores[1]["total"]
     total_matched = sum(t["matched"] for t in tier_scores.values())
     total_keywords = sum(t["total"] for t in tier_scores.values())
     match_rate = (total_matched / total_keywords * 100) if total_keywords > 0 else 0
     
-    ats_details = []
+    # 1. ATS COMPATIBILITY (PASS / FAIL) - Binary gate
+    ats_checks = []
+    ats_checks.append("Resume parses correctly")
     
-    if match_rate >= 80:
-        ats_status = "STRONG"
-        ats_details.append("Resume parses correctly")
-        ats_details.append("All critical keywords present")
-        ats_details.append("No disqualifying gaps detected")
-        ats_details.append("Recruiters can find you in search results")
-        ats_summary = "This resume would not be filtered out by an enterprise ATS."
-    elif match_rate >= 60:
+    # ATS is PASS if: match_rate >= 60% AND no more than 1 critical missing
+    if match_rate >= 60 and len(missing_critical) <= 1:
         ats_status = "PASS"
-        ats_details.append("Resume parses correctly")
-        ats_details.append("Most keywords present")
-        if missing_critical:
-            ats_details.append(f"Missing {len(missing_critical)} critical term(s)")
-        ats_summary = "This resume should pass most ATS filters but could be stronger."
+        ats_checks.append("Required keywords detected")
+        ats_checks.append("No disqualifying gaps identified")
+        ats_checks.append("Eligible for recruiter review")
+        ats_summary = "This resume passes enterprise ATS screening and would advance to recruiter review."
     else:
-        ats_status = "RISK"
-        ats_details.append("Several required keywords missing")
-        ats_details.append(f"Only {int(match_rate)}% keyword coverage")
-        ats_summary = "This resume may be filtered out. Consider adding missing keywords."
+        ats_status = "FAIL"
+        ats_checks.append(f"Missing {len(missing_critical)} critical keyword(s)")
+        ats_checks.append(f"Keyword coverage: {int(match_rate)}%")
+        ats_summary = "This resume may not pass ATS screening. Add missing critical keywords."
     
-    # ─────────────────────────────────────────────────────────────────────
-    # 3. RECRUITER SEARCH VISIBILITY (HIGH / MEDIUM / LOW)
-    # ─────────────────────────────────────────────────────────────────────
-    searchable_terms = matched_critical[:5]  # Top 5 matched critical terms
-    
-    # Add tier 2 matches
+    # 2. RECRUITER SEARCH VISIBILITY (DISCOVERABLE / LIMITED / LOW)
+    searchable_terms = matched_critical[:5]
     for detail in tier_scores[2]["details"]:
         if detail["match_type"] != "NONE" and len(searchable_terms) < 8:
             searchable_terms.append(detail["skill"])
     
-    if match_rate >= 75:
-        search_visibility = "HIGH"
-        search_summary = "Your resume contains the right titles, skills, and experience for recruiter searches."
-    elif match_rate >= 50:
-        search_visibility = "MEDIUM"
-        search_summary = "You are somewhat discoverable but adding key terms would help."
+    search_matched = total_matched
+    search_total = total_keywords
+    
+    if match_rate >= 90:
+        search_status = "DISCOVERABLE"
+        search_summary = "Recruiters searching for this role are likely to find your resume."
+    elif match_rate >= 60:
+        search_status = "LIMITED"
+        search_summary = "You may appear in some recruiter searches. Adding key terms would help."
     else:
-        search_visibility = "LOW"
+        search_status = "LOW_VISIBILITY"
         search_summary = "Recruiters may have difficulty finding you with current keyword coverage."
     
-    # ─────────────────────────────────────────────────────────────────────
-    # 4. ALIGNMENT SCORE + STRENGTHS + REFINEMENTS
-    # ─────────────────────────────────────────────────────────────────────
+    # 3. ALIGNMENT SCORE (ONLY numeric score - for optimization)
     alignment_strengths = []
-    
     if tier1_matched > 0:
         alignment_strengths.append(f"{tier1_matched} critical skills clearly stated")
     if experience_ratio >= 1.0:
@@ -758,67 +738,88 @@ def generate_evaluation(
     if quality_details.get("strong_verbs_count", 0) >= 5:
         alignment_strengths.append("Strong action verbs present")
     
-    # Build refinements (optional, non-blocking)
+    # Refinements (optional polish, not required)
     alignment_refinements = []
     for skill in weak_matches[:3]:
         alignment_refinements.append({
             "skill": skill,
-            "current": "Mentioned contextually",
-            "suggested": f"Make '{skill}' more explicit with specific examples",
-            "impact": "Slightly higher alignment score",
-            "blocking": "No"
+            "suggested": f"Add 1 short example demonstrating {skill.lower()} impact.",
+            "impact": "Optional polish, not required",
         })
     
-    # ─────────────────────────────────────────────────────────────────────
-    # 5. HUMAN READABILITY (1-5 stars)
-    # ─────────────────────────────────────────────────────────────────────
+    # Alignment label based on score bands
+    if score >= 90:
+        alignment_label = "Excellent"
+    elif score >= 80:
+        alignment_label = "Competitive"
+    elif score >= 65:
+        alignment_label = "Improving"
+    else:
+        alignment_label = "Needs Work"
+    
+    # 4. HUMAN READABILITY (Qualitative only - NO numbers)
     quality_score = _analyze_resume_quality(resume_text) if resume_text else 70
     
-    if quality_score >= 85:
-        stars = 5
-        readability_notes = ["Clear accomplishments", "Strong metrics", "Easy to scan", "Compelling narrative"]
-    elif quality_score >= 70:
-        stars = 4
+    if quality_score >= 80:
+        readability_label = "Strong"
         readability_notes = ["Clear accomplishments", "Metrics included", "Easy to scan"]
-    elif quality_score >= 55:
-        stars = 3
-        readability_notes = ["Readable but could use more metrics", "Consider adding impact statements"]
-    elif quality_score >= 40:
-        stars = 2
-        readability_notes = ["Needs more quantified achievements", "Add specific outcomes"]
+    elif quality_score >= 60:
+        readability_label = "Good"
+        readability_notes = ["Readable format", "Could add more metrics"]
     else:
-        stars = 1
-        readability_notes = ["Significant improvements needed", "Add metrics and clear accomplishments"]
+        readability_label = "Needs Work"
+        readability_notes = ["Add quantified achievements", "Include specific outcomes"]
     
-    # ─────────────────────────────────────────────────────────────────────
-    # 6. FINAL VERDICT
-    # ─────────────────────────────────────────────────────────────────────
-    if score >= 70 and len(missing_critical) == 0:
-        ready_to_submit = True
-        verdict_message = "This resume is ready to submit. Further changes are optional optimizations, not requirements."
-    elif score >= 55 and len(missing_critical) <= 1:
-        ready_to_submit = True
-        verdict_message = "This resume can be submitted. Consider the suggested improvements to strengthen your application."
+    # 5. HIRING READINESS (Derived from ATS + Search + Alignment)
+    # Logic: READY if ATS=PASS AND Search=DISCOVERABLE/LIMITED AND Alignment>=80
+    stop_optimizing = False
+    
+    if ats_status == "PASS" and search_status in ["DISCOVERABLE", "LIMITED"] and score >= 80:
+        hiring_status = "READY"
+        hiring_summary = "You meet all required qualifications and are competitive for this role."
+        hiring_reassurance = "No further changes are required to proceed."
+        stop_optimizing = True
+    elif ats_status == "PASS" and score >= 65:
+        hiring_status = "READY"
+        hiring_summary = "You meet the core requirements for this role."
+        hiring_reassurance = "Optional improvements are available but not required."
+        stop_optimizing = score >= 80
     else:
-        ready_to_submit = False
-        verdict_message = "Address the critical gaps before submitting to maximize your chances."
+        hiring_status = "NEEDS_ATTENTION"
+        hiring_summary = "There are gaps that may affect your application."
+        hiring_reassurance = "Review the suggestions below before submitting."
+    
+    # 6. FINAL VERDICT (Hard stop)
+    ready_to_submit = hiring_status == "READY"
+    
+    if ready_to_submit and stop_optimizing:
+        verdict_message = "This resume is ready to submit. Further changes are optional polish, not requirements."
+    elif ready_to_submit:
+        verdict_message = "This resume can be submitted. Consider applying rather than continuing to optimize."
+    else:
+        verdict_message = "Address the items above before submitting to maximize your chances."
     
     return EvaluationResult(
-        hiring_readiness=hiring_readiness,
-        hiring_readiness_summary=hiring_summary,
+        hiring_status=hiring_status,
+        hiring_summary=hiring_summary,
+        hiring_reassurance=hiring_reassurance,
         ats_status=ats_status,
-        ats_details=ats_details,
+        ats_checks=ats_checks,
         ats_summary=ats_summary,
-        search_visibility=search_visibility,
+        search_status=search_status,
+        search_matched=search_matched,
+        search_total=search_total,
         searchable_terms=searchable_terms,
         search_summary=search_summary,
         alignment_score=score,
+        alignment_label=alignment_label,
         alignment_strengths=alignment_strengths,
         alignment_refinements=alignment_refinements,
-        human_readability_stars=stars,
-        human_readability_notes=readability_notes,
+        readability_label=readability_label,
+        readability_notes=readability_notes,
         ready_to_submit=ready_to_submit,
         verdict_message=verdict_message,
+        stop_optimizing=stop_optimizing,
     )
 
 

@@ -76,38 +76,43 @@ export interface LegacyAnalysisResult {
   summary: string;
 }
 
-// Evaluation data type
+// Gate-based evaluation data type
 export interface EvaluationData {
-  hiring_readiness: 'HIGH' | 'MEDIUM' | 'LOW';
-  hiring_readiness_summary: string;
-  ats_compatibility: {
-    status: 'STRONG' | 'PASS' | 'RISK';
-    details: string[];
+  hiring: {
+    status: 'READY' | 'NEEDS_ATTENTION';
+    summary: string;
+    reassurance: string;
+  };
+  ats: {
+    status: 'PASS' | 'FAIL';
+    checks: string[];
     summary: string;
   };
-  search_visibility: {
-    level: 'HIGH' | 'MEDIUM' | 'LOW';
-    searchable_terms: string[];
+  search: {
+    status: 'DISCOVERABLE' | 'LIMITED' | 'LOW_VISIBILITY';
+    matched: number;
+    total: number;
+    terms: string[];
     summary: string;
   };
   alignment: {
     score: number;
+    label: string;  // "Excellent", "Competitive", "Improving", "Needs Work"
     strengths: string[];
     refinements: Array<{
       skill: string;
-      current: string;
       suggested: string;
       impact: string;
-      blocking: string;
     }>;
   };
-  human_readability: {
-    stars: number;
+  readability: {
+    label: string;  // "Strong", "Good", "Needs Work"
     notes: string[];
   };
   verdict: {
     ready_to_submit: boolean;
     message: string;
+    stop_optimizing: boolean;
   };
 }
 
@@ -361,37 +366,5 @@ interface HybridV2Result {
     total_earned: number;
     total_possible: number;
   };
-  evaluation?: {
-    hiring_readiness: 'HIGH' | 'MEDIUM' | 'LOW';
-    hiring_readiness_summary: string;
-    ats_compatibility: {
-      status: 'STRONG' | 'PASS' | 'RISK';
-      details: string[];
-      summary: string;
-    };
-    search_visibility: {
-      level: 'HIGH' | 'MEDIUM' | 'LOW';
-      searchable_terms: string[];
-      summary: string;
-    };
-    alignment: {
-      score: number;
-      strengths: string[];
-      refinements: Array<{
-        skill: string;
-        current: string;
-        suggested: string;
-        impact: string;
-        blocking: string;
-      }>;
-    };
-    human_readability: {
-      stars: number;
-      notes: string[];
-    };
-    verdict: {
-      ready_to_submit: boolean;
-      message: string;
-    };
-  };
+  evaluation?: EvaluationData;
 }
