@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
-import { ArrowUpCircle } from 'lucide-react'; // Icon for "Go back up"
+import { ArrowUpCircle } from 'lucide-react';
 import AnalysisReport from './AnalysisReport';
+import { EvaluationReport } from './EvaluationReport';
 import type { DisplayAnalysisResult } from '@/types/analysis';
 
 interface ResultsSectionProps {
@@ -15,8 +16,13 @@ export function ResultsSection({ results, onAnalyzeAgain, onEditAndOptimize }: R
   
   return (
     <div id="results" className="space-y-8 pb-12">
-      {/* World-Class Analysis Report */}
-      <AnalysisReport data={results} />
+      {/* New Truthful Evaluation Report */}
+      {results.evaluation && (
+        <EvaluationReport evaluation={results.evaluation} />
+      )}
+      
+      {/* Legacy Analysis Report (fallback if no evaluation) */}
+      {!results.evaluation && <AnalysisReport data={results} />}
 
       {/* Primary Action Bar */}
       <div className="flex flex-col items-center justify-center gap-4 pt-8 border-t border-gray-100">

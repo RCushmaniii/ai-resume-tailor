@@ -76,6 +76,41 @@ export interface LegacyAnalysisResult {
   summary: string;
 }
 
+// Evaluation data type
+export interface EvaluationData {
+  hiring_readiness: 'HIGH' | 'MEDIUM' | 'LOW';
+  hiring_readiness_summary: string;
+  ats_compatibility: {
+    status: 'STRONG' | 'PASS' | 'RISK';
+    details: string[];
+    summary: string;
+  };
+  search_visibility: {
+    level: 'HIGH' | 'MEDIUM' | 'LOW';
+    searchable_terms: string[];
+    summary: string;
+  };
+  alignment: {
+    score: number;
+    strengths: string[];
+    refinements: Array<{
+      skill: string;
+      current: string;
+      suggested: string;
+      impact: string;
+      blocking: string;
+    }>;
+  };
+  human_readability: {
+    stars: number;
+    notes: string[];
+  };
+  verdict: {
+    ready_to_submit: boolean;
+    message: string;
+  };
+}
+
 // Frontend display format (for components)
 export interface DisplayAnalysisResult {
   score: number;
@@ -94,6 +129,7 @@ export interface DisplayAnalysisResult {
     description: string;
   }[];
   summary: string;
+  evaluation?: EvaluationData;
 }
 
 // Transform backend response to frontend format
@@ -208,6 +244,7 @@ export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalys
       },
       suggestions,
       summary: v2Result.summary || 'Analysis completed.',
+      evaluation: v2Result.evaluation,
     };
   }
   
@@ -323,5 +360,38 @@ interface HybridV2Result {
     tier3_possible: number;
     total_earned: number;
     total_possible: number;
+  };
+  evaluation?: {
+    hiring_readiness: 'HIGH' | 'MEDIUM' | 'LOW';
+    hiring_readiness_summary: string;
+    ats_compatibility: {
+      status: 'STRONG' | 'PASS' | 'RISK';
+      details: string[];
+      summary: string;
+    };
+    search_visibility: {
+      level: 'HIGH' | 'MEDIUM' | 'LOW';
+      searchable_terms: string[];
+      summary: string;
+    };
+    alignment: {
+      score: number;
+      strengths: string[];
+      refinements: Array<{
+        skill: string;
+        current: string;
+        suggested: string;
+        impact: string;
+        blocking: string;
+      }>;
+    };
+    human_readability: {
+      stars: number;
+      notes: string[];
+    };
+    verdict: {
+      ready_to_submit: boolean;
+      message: string;
+    };
   };
 }

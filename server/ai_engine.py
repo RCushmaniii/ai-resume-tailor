@@ -22,7 +22,9 @@ import time
 from scoring_engine import (
     calculate_score,
     generate_optimization_plan,
-    transform_to_legacy_format
+    transform_to_legacy_format,
+    generate_evaluation,
+    EvaluationResult
 )
 
 # Modular analyzers
@@ -255,6 +257,40 @@ def analyze_resume(
         )
         
         # ─────────────────────────────────────────────────────────────────
+        # STEP 3.5: Generate Truthful Evaluation
+        # ─────────────────────────────────────────────────────────────────
+        
+        # Build tier_scores dict for evaluation
+        tier_scores = {
+            1: {
+                "total": scoring_result.tier1.total_count,
+                "matched": scoring_result.tier1.matched_count,
+                "details": scoring_result.tier1.match_details,
+            },
+            2: {
+                "total": scoring_result.tier2.total_count,
+                "matched": scoring_result.tier2.matched_count,
+                "details": scoring_result.tier2.match_details,
+            },
+            3: {
+                "total": scoring_result.tier3.total_count,
+                "matched": scoring_result.tier3.matched_count,
+                "details": scoring_result.tier3.match_details,
+            },
+        }
+        
+        evaluation = generate_evaluation(
+            score=scoring_result.score,
+            tier_scores=tier_scores,
+            missing_critical=scoring_result.missing_critical,
+            matched_critical=scoring_result.matched_critical,
+            weak_matches=scoring_result.weak_matches,
+            experience_ratio=scoring_result.experience_ratio,
+            resume_text=resume_text,
+        )
+        logger.info(f"Evaluation: Hiring Readiness={evaluation.hiring_readiness}, ATS={evaluation.ats_status}")
+        
+        # ─────────────────────────────────────────────────────────────────
         # STEP 4: Transform to Frontend Format
         # ─────────────────────────────────────────────────────────────────
         
@@ -344,6 +380,35 @@ def analyze_resume(
             "quality_analysis": include_quality_analysis,
             "interview_prep": include_interview_prep,
             "cover_letter": include_cover_letter,
+        }
+        
+        # Add truthful evaluation data
+        result["evaluation"] = {
+            "hiring_readiness": evaluation.hiring_readiness,
+            "hiring_readiness_summary": evaluation.hiring_readiness_summary,
+            "ats_compatibility": {
+                "status": evaluation.ats_status,
+                "details": evaluation.ats_details,
+                "summary": evaluation.ats_summary,
+            },
+            "search_visibility": {
+                "level": evaluation.search_visibility,
+                "searchable_terms": evaluation.searchable_terms,
+                "summary": evaluation.search_summary,
+            },
+            "alignment": {
+                "score": evaluation.alignment_score,
+                "strengths": evaluation.alignment_strengths,
+                "refinements": evaluation.alignment_refinements,
+            },
+            "human_readability": {
+                "stars": evaluation.human_readability_stars,
+                "notes": evaluation.human_readability_notes,
+            },
+            "verdict": {
+                "ready_to_submit": evaluation.ready_to_submit,
+                "message": evaluation.verdict_message,
+            },
         }
         
         logger.info(f"Analysis completed in {elapsed_time:.2f}s")
