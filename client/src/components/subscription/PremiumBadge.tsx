@@ -6,10 +6,9 @@
  * File: client/src/components/subscription/PremiumBadge.tsx
  */
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import type { ReactElement } from 'react';
 import { useSubscription } from '../../contexts/SubscriptionContext';
-import { SparklesIcon, BoltIcon } from '@heroicons/react/24/solid';
+import { Sparkles, Zap } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -17,6 +16,7 @@ import { SparklesIcon, BoltIcon } from '@heroicons/react/24/solid';
 
 interface BaseComponentProps {
   className?: string;
+  onClick?: () => void;
 }
 
 interface UsageIndicatorProps extends BaseComponentProps {
@@ -30,14 +30,14 @@ interface UsageIndicatorProps extends BaseComponentProps {
 /**
  * PremiumBadge - Small badge showing Pro/Premium status
  */
-export function PremiumBadge({ className = '' }: BaseComponentProps): JSX.Element | null {
+export function PremiumBadge({ className = '' }: BaseComponentProps): ReactElement | null {
   const { tierInfo, isPaid } = useSubscription();
 
   if (!isPaid()) return null;
 
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-medium rounded-full ${className}`}>
-      <SparklesIcon className="w-3 h-3" />
+      <Sparkles className="w-3 h-3" />
       {tierInfo.name}
     </span>
   );
@@ -46,19 +46,19 @@ export function PremiumBadge({ className = '' }: BaseComponentProps): JSX.Elemen
 /**
  * UpgradeBadge - Badge that links to pricing (for free users)
  */
-export function UpgradeBadge({ className = '' }: BaseComponentProps): JSX.Element | null {
+export function UpgradeBadge({ className = '' }: BaseComponentProps): ReactElement | null {
   const { isPaid } = useSubscription();
 
   if (isPaid()) return null;
 
   return (
-    <Link
-      to="/pricing"
+    <a
+      href="/pricing"
       className={`inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 hover:bg-indigo-100 text-gray-600 hover:text-indigo-600 text-xs font-medium rounded-full transition-colors ${className}`}
     >
-      <SparklesIcon className="w-3 h-3" />
+      <Sparkles className="w-3 h-3" />
       Upgrade
-    </Link>
+    </a>
   );
 }
 
@@ -68,7 +68,7 @@ export function UpgradeBadge({ className = '' }: BaseComponentProps): JSX.Elemen
 export function UsageIndicator({ 
   showWhenFull = false, 
   className = '' 
-}: UsageIndicatorProps): JSX.Element | null {
+}: UsageIndicatorProps): ReactElement | null {
   const { usage, isPaid } = useSubscription();
 
   const remaining = usage.analysesLimit - usage.analysesUsed;
@@ -91,7 +91,7 @@ export function UsageIndicator({
     <div className={className}>
       <div className="flex items-center justify-between text-xs mb-1">
         <span className="text-gray-600">
-          <BoltIcon className="w-3 h-3 inline mr-1" />
+          <Zap className="w-3 h-3 inline mr-1" />
           Analyses
         </span>
         <span className={`font-medium px-1.5 py-0.5 rounded ${colorClass}`}>
@@ -107,12 +107,12 @@ export function UsageIndicator({
       </div>
 
       {!isPaid() && remaining <= 5 && (
-        <Link
-          to="/pricing"
+        <a
+          href="/pricing"
           className="text-xs text-indigo-600 hover:text-indigo-700 mt-1 block"
         >
           Get more →
-        </Link>
+        </a>
       )}
     </div>
   );
@@ -121,7 +121,7 @@ export function UsageIndicator({
 /**
  * UsageBadge - Compact badge showing usage
  */
-export function UsageBadge({ className = '' }: BaseComponentProps): JSX.Element {
+export function UsageBadge({ className = '' }: BaseComponentProps): ReactElement {
   const { usage } = useSubscription();
   const remaining = usage.analysesLimit - usage.analysesUsed;
 
@@ -134,7 +134,7 @@ export function UsageBadge({ className = '' }: BaseComponentProps): JSX.Element 
 
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${colorClass} ${className}`}>
-      <BoltIcon className="w-3 h-3" />
+      <Zap className="w-3 h-3" />
       {remaining} analyses left
     </span>
   );
@@ -143,7 +143,7 @@ export function UsageBadge({ className = '' }: BaseComponentProps): JSX.Element 
 /**
  * SubscriptionStatus - Full status display for settings/profile
  */
-export function SubscriptionStatus({ className = '' }: BaseComponentProps): JSX.Element {
+export function SubscriptionStatus({ className = '' }: BaseComponentProps): ReactElement {
   const { tierInfo, usage, subscription, isPaid } = useSubscription();
 
   return (
@@ -158,17 +158,17 @@ export function SubscriptionStatus({ className = '' }: BaseComponentProps): JSX.
         
         {isPaid() ? (
           <span className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-medium rounded-full">
-            <SparklesIcon className="w-4 h-4" />
+            <Sparkles className="w-4 h-4" />
             {tierInfo.name}
           </span>
         ) : (
-          <Link
-            to="/pricing"
+          <a
+            href="/pricing"
             className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
           >
-            <SparklesIcon className="w-4 h-4" />
+            <Sparkles className="w-4 h-4" />
             Upgrade
-          </Link>
+          </a>
         )}
       </div>
 
@@ -197,12 +197,12 @@ export function SubscriptionStatus({ className = '' }: BaseComponentProps): JSX.
 
       {isPaid() && (
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <Link
-            to="/settings/billing"
+          <a
+            href="/settings/billing"
             className="text-sm text-indigo-600 hover:text-indigo-700"
           >
             Manage subscription →
-          </Link>
+          </a>
         </div>
       )}
     </div>

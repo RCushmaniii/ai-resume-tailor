@@ -10,17 +10,16 @@
  * File: client/src/components/subscription/UpgradeBanner.tsx
  */
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import type { ReactElement } from 'react';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import {
-  ExclamationTriangleIcon,
-  SparklesIcon,
-  CheckCircleIcon,
-  XMarkIcon,
-  ArrowRightIcon,
-  BoltIcon,
-} from '@heroicons/react/24/outline';
+  AlertTriangle,
+  Sparkles,
+  CheckCircle,
+  X,
+  ArrowRight,
+  Zap,
+} from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -69,7 +68,7 @@ interface BannerConfig {
 export function CreditExhaustedBanner({ 
   onDismiss, 
   className = '' 
-}: BannerBaseProps): JSX.Element {
+}: BannerBaseProps): ReactElement {
   const { tier, TIERS } = useSubscription();
   const isGuest = tier === TIERS.GUEST;
 
@@ -77,7 +76,7 @@ export function CreditExhaustedBanner({
     <div className={`bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 ${className}`}>
       <div className="flex items-start gap-3">
         <div className="p-2 bg-amber-100 rounded-full">
-          <ExclamationTriangleIcon className="w-5 h-5 text-amber-600" />
+          <AlertTriangle className="w-5 h-5 text-amber-600" />
         </div>
         
         <div className="flex-1">
@@ -93,20 +92,20 @@ export function CreditExhaustedBanner({
           
           <div className="flex items-center gap-3 mt-3">
             {isGuest && (
-              <Link
-                to="/signup"
+              <a
+                href="/signup"
                 className="text-sm font-medium text-amber-700 hover:text-amber-800"
               >
                 Create Free Account
-              </Link>
+              </a>
             )}
-            <Link
-              to="/pricing"
+            <a
+              href="/pricing"
               className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
             >
-              <SparklesIcon className="w-4 h-4" />
+              <Sparkles className="w-4 h-4" />
               Upgrade to Pro
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -115,7 +114,7 @@ export function CreditExhaustedBanner({
             onClick={onDismiss}
             className="p-1 text-gray-400 hover:text-gray-600"
           >
-            <XMarkIcon className="w-5 h-5" />
+            <X className="w-5 h-5" />
           </button>
         )}
       </div>
@@ -130,29 +129,29 @@ export function LowCreditsBanner({
   remaining, 
   onDismiss, 
   className = '' 
-}: LowCreditsBannerProps): JSX.Element | null {
+}: LowCreditsBannerProps): ReactElement | null {
   if (remaining > 2) return null;
 
   return (
     <div className={`bg-blue-50 border border-blue-200 rounded-lg p-3 ${className}`}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <BoltIcon className="w-5 h-5 text-blue-600" />
+          <Zap className="w-5 h-5 text-blue-600" />
           <p className="text-sm text-blue-800">
             <span className="font-medium">{remaining} {remaining === 1 ? 'analysis' : 'analyses'}</span> remaining
           </p>
         </div>
         
-        <Link
-          to="/pricing"
+        <a
+          href="/pricing"
           className="text-sm font-medium text-blue-700 hover:text-blue-800 flex items-center gap-1"
         >
-          Get more <ArrowRightIcon className="w-3 h-3" />
-        </Link>
+          Get more <ArrowRight className="w-3 h-3" />
+        </a>
 
         {onDismiss && (
           <button onClick={onDismiss} className="p-1 text-blue-400 hover:text-blue-600">
-            <XMarkIcon className="w-4 h-4" />
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -167,12 +166,12 @@ export function UpgradeSuccessBanner({
   planName = 'Pro', 
   onDismiss, 
   className = '' 
-}: UpgradeSuccessBannerProps): JSX.Element {
+}: UpgradeSuccessBannerProps): ReactElement {
   return (
     <div className={`bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 ${className}`}>
       <div className="flex items-start gap-3">
         <div className="p-2 bg-green-100 rounded-full">
-          <CheckCircleIcon className="w-5 h-5 text-green-600" />
+          <CheckCircle className="w-5 h-5 text-green-600" />
         </div>
         
         <div className="flex-1">
@@ -189,7 +188,7 @@ export function UpgradeSuccessBanner({
             onClick={onDismiss}
             className="p-1 text-gray-400 hover:text-gray-600"
           >
-            <XMarkIcon className="w-5 h-5" />
+            <X className="w-5 h-5" />
           </button>
         )}
       </div>
@@ -200,7 +199,7 @@ export function UpgradeSuccessBanner({
 /**
  * ProBadgeBanner - Subtle banner showing Pro benefits
  */
-export function ProBadgeBanner({ className = '' }: { className?: string }): JSX.Element | null {
+export function ProBadgeBanner({ className = '' }: { className?: string }): ReactElement | null {
   const { isPaid } = useSubscription();
 
   if (isPaid()) return null;
@@ -209,7 +208,7 @@ export function ProBadgeBanner({ className = '' }: { className?: string }): JSX.
     <div className={`bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-4 text-white ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <SparklesIcon className="w-6 h-6" />
+          <Sparkles className="w-6 h-6" />
           <div>
             <p className="font-medium">Unlock Pro Features</p>
             <p className="text-sm text-indigo-100">
@@ -218,12 +217,12 @@ export function ProBadgeBanner({ className = '' }: { className?: string }): JSX.
           </div>
         </div>
         
-        <Link
-          to="/pricing"
+        <a
+          href="/pricing"
           className="flex-shrink-0 px-4 py-2 bg-white text-indigo-600 text-sm font-medium rounded-lg hover:bg-indigo-50 transition-colors"
         >
           Upgrade Now
-        </Link>
+        </a>
       </div>
     </div>
   );
@@ -235,7 +234,7 @@ export function ProBadgeBanner({ className = '' }: { className?: string }): JSX.
 export function ContextualUpgradeBanner({ 
   score, 
   className = '' 
-}: ContextualUpgradeBannerProps): JSX.Element | null {
+}: ContextualUpgradeBannerProps): ReactElement | null {
   const { isPaid } = useSubscription();
 
   if (isPaid()) return null;
@@ -288,20 +287,20 @@ export function ContextualUpgradeBanner({
     <div className={`bg-gradient-to-r ${config.gradient} ${config.border} border rounded-lg p-4 ${className}`}>
       <div className="flex items-start gap-3">
         <div className={`p-2 ${config.iconBg} rounded-full`}>
-          <SparklesIcon className={`w-5 h-5 ${config.iconColor}`} />
+          <Sparkles className={`w-5 h-5 ${config.iconColor}`} />
         </div>
         
         <div className="flex-1">
           <h3 className="font-semibold text-gray-900">{config.headline}</h3>
           <p className="text-sm text-gray-600 mt-1">{config.message}</p>
           
-          <Link
-            to="/pricing"
+          <a
+            href="/pricing"
             className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
           >
-            <SparklesIcon className="w-4 h-4" />
+            <Sparkles className="w-4 h-4" />
             {config.cta}
-          </Link>
+          </a>
         </div>
       </div>
     </div>
@@ -314,7 +313,7 @@ export function ContextualUpgradeBanner({
 export function AutoUpgradeBanner({ 
   score, 
   className = '' 
-}: AutoUpgradeBannerProps): JSX.Element | null {
+}: AutoUpgradeBannerProps): ReactElement | null {
   const { hasAnalysesRemaining, getAnalysesRemaining, isPaid } = useSubscription();
   
   if (isPaid()) return null;

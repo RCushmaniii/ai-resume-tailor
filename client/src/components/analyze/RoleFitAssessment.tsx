@@ -13,23 +13,22 @@
  * File: client/src/components/analyze/RoleFitAssessment.tsx
  */
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import type { ReactElement } from 'react';
+import { useState } from 'react';
 import {
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ArrowTrendingUpIcon,
-  BriefcaseIcon,
-  SparklesIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  LockClosedIcon,
-  ArrowRightIcon,
-  LightBulbIcon,
-  ShieldExclamationIcon,
-} from '@heroicons/react/24/outline';
-import { CheckIcon } from '@heroicons/react/24/solid';
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  TrendingUp,
+  Briefcase,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Lock,
+  ArrowRight,
+  Lightbulb,
+  ShieldAlert,
+} from 'lucide-react';
 import { useFeatureAccess } from '../../contexts/SubscriptionContext';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -88,7 +87,7 @@ interface RoleFitAssessmentProps {
 // ═══════════════════════════════════════════════════════════════════════════
 
 const VERDICT_CONFIG: Record<Verdict, {
-  icon: typeof CheckCircleIcon;
+  icon: typeof CheckCircle;
   bgGradient: string;
   borderColor: string;
   iconBg: string;
@@ -96,7 +95,7 @@ const VERDICT_CONFIG: Record<Verdict, {
   textColor: string;
 }> = {
   strong_fit: {
-    icon: CheckCircleIcon,
+    icon: CheckCircle,
     bgGradient: 'from-emerald-50 to-green-50',
     borderColor: 'border-emerald-200',
     iconBg: 'bg-emerald-100',
@@ -104,7 +103,7 @@ const VERDICT_CONFIG: Record<Verdict, {
     textColor: 'text-emerald-800',
   },
   moderate_fit: {
-    icon: ArrowTrendingUpIcon,
+    icon: TrendingUp,
     bgGradient: 'from-blue-50 to-indigo-50',
     borderColor: 'border-blue-200',
     iconBg: 'bg-blue-100',
@@ -112,7 +111,7 @@ const VERDICT_CONFIG: Record<Verdict, {
     textColor: 'text-blue-800',
   },
   stretch_role: {
-    icon: ExclamationTriangleIcon,
+    icon: AlertTriangle,
     bgGradient: 'from-amber-50 to-orange-50',
     borderColor: 'border-amber-200',
     iconBg: 'bg-amber-100',
@@ -120,7 +119,7 @@ const VERDICT_CONFIG: Record<Verdict, {
     textColor: 'text-amber-800',
   },
   role_mismatch: {
-    icon: ShieldExclamationIcon,
+    icon: ShieldAlert,
     bgGradient: 'from-red-50 to-orange-50',
     borderColor: 'border-red-200',
     iconBg: 'bg-red-100',
@@ -149,7 +148,7 @@ const GAP_CATEGORY_LABELS: Record<GapCategory, string> = {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function RoleFitAssessment({ data, jobTitle, className = '' }: RoleFitAssessmentProps): JSX.Element | null {
+export function RoleFitAssessment({ data, jobTitle, className = '' }: RoleFitAssessmentProps): ReactElement | null {
   const [showGapDetails, setShowGapDetails] = useState(false);
   const { hasAccess } = useFeatureAccess('fullOptimizationPlan');
   
@@ -201,7 +200,7 @@ export function RoleFitAssessment({ data, jobTitle, className = '' }: RoleFitAss
               
               {data.dignity_statement && (
                 <div className="flex items-start gap-2 mt-3 pt-3 border-t border-red-100">
-                  <LightBulbIcon className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-gray-600 italic">
                     {data.dignity_statement}
                   </p>
@@ -223,9 +222,9 @@ export function RoleFitAssessment({ data, jobTitle, className = '' }: RoleFitAss
                 {data.expressive_gap_count > 0 && ` • ${data.expressive_gap_count} fixable with rewording`}
               </span>
               {showGapDetails ? (
-                <ChevronUpIcon className="w-5 h-5" />
+                <ChevronUp className="w-5 h-5" />
               ) : (
-                <ChevronDownIcon className="w-5 h-5" />
+                <ChevronDown className="w-5 h-5" />
               )}
             </button>
           </div>
@@ -259,11 +258,11 @@ interface StructuralGapListProps {
   gaps: StructuralGap[];
 }
 
-function StructuralGapList({ gaps }: StructuralGapListProps): JSX.Element {
+function StructuralGapList({ gaps }: StructuralGapListProps): ReactElement {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6">
       <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <XCircleIcon className="w-5 h-5 text-red-500" />
+        <XCircle className="w-5 h-5 text-red-500" />
         Gaps That Cannot Be Fixed With Rewording
       </h4>
       
@@ -309,7 +308,7 @@ function StructuralGapList({ gaps }: StructuralGapListProps): JSX.Element {
       </div>
       
       <p className="text-xs text-gray-500 mt-4 flex items-center gap-1">
-        <LightBulbIcon className="w-4 h-4" />
+        <Lightbulb className="w-4 h-4" />
         These gaps require actual experience to address, not resume optimization.
       </p>
     </div>
@@ -334,14 +333,14 @@ function EligibleRolesTeaser({
   resumeLevel,
   targetRole,
   hasFullAccess,
-}: EligibleRolesTeaserProps): JSX.Element {
+}: EligibleRolesTeaserProps): ReactElement {
   return (
     <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl overflow-hidden">
       {/* Header */}
       <div className="p-6 pb-4">
         <div className="flex items-start gap-4">
           <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white">
-            <BriefcaseIcon className="w-6 h-6" />
+            <Briefcase className="w-6 h-6" />
           </div>
           
           <div>
@@ -382,7 +381,7 @@ function EligibleRolesTeaser({
                 <div className="h-12 bg-gray-100 rounded animate-pulse" />
               </div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <LockClosedIcon className="w-5 h-5 text-gray-400" />
+                <Lock className="w-5 h-5 text-gray-400" />
               </div>
             </div>
           )}
@@ -392,8 +391,8 @@ function EligibleRolesTeaser({
       {/* Upsell CTA */}
       {!hasFullAccess && totalCount > 2 && (
         <div className="px-6 pb-6">
-          <Link
-            to="/pricing"
+          <a
+            href="/pricing"
             className="flex items-center justify-between w-full p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity"
           >
             <div>
@@ -405,10 +404,10 @@ function EligibleRolesTeaser({
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <SparklesIcon className="w-5 h-5" />
-              <ArrowRightIcon className="w-5 h-5" />
+              <Sparkles className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5" />
             </div>
-          </Link>
+          </a>
           
           <p className="text-xs text-center text-gray-500 mt-3">
             Unlock with Pro • Includes recommended search terms
@@ -421,7 +420,7 @@ function EligibleRolesTeaser({
         <div className="px-6 pb-6">
           <div className="bg-white rounded-lg p-4 border border-indigo-100">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <ArrowTrendingUpIcon className="w-5 h-5 text-indigo-500" />
+              <TrendingUp className="w-5 h-5 text-indigo-500" />
               <span>
                 <strong className="text-gray-900">Career Path:</strong> These roles position you for 
                 progression toward {targetRole} in 1-2 years.
@@ -443,7 +442,7 @@ interface RoleFitBadgeProps {
   onClick?: () => void;
 }
 
-export function RoleFitBadge({ verdict, onClick }: RoleFitBadgeProps): JSX.Element {
+export function RoleFitBadge({ verdict, onClick }: RoleFitBadgeProps): ReactElement {
   const config = VERDICT_CONFIG[verdict];
   const Icon = config.icon;
   

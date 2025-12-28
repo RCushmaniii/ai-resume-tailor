@@ -71,3 +71,6 @@ export {
   UsageBadge,
   SubscriptionStatus,
 } from './PremiumBadge';
+
+// Modals
+export { UpgradeRequiredModal } from './UpgradeRequiredModal';

@@ -10,6 +10,7 @@ import logoNoTextImage from '@/assets/images/ai resume tailor notext logo .jpg';
 import logoImageES from '@/assets/images/ai resume tailor logo es.jpg';
 import { useSignInPrompt } from '@/contexts/SignInPromptContext';
 import { AuthDialog } from '@/components/auth/AuthDialog';
+import { UsageBadge } from '@/components/subscription/PremiumBadge';
 
 type HeaderProps = {
   navigate: (page: string) => void;
@@ -114,20 +115,24 @@ export function Header({ navigate }: HeaderProps) {
             </a>
           </div>
 
-          {/* Desktop Branding - Hidden on mobile */}
-          <div className={`hidden lg:flex items-center transition-all duration-300 ${isScrolled ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
+          {/* Desktop Branding - Hidden on tablet and mobile, only show on lg+ */}
+          <div className={`hidden xl:flex items-center transition-all duration-300 ${isScrolled ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
             <span className="text-sm text-slate-500 dark:text-slate-400">{t('header.tagline')}</span>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:space-x-6">
+          <div className="hidden md:flex md:items-center md:space-x-4 lg:space-x-6">
             <Button onClick={() => handleNavClick('analyze')} className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
               {t('header.nav.analyze')}
             </Button>
             <a href="/methodology" onClick={(e) => { e.preventDefault(); handleNavClick('methodology'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('header.nav.forRecruiters')}</a>
             <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('header.nav.docs')}</a>
 
-            <LanguageToggle variant="ghost" />
+            {/* Group: Usage Badge + Language Toggle (closer together) */}
+            <div className="flex items-center gap-2 border-l border-gray-200 pl-4">
+              <UsageBadge />
+              <LanguageToggle variant="ghost" />
+            </div>
 
             {authEnabled && showSignIn ? (
               user ? (

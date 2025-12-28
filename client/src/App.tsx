@@ -6,6 +6,8 @@ import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { Landing } from './pages/Landing';
 import { SignInPromptProvider } from './contexts/SignInPromptContext';
+import { SubscriptionProvider } from './contexts/SubscriptionContext';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Lazy load pages for code splitting
 const DocsPage = lazy(() => import('./pages/DocsPage').then(m => ({ default: m.DocsPage })));
@@ -18,9 +20,11 @@ const CookiesPolicyPage = lazy(() => import('./pages/CookiesPolicyPage').then(m 
 const TestApiPage = lazy(() => import('./pages/TestApiPage'));
 const Analyze = lazy(() => import('./pages/Analyze').then(m => ({ default: m.Analyze })));
 const MethodologyPage = lazy(() => import('./pages/MethodologyPage'));
+const SignupPage = lazy(() => import('./pages/SignupPage').then(m => ({ default: m.SignupPage })));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
 
 // Define the possible pages in our application
-export type Page = 'home' | 'components' | 'docs' | 'examples' | 'privacy' | 'terms' | 'cookie' | 'test-api' | 'analyze' | 'methodology' | 'not-found';
+export type Page = 'home' | 'components' | 'docs' | 'examples' | 'privacy' | 'terms' | 'cookie' | 'test-api' | 'analyze' | 'methodology' | 'signup' | 'login' | 'not-found';
 
 function App() {
   const { t } = useTranslation();
@@ -39,6 +43,8 @@ function App() {
       'cookie',
       'analyze',
       'methodology',
+      'signup',
+      'login',
       ...(import.meta.env.DEV ? (['components', 'examples', 'test-api'] as const) : []),
     ];
     const isValidPage = validPages.includes(page);
@@ -125,6 +131,10 @@ function App() {
         return <Analyze />;
       case 'methodology':
         return <MethodologyPage />;
+      case 'signup':
+        return <SignupPage navigate={handleNavClick} />;
+      case 'login':
+        return <LoginPage navigate={handleNavClick} />;
       case 'not-found':
         return <NotFoundPage />;
       default:
@@ -133,8 +143,9 @@ function App() {
   };
 
   return (
-    <SignInPromptProvider>
-      <div className="flex flex-col min-h-screen bg-white">
+    <SubscriptionProvider>
+      <SignInPromptProvider>
+        <div className="flex flex-col min-h-screen bg-white">
         <Toaster position="top-center" richColors closeButton />
         <Header navigate={handleNavClick} />
         <main className={currentPage === 'home' ? 'flex-grow' : 'flex-grow container mx-auto px-4 py-8'}>
@@ -149,9 +160,11 @@ function App() {
             {renderCurrentPage()}
           </Suspense>
         </main>
-        <Footer navigate={handleNavClick} />
-      </div>
-    </SignInPromptProvider>
+          <Footer navigate={handleNavClick} />
+          <SpeedInsights />
+        </div>
+      </SignInPromptProvider>
+    </SubscriptionProvider>
   );
 }
 

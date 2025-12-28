@@ -9,29 +9,12 @@ import type { DisplayAnalysisResult } from '@/types/analysis';
 import { transformAnalysisResult, type AnalysisResult } from '@/types/analysis';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
 import { useAuth } from '@/lib/useAuth';
+import { useAnalysisLimit } from '@/hooks/useAnalysisLimit';
+import { RegistrationGateModal } from '@/components/auth/RegistrationGateModal';
+import { UpgradeRequiredModal } from '@/components/subscription/UpgradeRequiredModal';
+import { LowCreditsBanner } from '@/components/subscription/UpgradeBanner';
 
 const GUEST_CREDITS_TOTAL = Number(import.meta.env.VITE_GUEST_CREDITS_TOTAL ?? 3);
-const GUEST_CREDITS_STORAGE_KEY = 'guest_analyses_used';
-
-function getGuestAnalysesUsed(): number {
-  try {
-    const raw = localStorage.getItem(GUEST_CREDITS_STORAGE_KEY);
-    const parsed = Number(raw ?? 0);
-    return Number.isFinite(parsed) ? parsed : 0;
-  } catch {
-    return 0;
-  }
-}
-
-function incrementGuestAnalysesUsed(): number {
-  const next = getGuestAnalysesUsed() + 1;
-  try {
-    localStorage.setItem(GUEST_CREDITS_STORAGE_KEY, String(next));
-  } catch {
-    // Ignore storage errors; gating is best-effort until server-side enforcement exists.
-  }
-  return next;
-}
 
 export function Analyze() {
   const { t } = useTranslation();
@@ -41,7 +24,10 @@ export function Analyze() {
   const [results, setResults] = useState<DisplayAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const { user } = useAuth();
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  useAuth(); // Keep for future auth state needs
+  const { checkCanAnalyze, incrementUsage } = useAnalysisLimit();
 
   const handleAnalyzeAgain = () => {
     // Clear everything - results, errors, AND input fields
@@ -57,29 +43,18 @@ export function Analyze() {
     setResults(null);
     setError(null);
     
-    if (!user && !isEditing) {
-      const used = getGuestAnalysesUsed();
-      if (used >= GUEST_CREDITS_TOTAL) {
-        const message = t('analyze.messages.freeLimitReached', { total: GUEST_CREDITS_TOTAL });
-        toast.error(t('analyze.toasts.freeLimitReachedTitle'), {
-          description: message,
-          duration: 10000,
-          action: {
-            label: 'Reset (Dev)',
-            onClick: async () => {
-              try {
-                const API_URL = import.meta.env.VITE_API_URL || '/api';
-                await fetch(`${API_URL}/dev/reset`, { method: 'POST' });
-                localStorage.removeItem('guest_analyses_used');
-                toast.success('Counter reset! Refreshing...');
-                setTimeout(() => window.location.reload(), 500);
-              } catch (e) {
-                console.error('Reset failed:', e);
-              }
-            }
-          }
-        });
-        setError(message);
+    // Check analysis limits using the new hook
+    const limitCheck = checkCanAnalyze();
+    
+    if (!limitCheck.allowed) {
+      if (limitCheck.reason === 'guest_limit') {
+        // Show registration modal for guests
+        setShowRegistrationModal(true);
+        return;
+      }
+      if (limitCheck.reason === 'free_limit') {
+        // Show upgrade modal for free users
+        setShowUpgradeModal(true);
         return;
       }
     }
@@ -145,10 +120,8 @@ export function Analyze() {
       
       setResults(displayResult);
 
-      // Increment guest counter silently (no toast notification)
-      if (!user) {
-        incrementGuestAnalysesUsed();
-      }
+      // Increment usage counter (works for both guest and registered users)
+      incrementUsage();
       
       // Smooth scroll to results with offset for header
       setTimeout(() => {
@@ -282,6 +255,15 @@ export function Analyze() {
       {/* Loading State */}
       {isAnalyzing && <LoadingState />}
 
+      {/* Low Credits Warning */}
+      {(() => {
+        const { remaining } = checkCanAnalyze();
+        if (remaining <= 2 && remaining > 0 && !results) {
+          return <LowCreditsBanner remaining={remaining} />;
+        }
+        return null;
+      })()}
+
       {/* Results Section */}
       {results && (
         <ResultsSection
@@ -291,6 +273,20 @@ export function Analyze() {
         />
       )}
       </div>
+
+      {/* Registration Gate Modal (Guest -> Free) */}
+      <RegistrationGateModal
+        isOpen={showRegistrationModal}
+        onClose={() => setShowRegistrationModal(false)}
+        allowDismiss={false}
+      />
+
+      {/* Upgrade Required Modal (Free -> Pro) */}
+      <UpgradeRequiredModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        analysesUsed={checkCanAnalyze().used}
+      />
     </>
   );
 }

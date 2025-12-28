@@ -31,7 +31,7 @@ server/analyzers/role_fit.py     # Role fit analyzer
 ### Frontend
 
 ```
-client/src/components/analysis/
+client/src/components/analyze/
 ├── RoleFitAssessment.tsx        # Main assessment display
 ├── EligibleRoles.tsx            # Pro feature - full roles list
 └── index.ts                     # Exports
@@ -92,7 +92,7 @@ def get_eligible_roles():
 ### In Results Page
 
 ```tsx
-import { RoleFitAssessment, RoleFitBadge } from '@/components/analysis';
+import { RoleFitAssessment, RoleFitBadge } from '@/components/analyze';
 
 function ResultsPage({ data }) {
   return (
@@ -112,7 +112,7 @@ function ResultsPage({ data }) {
 ### For Pro Users - Full Eligible Roles
 
 ```tsx
-import { EligibleRoles } from '@/components/analysis';
+import { EligibleRoles } from '@/components/analyze';
 import { useFeatureAccess } from '@/contexts/SubscriptionContext';
 
 function EligibleRolesSection({ analysisId }) {

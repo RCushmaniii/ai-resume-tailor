@@ -7,13 +7,12 @@
  * File: client/src/components/subscription/FeatureGate.tsx
  */
 
-import React, { ReactNode } from 'react';
+import type { ReactNode, ReactElement } from 'react';
 import { 
   useFeatureAccess, 
   useSubscription, 
-  FeatureType, 
-  TierType 
 } from '../../contexts/SubscriptionContext';
+import type { FeatureType, TierType } from '../../contexts/SubscriptionContext';
 import { LockedFeature } from './LockedFeature';
 import { UpgradeCard } from './UpgradeCard';
 
@@ -75,7 +74,7 @@ export function FeatureGate({
   behavior = 'hide',
   lockProps = {},
   cardFeature,
-}: FeatureGateProps): JSX.Element | null {
+}: FeatureGateProps): ReactElement | null {
   const { hasAccess } = useFeatureAccess(feature);
 
   if (hasAccess) {
@@ -107,7 +106,7 @@ export function FeatureGate({
 /**
  * PaidOnlyGate - Only show content to paid users
  */
-export function PaidOnlyGate({ children, fallback = null }: SimpleGateProps): JSX.Element | null {
+export function PaidOnlyGate({ children, fallback = null }: SimpleGateProps): ReactElement | null {
   const { isPaid } = useSubscription();
 
   if (isPaid()) {
@@ -120,7 +119,7 @@ export function PaidOnlyGate({ children, fallback = null }: SimpleGateProps): JS
 /**
  * FreeOnlyGate - Only show content to free users (for upgrade prompts)
  */
-export function FreeOnlyGate({ children }: { children: ReactNode }): JSX.Element | null {
+export function FreeOnlyGate({ children }: { children: ReactNode }): ReactElement | null {
   const { isPaid } = useSubscription();
 
   if (!isPaid()) {
@@ -133,7 +132,7 @@ export function FreeOnlyGate({ children }: { children: ReactNode }): JSX.Element
 /**
  * TierGate - Show content only for specific tiers
  */
-export function TierGate({ tiers, children, fallback = null }: TierGateProps): JSX.Element | null {
+export function TierGate({ tiers, children, fallback = null }: TierGateProps): ReactElement | null {
   const { tier } = useSubscription();
 
   if (tiers.includes(tier)) {
@@ -146,7 +145,7 @@ export function TierGate({ tiers, children, fallback = null }: TierGateProps): J
 /**
  * AnalysisGate - Check if user has analyses remaining
  */
-export function AnalysisGate({ children, fallback = null }: AnalysisGateProps): JSX.Element | null {
+export function AnalysisGate({ children, fallback = null }: AnalysisGateProps): ReactElement | null {
   const { hasAnalysesRemaining } = useSubscription();
 
   if (hasAnalysesRemaining()) {
@@ -165,7 +164,7 @@ export function PreviewGate<T>({
   renderItem,
   renderLocked,
   feature = 'fullOptimizationPlan',
-}: PreviewGateProps<T>): JSX.Element {
+}: PreviewGateProps<T>): ReactElement {
   const { hasAccess } = useFeatureAccess(feature);
 
   if (hasAccess) {

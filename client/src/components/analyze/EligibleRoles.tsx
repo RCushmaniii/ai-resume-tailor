@@ -14,19 +14,20 @@
  * File: client/src/components/analyze/EligibleRoles.tsx
  */
 
-import React, { useState } from 'react';
+import type { ReactElement } from 'react';
+import { useState, Fragment } from 'react';
 import {
-  BriefcaseIcon,
-  ArrowTrendingUpIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  MagnifyingGlassIcon,
-  ClipboardDocumentIcon,
-  SparklesIcon,
-  AcademicCapIcon,
-} from '@heroicons/react/24/outline';
-import { CheckIcon } from '@heroicons/react/24/solid';
+  Briefcase,
+  TrendingUp,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  Search,
+  Clipboard,
+  Sparkles,
+  GraduationCap,
+  Check,
+} from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -85,7 +86,7 @@ const LEVEL_COLORS: Record<string, { bg: string; text: string; border: string }>
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function EligibleRoles({ data, targetJobTitle, className = '' }: EligibleRolesProps): JSX.Element {
+export function EligibleRoles({ data, targetJobTitle, className = '' }: EligibleRolesProps): ReactElement {
   const [expandedRole, setExpandedRole] = useState<number | null>(0);
   const [copiedTerms, setCopiedTerms] = useState(false);
 
@@ -102,7 +103,7 @@ export function EligibleRoles({ data, targetJobTitle, className = '' }: Eligible
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg text-white">
-          <BriefcaseIcon className="w-5 h-5" />
+          <Briefcase className="w-5 h-5" />
         </div>
         <div>
           <h2 className="text-xl font-bold text-gray-900">Roles You're Qualified For</h2>
@@ -111,7 +112,7 @@ export function EligibleRoles({ data, targetJobTitle, className = '' }: Eligible
           </p>
         </div>
         <span className="ml-auto px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full flex items-center gap-1">
-          <SparklesIcon className="w-3 h-3" />
+          <Sparkles className="w-3 h-3" />
           Pro Feature
         </span>
       </div>
@@ -136,14 +137,14 @@ export function EligibleRoles({ data, targetJobTitle, className = '' }: Eligible
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <MagnifyingGlassIcon className="w-5 h-5 text-slate-600" />
+            <Search className="w-5 h-5 text-slate-600" />
             <h3 className="font-semibold text-gray-900">Recommended Job Search Terms</h3>
           </div>
           <button
             onClick={copySearchTerms}
             className="flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700"
           >
-            <ClipboardDocumentIcon className="w-4 h-4" />
+            <Clipboard className="w-4 h-4" />
             {copiedTerms ? 'Copied!' : 'Copy All'}
           </button>
         </div>
@@ -184,14 +185,14 @@ interface CareerLevelVisualProps {
   targetRole: string;
 }
 
-function CareerLevelVisual({ assessment, targetRole }: CareerLevelVisualProps): JSX.Element {
+function CareerLevelVisual({ assessment }: CareerLevelVisualProps): ReactElement {
   const currentIdx = LEVEL_ORDER.indexOf(assessment.current_level);
   const targetIdx = LEVEL_ORDER.indexOf(assessment.target_level);
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5">
       <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <AcademicCapIcon className="w-5 h-5 text-indigo-600" />
+        <GraduationCap className="w-5 h-5 text-indigo-600" />
         Career Level Assessment
       </h3>
       
@@ -204,7 +205,7 @@ function CareerLevelVisual({ assessment, targetRole }: CareerLevelVisualProps): 
           const isBetween = index > currentIdx && index < targetIdx;
           
           return (
-            <React.Fragment key={level}>
+            <Fragment key={level}>
               {/* Level Dot */}
               <div className="flex flex-col items-center">
                 <div
@@ -219,9 +220,9 @@ function CareerLevelVisual({ assessment, targetRole }: CareerLevelVisualProps): 
                   }`}
                 >
                   {isCurrent ? (
-                    <CheckIcon className="w-5 h-5" />
+                    <Check className="w-5 h-5" />
                   ) : isTarget ? (
-                    <ArrowTrendingUpIcon className="w-5 h-5" />
+                    <TrendingUp className="w-5 h-5" />
                   ) : (
                     <span className="text-xs font-medium">{index + 1}</span>
                   )}
@@ -249,7 +250,7 @@ function CareerLevelVisual({ assessment, targetRole }: CareerLevelVisualProps): 
                     : 'bg-gray-200'
                 }`} />
               )}
-            </React.Fragment>
+            </Fragment>
           );
         })}
       </div>
@@ -275,7 +276,7 @@ interface RoleCardProps {
   index: number;
 }
 
-function RoleCard({ role, isExpanded, onToggle, index }: RoleCardProps): JSX.Element {
+function RoleCard({ role, isExpanded, onToggle, index }: RoleCardProps): ReactElement {
   const levelColor = LEVEL_COLORS[role.experience_level] || LEVEL_COLORS.mid;
 
   return (
@@ -301,9 +302,9 @@ function RoleCard({ role, isExpanded, onToggle, index }: RoleCardProps): JSX.Ele
             {role.experience_level}
           </span>
           {isExpanded ? (
-            <ChevronUpIcon className="w-5 h-5 text-gray-400" />
+            <ChevronUp className="w-5 h-5 text-gray-400" />
           ) : (
-            <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+            <ChevronDown className="w-5 h-5 text-gray-400" />
           )}
         </div>
       </button>
@@ -321,7 +322,7 @@ function RoleCard({ role, isExpanded, onToggle, index }: RoleCardProps): JSX.Ele
                     key={idx}
                     className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 text-xs rounded-full"
                   >
-                    <CheckIcon className="w-3 h-3" />
+                    <Check className="w-3 h-3" />
                     {skill}
                   </span>
                 ))}
@@ -331,7 +332,7 @@ function RoleCard({ role, isExpanded, onToggle, index }: RoleCardProps): JSX.Ele
             {/* Growth Path */}
             {role.growth_path && (
               <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg">
-                <ArrowTrendingUpIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <TrendingUp className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <h5 className="text-sm font-medium text-amber-900">Growth Path</h5>
                   <p className="text-sm text-amber-700">{role.growth_path}</p>
@@ -355,7 +356,7 @@ interface GrowthPathCardProps {
   roles: EligibleRole[];
 }
 
-function GrowthPathCard({ currentLevel, targetRole, roles }: GrowthPathCardProps): JSX.Element {
+function GrowthPathCard({ currentLevel, targetRole, roles }: GrowthPathCardProps): ReactElement {
   // Find roles at next level
   const currentIdx = LEVEL_ORDER.indexOf(currentLevel);
   const nextLevel = LEVEL_ORDER[currentIdx + 1];
@@ -367,7 +368,7 @@ function GrowthPathCard({ currentLevel, targetRole, roles }: GrowthPathCardProps
     <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5">
       <div className="flex items-start gap-3">
         <div className="p-2 bg-amber-100 rounded-lg">
-          <ArrowTrendingUpIcon className="w-5 h-5 text-amber-600" />
+          <TrendingUp className="w-5 h-5 text-amber-600" />
         </div>
         
         <div>
@@ -382,7 +383,7 @@ function GrowthPathCard({ currentLevel, targetRole, roles }: GrowthPathCardProps
                 key={index}
                 className="flex items-center gap-2 p-2 bg-white rounded-lg border border-amber-100"
               >
-                <CheckCircleIcon className="w-5 h-5 text-amber-500" />
+                <CheckCircle className="w-5 h-5 text-amber-500" />
                 <span className="text-sm font-medium text-gray-900">{role.title}</span>
                 <span className="text-xs text-gray-500 ml-auto">
                   → {targetRole}
