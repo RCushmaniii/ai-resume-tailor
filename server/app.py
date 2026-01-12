@@ -122,6 +122,74 @@ def health():
         "version": VERSION
     })
 
+
+# ═══════════════════════════════════════════════════════════════════════════
+# FILE UPLOAD ENDPOINT
+# ═══════════════════════════════════════════════════════════════════════════
+
+@app.route("/api/parse-resume", methods=["POST"])
+def parse_resume():
+    """
+    Parse uploaded resume file (PDF or DOCX) and return extracted text.
+
+    Accepts multipart/form-data with a 'file' field.
+    Returns JSON with extracted text, character count, and file type.
+    """
+    from file_parser import parse_resume_file, FileParserError
+
+    # Check if file was provided
+    if 'file' not in request.files:
+        return api_error(
+            error_code="FILE_MISSING",
+            status_code=400,
+            message="No file provided. Please upload a PDF or DOCX file."
+        )
+
+    file = request.files['file']
+
+    # Check if a file was actually selected
+    if not file.filename:
+        return api_error(
+            error_code="FILE_EMPTY",
+            status_code=400,
+            message="No file selected. Please choose a file to upload."
+        )
+
+    try:
+        # Read file bytes
+        file_bytes = file.read()
+        filename = file.filename
+
+        logger.info(f"Parsing resume file: {filename} ({len(file_bytes)} bytes)")
+
+        # Parse the file
+        result = parse_resume_file(file_bytes, filename)
+
+        logger.info(f"Successfully extracted {result['character_count']} characters from {filename}")
+
+        return jsonify({
+            "success": True,
+            "text": result["text"],
+            "character_count": result["character_count"],
+            "file_type": result["file_type"]
+        })
+
+    except FileParserError as e:
+        logger.warning(f"File parsing error for {file.filename}: {e}")
+        return api_error(
+            error_code="PARSE_ERROR",
+            status_code=400,
+            message=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error parsing file {file.filename}: {e}")
+        return api_error(
+            error_code="INTERNAL_ERROR",
+            status_code=500,
+            message="Failed to parse file. Please try copy-pasting your resume text instead."
+        )
+
+
 @app.route("/api/dev/debug", methods=["GET"])
 def dev_debug():
     """Debug endpoint to check localStorage content"""

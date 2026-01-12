@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
+import { FileText, Upload } from 'lucide-react';
 import { SAMPLE_ROLES } from '@/data/sampleData';
 import { ValidatedTextArea } from './ValidatedTextArea';
+import { FileUpload } from './FileUpload';
 import {
   validateResumeText,
   validateJobText,
   canSubmit,
 } from '@/lib/validation';
+
+type ResumeInputMode = 'paste' | 'upload';
 
 interface InputSectionProps {
   resumeText: string;
@@ -30,6 +34,13 @@ export function InputSection({
   const [resumeError, setResumeError] = useState<string | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
   const [touched, setTouched] = useState({ resume: false, job: false });
+  const [resumeInputMode, setResumeInputMode] = useState<ResumeInputMode>('paste');
+
+  // Handle file upload text extraction
+  const handleFileTextExtracted = (text: string) => {
+    onResumeChange(text);
+    setTouched((prev) => ({ ...prev, resume: true }));
+  };
 
   const loadSample = (role: typeof SAMPLE_ROLES[0]) => {
     onResumeChange(role.resume);
@@ -108,18 +119,91 @@ export function InputSection({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ValidatedTextArea
-          id="resume"
-          label={t('analyze.resumeLabel')}
-          value={resumeText}
-          onChange={onResumeChange}
-          placeholder={t('analyze.resumePlaceholder')}
-          error={resumeError}
-          showError={Boolean(touched.resume && !!resumeError)}
-          onClear={() => handleClear('resume')}
-          disabled={isAnalyzing}
-          onBlur={() => setTouched((prev) => ({ ...prev, resume: true }))}
-        />
+        {/* Resume Input with Mode Toggle */}
+        <div className="space-y-3">
+          {/* Input Mode Toggle */}
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-gray-700">
+              {t('analyze.resumeLabel')}
+            </label>
+            <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+              <button
+                type="button"
+                onClick={() => setResumeInputMode('paste')}
+                disabled={isAnalyzing}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  resumeInputMode === 'paste'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                {t('analyze.pasteText', 'Paste')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setResumeInputMode('upload')}
+                disabled={isAnalyzing}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  resumeInputMode === 'upload'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                {t('analyze.uploadFile', 'Upload')}
+              </button>
+            </div>
+          </div>
+
+          {/* Conditional Input: Text Area or File Upload */}
+          {resumeInputMode === 'paste' ? (
+            <ValidatedTextArea
+              id="resume"
+              label=""
+              hideLabel
+              value={resumeText}
+              onChange={onResumeChange}
+              placeholder={t('analyze.resumePlaceholder')}
+              error={resumeError}
+              showError={Boolean(touched.resume && !!resumeError)}
+              onClear={() => handleClear('resume')}
+              disabled={isAnalyzing}
+              onBlur={() => setTouched((prev) => ({ ...prev, resume: true }))}
+            />
+          ) : (
+            <div className="space-y-2">
+              <FileUpload
+                onTextExtracted={handleFileTextExtracted}
+                disabled={isAnalyzing}
+              />
+              {/* Show extracted text preview if we have content */}
+              {resumeText && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-gray-600">
+                      {t('analyze.extractedText', 'Extracted text preview')}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleClear('resume')}
+                      className="text-xs text-red-600 hover:text-red-700"
+                    >
+                      {t('common.clear', 'Clear')}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 line-clamp-3">
+                    {resumeText.substring(0, 300)}
+                    {resumeText.length > 300 && '...'}
+                  </p>
+                </div>
+              )}
+              {touched.resume && resumeError && (
+                <p className="text-xs text-red-600">{resumeError}</p>
+              )}
+            </div>
+          )}
+        </div>
 
         <ValidatedTextArea
           id="job-description"

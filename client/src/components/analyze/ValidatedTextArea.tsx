@@ -17,6 +17,7 @@ interface ValidatedTextAreaProps {
   disabled?: boolean;
   maxLength?: number;
   onBlur?: () => void;
+  hideLabel?: boolean;
 }
 
 export function ValidatedTextArea({
@@ -31,6 +32,7 @@ export function ValidatedTextArea({
   disabled = false,
   maxLength = VALIDATION_RULES.MAX_LENGTH,
   onBlur,
+  hideLabel = false,
 }: ValidatedTextAreaProps) {
   const { t } = useTranslation(); // 2. Initialize Hook
   const [characterCount, setCharacterCount] = useState(value.length);
@@ -52,10 +54,12 @@ export function ValidatedTextArea({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label htmlFor={id} className="text-lg font-semibold">
-          {label}
-        </Label>
-        <div className="flex items-center gap-2">
+        {!hideLabel && (
+          <Label htmlFor={id} className="text-lg font-semibold">
+            {label}
+          </Label>
+        )}
+        <div className={`flex items-center gap-2 ${hideLabel ? 'ml-auto' : ''}`}>
           <span className={`text-xs ${getCharacterCountColor()} transition-colors duration-300`}>
             {/* 3. Localize 'characters' */}
             {characterCount.toLocaleString()} / {maxLength.toLocaleString()} {t('analyze.characters')}
