@@ -70,27 +70,23 @@ export function Header({ navigate }: HeaderProps) {
   // Add scroll effect with proper debouncing
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    let lastScrollY = window.scrollY;
     let lastIsScrolled = window.scrollY > 50;
-    
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const currentIsScrolled = currentScrollY > 50;
-      
+      const currentIsScrolled = window.scrollY > 50;
+
       // Only update if the scrolled state actually changes
       if (currentIsScrolled !== lastIsScrolled) {
         // Clear existing timeout
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
-        
+
         // Debounce to prevent rapid changes
         timeoutId = setTimeout(() => {
           setIsScrolled(currentIsScrolled);
           lastIsScrolled = currentIsScrolled;
         }, 150);
-        
-        lastScrollY = currentScrollY;
       }
     };
     

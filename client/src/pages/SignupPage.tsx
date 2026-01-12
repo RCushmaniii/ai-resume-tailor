@@ -1,15 +1,16 @@
 /**
  * Signup Page
- * 
+ *
  * User registration page with Supabase Auth integration.
- * 
+ * Supports OAuth (Google, LinkedIn) and email/password signup.
+ *
  * File: client/src/pages/SignupPage.tsx
  */
 
 import type { ReactElement, FormEvent } from 'react';
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { getSupabaseClient } from '../lib/supabaseClient';
+import { SocialLoginButtons, OrDivider } from '../components/auth/SocialLoginButtons';
 import {
   Mail,
   Lock,
@@ -33,9 +34,9 @@ interface SignupPageProps {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export function SignupPage({ navigate }: SignupPageProps): ReactElement {
-  useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,10 +47,25 @@ export function SignupPage({ navigate }: SignupPageProps): ReactElement {
     setLoading(true);
     setError(null);
 
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+
     try {
       const supabase = getSupabaseClient();
       if (!supabase) {
         setError('Authentication service is not configured. Please try again later.');
+        setLoading(false);
         return;
       }
 
@@ -70,14 +86,6 @@ export function SignupPage({ navigate }: SignupPageProps): ReactElement {
 
       if (data.user) {
         setSuccess(true);
-        // Redirect to analyze page after short delay
-        setTimeout(() => {
-          if (navigate) {
-            navigate('analyze');
-          } else {
-            window.location.href = '/analyze';
-          }
-        }, 2000);
       }
     } catch {
       setError('An unexpected error occurred. Please try again.');
@@ -102,12 +110,21 @@ export function SignupPage({ navigate }: SignupPageProps): ReactElement {
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Account Created!
+            Check Your Email
           </h1>
           <p className="text-gray-600 mb-4">
-            Check your email to confirm your account. Redirecting you to the analyzer...
+            We've sent a confirmation link to <strong>{email}</strong>. 
+            Please click the link in your email to activate your account.
           </p>
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto" />
+          <p className="text-sm text-gray-500">
+            Didn't receive the email? Check your spam folder or{' '}
+            <button 
+              onClick={() => setSuccess(false)}
+              className="text-blue-600 hover:underline"
+            >
+              try again
+            </button>
+          </p>
         </div>
       </div>
     );
@@ -122,7 +139,7 @@ export function SignupPage({ navigate }: SignupPageProps): ReactElement {
             Create Your Free Account
           </h1>
           <p className="text-gray-600">
-            Get 5 more free analyses and save your history
+            Get 5 free analyses and save your history
           </p>
         </div>
 
@@ -133,7 +150,7 @@ export function SignupPage({ navigate }: SignupPageProps): ReactElement {
             <div className="text-sm text-blue-800">
               <p className="font-medium mb-1">What you'll get:</p>
               <ul className="space-y-1 text-blue-700">
-                <li>• 5 additional free analyses</li>
+                <li>• 5 free resume analyses</li>
                 <li>• Save your analysis history</li>
                 <li>• Access from any device</li>
               </ul>
@@ -141,7 +158,16 @@ export function SignupPage({ navigate }: SignupPageProps): ReactElement {
           </div>
         </div>
 
-        {/* Form */}
+        {/* Social Login Buttons */}
+        <SocialLoginButtons
+          mode="signup"
+          disabled={loading}
+          onError={setError}
+        />
+
+        <OrDivider />
+
+        {/* Email/Password Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -162,6 +188,7 @@ export function SignupPage({ navigate }: SignupPageProps): ReactElement {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
+                autoComplete="name"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
               />
@@ -180,6 +207,7 @@ export function SignupPage({ navigate }: SignupPageProps): ReactElement {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                autoComplete="email"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
               />
@@ -198,6 +226,7 @@ export function SignupPage({ navigate }: SignupPageProps): ReactElement {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                autoComplete="new-password"
                 minLength={6}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
@@ -206,6 +235,26 @@ export function SignupPage({ navigate }: SignupPageProps): ReactElement {
             <p className="text-xs text-gray-500 mt-1">
               Must be at least 6 characters
             </p>
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                minLength={6}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
           </div>
 
           <button

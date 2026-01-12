@@ -7,7 +7,7 @@
  * File: client/src/contexts/SubscriptionContext.tsx
  */
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES & INTERFACES
@@ -146,7 +146,7 @@ interface SubscriptionProviderProps {
 /**
  * Subscription Provider
  */
-export function SubscriptionProvider({ children }: SubscriptionProviderProps): JSX.Element {
+export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const [tier, setTier] = useState<TierType>(TIERS.GUEST);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
@@ -162,7 +162,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps): J
       const token = localStorage.getItem('auth_token');
       
       if (!token) {
-        const guestUsed = parseInt(localStorage.getItem('guest_analyses_used') || '0', 10);
+        const guestUsed = parseInt(localStorage.getItem('guest_analyses') || '0', 10);
         setTier(TIERS.GUEST);
         setUsage({
           analysesUsed: guestUsed,
@@ -227,8 +227,8 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps): J
     }));
     
     if (tier === TIERS.GUEST) {
-      const current = parseInt(localStorage.getItem('guest_analyses_used') || '0', 10);
-      localStorage.setItem('guest_analyses_used', (current + 1).toString());
+      const current = parseInt(localStorage.getItem('guest_analyses') || '0', 10);
+      localStorage.setItem('guest_analyses', (current + 1).toString());
     }
   }, [tier]);
 

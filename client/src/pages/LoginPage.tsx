@@ -2,6 +2,7 @@
  * Login Page
  *
  * User login page with Supabase Auth integration.
+ * Supports OAuth (Google, LinkedIn) and email/password login.
  *
  * File: client/src/pages/LoginPage.tsx
  */
@@ -9,6 +10,7 @@
 import type { ReactElement, FormEvent } from 'react';
 import { useState } from 'react';
 import { getSupabaseClient } from '../lib/supabaseClient';
+import { SocialLoginButtons, OrDivider } from '../components/auth/SocialLoginButtons';
 import {
   Mail,
   Lock,
@@ -35,6 +37,7 @@ export function LoginPage({ navigate }: LoginPageProps): ReactElement {
       const supabase = getSupabaseClient();
       if (!supabase) {
         setError('Authentication service is not configured. Please try again later.');
+        setLoading(false);
         return;
       }
 
@@ -44,7 +47,14 @@ export function LoginPage({ navigate }: LoginPageProps): ReactElement {
       });
 
       if (signInError) {
-        setError(signInError.message);
+        // Provide user-friendly error messages
+        if (signInError.message.includes('Invalid login credentials')) {
+          setError('Invalid email or password. Please check your credentials and try again.');
+        } else if (signInError.message.includes('Email not confirmed')) {
+          setError('Please confirm your email address before signing in. Check your inbox for the confirmation link.');
+        } else {
+          setError(signInError.message);
+        }
         return;
       }
 
@@ -80,6 +90,16 @@ export function LoginPage({ navigate }: LoginPageProps): ReactElement {
           </p>
         </div>
 
+        {/* Social Login Buttons */}
+        <SocialLoginButtons
+          mode="login"
+          disabled={loading}
+          onError={setError}
+        />
+
+        <OrDivider />
+
+        {/* Email/Password Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -100,6 +120,7 @@ export function LoginPage({ navigate }: LoginPageProps): ReactElement {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                autoComplete="email"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
               />
@@ -118,6 +139,7 @@ export function LoginPage({ navigate }: LoginPageProps): ReactElement {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                autoComplete="current-password"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
               />

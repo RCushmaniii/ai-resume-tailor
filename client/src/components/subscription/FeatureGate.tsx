@@ -93,7 +93,9 @@ export function FeatureGate({
       );
 
     case 'card':
-      return <UpgradeCard feature={cardFeature || feature as any} />;
+      // Type assertion needed: FeatureGate uses FeatureType, UpgradeCard uses FeatureCardKey
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return <UpgradeCard feature={(cardFeature || feature) as any} />;
 
     case 'custom':
       return <>{fallback}</>;
