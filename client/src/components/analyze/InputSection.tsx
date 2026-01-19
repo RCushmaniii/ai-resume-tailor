@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
-import { FileText, Upload } from 'lucide-react';
+import { FileText, Upload, CheckCircle } from 'lucide-react';
 import { SAMPLE_ROLES } from '@/data/sampleData';
 import { ValidatedTextArea } from './ValidatedTextArea';
 import { FileUpload } from './FileUpload';
@@ -35,11 +35,17 @@ export function InputSection({
   const [jobError, setJobError] = useState<string | null>(null);
   const [touched, setTouched] = useState({ resume: false, job: false });
   const [resumeInputMode, setResumeInputMode] = useState<ResumeInputMode>('paste');
+  const [showExtractionSuccess, setShowExtractionSuccess] = useState(false);
 
-  // Handle file upload text extraction
+  // Handle file upload text extraction - auto-switch to paste mode to show full text
   const handleFileTextExtracted = (text: string) => {
     onResumeChange(text);
     setTouched((prev) => ({ ...prev, resume: true }));
+    // Show success message and switch to paste mode so user can see/edit the full text
+    setShowExtractionSuccess(true);
+    setResumeInputMode('paste');
+    // Clear success message after 5 seconds
+    setTimeout(() => setShowExtractionSuccess(false), 5000);
   };
 
   const loadSample = (role: typeof SAMPLE_ROLES[0]) => {
@@ -53,6 +59,7 @@ export function InputSection({
       onResumeChange('');
       setResumeError(null);
       setTouched((prev) => ({ ...prev, resume: false }));
+      setShowExtractionSuccess(false);
     } else {
       onJobChange('');
       setJobError(null);
@@ -158,19 +165,35 @@ export function InputSection({
 
           {/* Conditional Input: Text Area or File Upload */}
           {resumeInputMode === 'paste' ? (
-            <ValidatedTextArea
-              id="resume"
-              label=""
-              hideLabel
-              value={resumeText}
-              onChange={onResumeChange}
-              placeholder={t('analyze.resumePlaceholder')}
-              error={resumeError}
-              showError={Boolean(touched.resume && !!resumeError)}
-              onClear={() => handleClear('resume')}
-              disabled={isAnalyzing}
-              onBlur={() => setTouched((prev) => ({ ...prev, resume: true }))}
-            />
+            <div className="space-y-2">
+              {/* Success banner after file extraction */}
+              {showExtractionSuccess && resumeText && (
+                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-800">
+                      {t('analyze.extractionSuccess', 'Resume text extracted successfully!')}
+                    </p>
+                    <p className="text-xs text-green-600">
+                      {t('analyze.extractionHint', 'Review your text below and make any edits before analyzing.')}
+                    </p>
+                  </div>
+                </div>
+              )}
+              <ValidatedTextArea
+                id="resume"
+                label=""
+                hideLabel
+                value={resumeText}
+                onChange={onResumeChange}
+                placeholder={t('analyze.resumePlaceholder')}
+                error={resumeError}
+                showError={Boolean(touched.resume && !!resumeError)}
+                onClear={() => handleClear('resume')}
+                disabled={isAnalyzing}
+                onBlur={() => setTouched((prev) => ({ ...prev, resume: true }))}
+              />
+            </div>
           ) : (
             <div className="space-y-2">
               <FileUpload

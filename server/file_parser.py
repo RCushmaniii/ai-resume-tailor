@@ -9,7 +9,7 @@ File: server/file_parser.py
 
 import io
 import logging
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 # Constants
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 MIN_TEXT_LENGTH = 100  # Minimum characters for a valid resume
+MIN_CHARS_PER_PAGE = 50  # Minimum characters expected per page (to detect image-based pages)
 SUPPORTED_EXTENSIONS = {'pdf', 'docx'}
 
 
@@ -25,7 +26,7 @@ class FileParserError(Exception):
     pass
 
 
-def extract_text_from_pdf(file_bytes: bytes) -> str:
+def extract_text_from_pdf(file_bytes: bytes) -> dict:
     """
     Extract text from PDF file bytes.
 
@@ -33,10 +34,14 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
         file_bytes: Raw PDF file content
 
     Returns:
-        Extracted text from all pages
+        Dictionary with:
+        - text: Extracted text from all pages
+        - total_pages: Total number of pages in PDF
+        - pages_with_text: Number of pages that had extractable text
+        - warning: Optional warning message if extraction was partial
 
     Raises:
-        FileParserError: If PDF parsing fails
+        FileParserError: If PDF parsing fails completely
     """
     try:
         import pdfplumber
@@ -44,22 +49,54 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
         raise FileParserError("PDF parsing library not installed. Please install pdfplumber.")
 
     text_parts = []
+    total_pages = 0
+    pages_with_text = 0
+    pages_with_minimal_text = []  # Pages that had very little text (likely image-based)
 
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+            total_pages = len(pdf.pages)
+
             for page_num, page in enumerate(pdf.pages, 1):
                 try:
                     page_text = page.extract_text()
                     if page_text:
-                        text_parts.append(page_text.strip())
+                        stripped_text = page_text.strip()
+                        if stripped_text:
+                            text_parts.append(stripped_text)
+                            if len(stripped_text) >= MIN_CHARS_PER_PAGE:
+                                pages_with_text += 1
+                            else:
+                                pages_with_minimal_text.append(page_num)
                 except Exception as e:
                     logger.warning(f"Failed to extract text from page {page_num}: {e}")
                     continue
+
     except Exception as e:
         logger.error(f"PDF parsing error: {e}")
         raise FileParserError(f"Failed to parse PDF: {str(e)}")
 
-    return "\n\n".join(text_parts)
+    combined_text = "\n\n".join(text_parts)
+
+    # Determine if there's a warning to show
+    warning = None
+    if total_pages > 0 and pages_with_text == 0:
+        # No pages had meaningful text - likely all image-based
+        warning = "image_based"
+    elif pages_with_minimal_text and len(pages_with_minimal_text) > total_pages / 2:
+        # More than half the pages had minimal text
+        warning = "partial_extraction"
+    elif total_pages > pages_with_text + len(pages_with_minimal_text):
+        # Some pages completely failed to extract
+        warning = "some_pages_failed"
+
+    return {
+        "text": combined_text,
+        "total_pages": total_pages,
+        "pages_with_text": pages_with_text,
+        "pages_with_minimal_text": len(pages_with_minimal_text),
+        "warning": warning
+    }
 
 
 def extract_text_from_docx(file_bytes: bytes) -> str:
@@ -161,17 +198,50 @@ def parse_resume_file(file_bytes: bytes, filename: str) -> dict:
         - text: Extracted text content
         - character_count: Length of extracted text
         - file_type: Type of file processed
+        - warning: Optional warning code for partial extraction
+        - warning_message: Human-readable warning message (if applicable)
 
     Raises:
-        FileParserError: If parsing fails
+        FileParserError: If parsing fails completely
     """
     # Validate file
     extension = validate_file(file_bytes, filename)
 
     # Extract text based on file type
+    warning = None
+    warning_message = None
+
     if extension == 'pdf':
-        text = extract_text_from_pdf(file_bytes)
+        pdf_result = extract_text_from_pdf(file_bytes)
+        text = pdf_result["text"]
+        warning = pdf_result.get("warning")
         file_type = 'application/pdf'
+
+        # Handle image-based PDF (no text at all)
+        if warning == "image_based" and not text.strip():
+            raise FileParserError(
+                "This PDF appears to be image-based (like a scanned document) "
+                "and we couldn't extract the text. Please try one of these options:\n\n"
+                "1. Copy and paste your resume text directly into the text field\n"
+                "2. If you have the original Word document, upload that instead\n"
+                "3. Use a PDF with selectable text"
+            )
+
+        # Generate warning messages for partial extraction
+        if warning == "partial_extraction":
+            warning_message = (
+                f"We extracted text from your PDF, but some pages may contain "
+                f"images or graphics that couldn't be read. Please review the "
+                f"extracted text below to make sure it looks complete."
+            )
+        elif warning == "some_pages_failed":
+            warning_message = (
+                f"We extracted text from {pdf_result['pages_with_text']} of "
+                f"{pdf_result['total_pages']} pages. Some pages may have failed "
+                f"to process. Please review the extracted text to ensure nothing "
+                f"important is missing."
+            )
+
     elif extension == 'docx':
         text = extract_text_from_docx(file_bytes)
         file_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -184,23 +254,35 @@ def parse_resume_file(file_bytes: bytes, filename: str) -> dict:
     # Validate extracted content
     if not text:
         raise FileParserError(
-            "Could not extract any text from the file. "
-            "The file may be image-based or corrupted. "
-            "Please try copy-pasting your resume text instead."
+            "We couldn't extract any text from your file. This sometimes happens with:\n\n"
+            "- Scanned documents or image-based PDFs\n"
+            "- Files with unusual formatting\n"
+            "- Corrupted or password-protected files\n\n"
+            "Please try copying and pasting your resume text directly into the text field instead."
         )
 
     if len(text) < MIN_TEXT_LENGTH:
         raise FileParserError(
-            f"Extracted text is too short ({len(text)} characters). "
-            f"A valid resume should have at least {MIN_TEXT_LENGTH} characters. "
-            "Please ensure the file contains your full resume."
+            f"The extracted text seems too short ({len(text)} characters). "
+            f"A typical resume has at least {MIN_TEXT_LENGTH} characters.\n\n"
+            "This might mean:\n"
+            "- Only part of your resume was extracted\n"
+            "- The file contains mostly images or graphics\n\n"
+            "Please try copying and pasting your full resume text instead."
         )
 
-    return {
+    result = {
         'text': text,
         'character_count': len(text),
         'file_type': file_type
     }
+
+    # Add warning info if applicable
+    if warning and warning_message:
+        result['warning'] = warning
+        result['warning_message'] = warning_message
+
+    return result
 
 
 # Quick test function for development

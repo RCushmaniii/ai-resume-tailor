@@ -75,6 +75,8 @@ export const en = {
   fileUpload: {
     extracting: "Extracting text...",
     charactersExtracted: "characters extracted",
+    successMessage: "Resume text extracted successfully!",
+    reviewHint: "Your text is ready below. Feel free to review and edit before analyzing.",
     failed: "Upload failed",
     tryAgain: "Try again",
     uploadFile: "Upload a file",
@@ -103,6 +105,8 @@ export const en = {
     pasteText: "Paste",
     uploadFile: "Upload",
     extractedText: "Extracted text preview",
+    extractionSuccess: "Resume text extracted successfully!",
+    extractionHint: "Review your text below and make any edits before analyzing.",
     analyzing: "Analyzing...",
     pasteBothToStart: "Paste Both Texts to Start",
     analyzeMatch: "Analyze Match Now",

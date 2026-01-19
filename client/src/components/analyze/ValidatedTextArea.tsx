@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Trash2 } from 'lucide-react';
@@ -38,12 +38,33 @@ export function ValidatedTextArea({
   const [characterCount, setCharacterCount] = useState(value.length);
   const [isNearLimit, setIsNearLimit] = useState(false);
   const [isAtLimit, setIsAtLimit] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea based on content
+  const adjustHeight = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      // Reset height to auto to get the correct scrollHeight
+      textarea.style.height = 'auto';
+      // Dynamic sizing: starts at 200px, expands up to 800px, then scrolls
+      // 800px shows roughly 40-45 lines of monospace text
+      const minHeight = 200;
+      const maxHeight = 800;
+      const newHeight = Math.min(Math.max(textarea.scrollHeight, minHeight), maxHeight);
+      textarea.style.height = `${newHeight}px`;
+    }
+  }, []);
 
   useEffect(() => {
     setCharacterCount(value.length);
     setIsNearLimit(value.length >= maxLength * 0.9);
     setIsAtLimit(value.length >= maxLength);
   }, [value, maxLength]);
+
+  // Adjust height when value changes
+  useEffect(() => {
+    adjustHeight();
+  }, [value, adjustHeight]);
 
   const getCharacterCountColor = () => {
     if (isAtLimit) return 'text-red-500';
@@ -80,13 +101,14 @@ export function ValidatedTextArea({
         </div>
       </div>
       <Textarea
+        ref={textareaRef}
         id={id}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         disabled={disabled}
-        className={`min-h-[300px] resize-none font-mono text-sm transition-all duration-200 ${
+        className={`min-h-[200px] max-h-[800px] resize-y font-mono text-sm leading-relaxed transition-all duration-200 overflow-y-auto ${
           showError ? 'border-red-500 focus-visible:ring-red-500' : 'focus-visible:ring-blue-500'
         }`}
         aria-label={label}

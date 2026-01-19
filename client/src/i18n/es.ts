@@ -74,6 +74,8 @@ export const es = {
   fileUpload: {
     extracting: "Extrayendo texto...",
     charactersExtracted: "caracteres extraídos",
+    successMessage: "¡Texto del CV extraído exitosamente!",
+    reviewHint: "Tu texto está listo abajo. Revísalo y edítalo antes de analizar.",
     failed: "Subida fallida",
     tryAgain: "Intentar de nuevo",
     uploadFile: "Sube un archivo",
@@ -102,6 +104,8 @@ export const es = {
     pasteText: "Pegar",
     uploadFile: "Subir",
     extractedText: "Vista previa del texto extraído",
+    extractionSuccess: "¡Texto del CV extraído exitosamente!",
+    extractionHint: "Revisa tu texto abajo y haz ediciones antes de analizar.",
     analyzing: "Analizando...",
     pasteBothToStart: "Pega ambos textos para comenzar",
     analyzeMatch: "Analizar compatibilidad ahora",

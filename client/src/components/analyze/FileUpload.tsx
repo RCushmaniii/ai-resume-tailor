@@ -27,6 +27,8 @@ interface UploadState {
   fileName: string | null;
   error: string | null;
   characterCount: number | null;
+  warning: string | null;
+  warningMessage: string | null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -57,6 +59,8 @@ export function FileUpload({
     fileName: null,
     error: null,
     characterCount: null,
+    warning: null,
+    warningMessage: null,
   });
 
   // Validate file before upload
@@ -92,6 +96,8 @@ export function FileUpload({
       fileName: file.name,
       error: null,
       characterCount: null,
+      warning: null,
+      warningMessage: null,
     });
 
     // Validate file
@@ -102,6 +108,8 @@ export function FileUpload({
         fileName: file.name,
         error: validationError,
         characterCount: null,
+        warning: null,
+        warningMessage: null,
       });
       return;
     }
@@ -124,12 +132,14 @@ export function FileUpload({
         throw new Error(data.message || data.error || 'Failed to parse file');
       }
 
-      // Success
+      // Success (possibly with warning)
       setState({
         status: 'success',
         fileName: file.name,
         error: null,
         characterCount: data.character_count,
+        warning: data.warning || null,
+        warningMessage: data.warning_message || null,
       });
 
       // Pass extracted text to parent
@@ -145,6 +155,8 @@ export function FileUpload({
         fileName: file.name,
         error: message,
         characterCount: null,
+        warning: null,
+        warningMessage: null,
       });
     }
   }, [validateFile, onTextExtracted, t]);
@@ -204,6 +216,8 @@ export function FileUpload({
       fileName: null,
       error: null,
       characterCount: null,
+      warning: null,
+      warningMessage: null,
     });
   }, []);
 
@@ -223,11 +237,19 @@ export function FileUpload({
 
       case 'success':
         return (
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-3">
+            {/* Success header */}
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-600" />
-              <FileText className="w-5 h-5 text-gray-600" />
-              <span className="text-sm text-gray-700 font-medium">{state.fileName}</span>
+              <span className="text-sm font-medium text-green-700">
+                {t('fileUpload.successMessage', 'Resume text extracted successfully!')}
+              </span>
+            </div>
+
+            {/* File info */}
+            <div className="flex items-center gap-2 text-gray-600">
+              <FileText className="w-4 h-4" />
+              <span className="text-sm">{state.fileName}</span>
               <button
                 type="button"
                 onClick={handleClear}
@@ -237,11 +259,30 @@ export function FileUpload({
                 <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
+
+            {/* Character count */}
             {state.characterCount && (
               <span className="text-xs text-green-600">
                 {state.characterCount.toLocaleString()} {t('fileUpload.charactersExtracted', 'characters extracted')}
               </span>
             )}
+
+            {/* Warning message if partial extraction */}
+            {state.warningMessage && (
+              <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-left max-w-md">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-amber-800">
+                    {state.warningMessage}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Helpful hint */}
+            <p className="text-xs text-gray-500 text-center max-w-xs">
+              {t('fileUpload.reviewHint', 'Your text is ready below. Feel free to review and edit before analyzing.')}
+            </p>
           </div>
         );
 
