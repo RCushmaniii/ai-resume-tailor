@@ -27,9 +27,20 @@ from functools import wraps
 import stripe
 from flask import Blueprint, request, jsonify
 from dotenv import load_dotenv
+from supabase import create_client, Client
 
 # Load environment variables
 load_dotenv()
+
+# Initialize Supabase admin client (uses service role key for admin operations)
+_supabase_url = os.getenv("SUPABASE_URL", "").strip()
+_supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+
+supabase_admin: Client | None = None
+if _supabase_url and _supabase_service_key:
+    supabase_admin = create_client(_supabase_url, _supabase_service_key)
+else:
+    logging.warning("Supabase admin client not initialized - missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY")
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -107,20 +118,61 @@ def get_or_create_stripe_customer(user_id: str, email: str) -> str:
 def update_user_subscription(user_id: str, tier: str, subscription_data: dict):
     """
     Update user's subscription status in database.
-    
-    In production, implement this to update your Supabase users table.
+
+    Args:
+        user_id: Supabase auth user ID
+        tier: 'free' or 'pro'
+        subscription_data: Dict with customer, subscription_id, status, current_period_end, etc.
     """
-    # TODO: Implement database update
-    # Example with Supabase:
-    # supabase.table('users').update({
-    #     'subscription_tier': tier,
-    #     'stripe_customer_id': subscription_data.get('customer'),
-    #     'subscription_status': subscription_data.get('status'),
-    #     'subscription_period_end': subscription_data.get('current_period_end'),
-    # }).eq('id', user_id).execute()
-    
-    logger.info(f"Updated subscription for user {user_id}: tier={tier}")
-    pass
+    if not supabase_admin:
+        logger.error("Cannot update subscription: Supabase admin client not initialized")
+        return
+
+    try:
+        # Build update payload
+        update_data = {
+            "subscription_tier": tier,
+            "subscription_status": subscription_data.get("status", "none"),
+            "updated_at": datetime.utcnow().isoformat(),
+        }
+
+        # Add optional fields if present
+        if subscription_data.get("customer"):
+            update_data["stripe_customer_id"] = subscription_data["customer"]
+
+        if subscription_data.get("current_period_end"):
+            # Convert Unix timestamp to ISO format
+            period_end = subscription_data["current_period_end"]
+            if isinstance(period_end, (int, float)):
+                update_data["subscription_period_end"] = datetime.utcfromtimestamp(period_end).isoformat()
+            else:
+                update_data["subscription_period_end"] = period_end
+
+        # For Pro tier upgrades, also set usage limits and reset date
+        if tier == "pro" and subscription_data.get("status") in ["active", "trialing"]:
+            update_data["analyses_limit"] = 50
+            update_data["analyses_used_this_period"] = 0
+            if subscription_data.get("current_period_end"):
+                period_end = subscription_data["current_period_end"]
+                if isinstance(period_end, (int, float)):
+                    update_data["analyses_reset_date"] = datetime.utcfromtimestamp(period_end).isoformat()
+
+        # For downgrades to free, reset to free tier limits
+        if tier == "free":
+            update_data["analyses_limit"] = 5
+            update_data["subscription_period_end"] = None
+            update_data["analyses_reset_date"] = None
+
+        # Execute update
+        result = supabase_admin.table("profiles").update(update_data).eq("id", user_id).execute()
+
+        if result.data:
+            logger.info(f"Updated subscription for user {user_id}: tier={tier}, status={subscription_data.get('status')}")
+        else:
+            logger.warning(f"No profile found for user {user_id} - update may have failed")
+
+    except Exception as e:
+        logger.error(f"Failed to update subscription for user {user_id}: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -483,15 +535,45 @@ def handle_payment_succeeded(invoice):
     """Handle successful payment (subscription renewal)."""
     customer_id = invoice.get("customer")
     subscription_id = invoice.get("subscription")
-    
-    if customer_id and subscription_id:
-        customer = stripe.Customer.retrieve(customer_id)
-        user_id = customer.get("metadata", {}).get("user_id")
-        
-        if user_id:
-            # Reset monthly usage counter
-            logger.info(f"Payment succeeded for user {user_id}, resetting usage")
-            # TODO: Reset analyses_used in database
+
+    if not customer_id or not subscription_id:
+        return
+
+    customer = stripe.Customer.retrieve(customer_id)
+    user_id = customer.get("metadata", {}).get("user_id")
+
+    if not user_id:
+        logger.warning("Payment succeeded but no user_id found in customer metadata")
+        return
+
+    logger.info(f"Payment succeeded for user {user_id}, resetting usage")
+
+    # Reset monthly usage counter in database
+    if not supabase_admin:
+        logger.error("Cannot reset usage: Supabase admin client not initialized")
+        return
+
+    try:
+        # Get the subscription to find the next billing period end
+        subscription = stripe.Subscription.retrieve(subscription_id)
+        next_period_end = subscription.current_period_end
+
+        # Reset usage counter and set new reset date
+        update_data = {
+            "analyses_used_this_period": 0,
+            "analyses_reset_date": datetime.utcfromtimestamp(next_period_end).isoformat(),
+            "updated_at": datetime.utcnow().isoformat(),
+        }
+
+        result = supabase_admin.table("profiles").update(update_data).eq("id", user_id).execute()
+
+        if result.data:
+            logger.info(f"Reset usage counter for user {user_id}, next reset: {update_data['analyses_reset_date']}")
+        else:
+            logger.warning(f"No profile found for user {user_id} - usage reset may have failed")
+
+    except Exception as e:
+        logger.error(f"Failed to reset usage for user {user_id}: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
