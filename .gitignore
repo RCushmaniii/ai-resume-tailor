@@ -63,8 +63,15 @@ server/.env
 
 # Claude Code temp files
 server/tmpclaude-*/
+client/tmpclaude-*/
 tmpclaude-*/
 .claude/settings.local.json
+
+# Backup files
+*.bak
+
+# Local test files
+cookies.txt
 
 # Old root files (moved to client)
 /src/
