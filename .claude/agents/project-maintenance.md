@@ -293,11 +293,14 @@ Before starting Phase 3, always ask:
 
 ## Project-Specific Considerations
 
-When working on the ai-webscraper project:
+When working on the ai-resume-tailor project:
 
-- Respect the established file structure (frontend/backend/database separation)
+- Respect the established file structure (client/server separation)
 - Maintain alignment with CLAUDE.md conventions
-- Be especially careful with backend/app/core/ files (security-critical)
-- Verify database field names match actual schema before any documentation changes
-- Preserve the batch operations patterns documented in the codebase
-- Keep domain_blacklist.py intact — it's critical for crawl safety
+- Be especially careful with server/stripe_integration.py (payment-critical)
+- Be especially careful with server/ai_engine.py (OpenAI integration)
+- Verify Supabase schema matches migrations in supabase/migrations/
+- Preserve the i18n structure (client/src/i18n/en.ts and es.ts must stay in sync)
+- Keep file_parser.py intact — it's critical for resume text extraction
+- Do not modify .env files or expose any API keys
+- Preserve the component structure in client/src/components/analyze/

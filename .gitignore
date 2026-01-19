@@ -61,6 +61,11 @@ server/__pycache__/
 server/*.pyc
 server/.env
 
+# Claude Code temp files
+server/tmpclaude-*/
+tmpclaude-*/
+.claude/settings.local.json
+
 # Old root files (moved to client)
 /src/
 /public/
