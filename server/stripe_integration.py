@@ -367,6 +367,105 @@ def get_subscription(user):
         return jsonify({"error": "Failed to fetch subscription"}), 500
 
 
+@stripe_bp.route('/subscription/claim', methods=['POST'])
+@require_auth
+def claim_subscription(user):
+    """
+    Claim a guest subscription after account creation.
+
+    This links a Stripe subscription (created during guest checkout)
+    to the newly created user account.
+
+    Request body:
+    {
+        "email": "guest@example.com",
+        "session_id": "cs_xxx" (optional, for verification)
+    }
+    """
+    try:
+        data = request.json or {}
+        email = data.get("email")
+
+        if not email:
+            return jsonify({"error": "Email is required"}), 400
+
+        # Verify the email matches the authenticated user
+        if user.get("email") != email:
+            return jsonify({"error": "Email mismatch"}), 403
+
+        user_id = user.get("id")
+
+        # Find Stripe customer by email
+        customers = stripe.Customer.list(email=email, limit=1)
+
+        if not customers.data:
+            return jsonify({"error": "No subscription found for this email"}), 404
+
+        customer = customers.data[0]
+        customer_id = customer.id
+
+        # Get active subscriptions
+        subscriptions = stripe.Subscription.list(
+            customer=customer_id,
+            status="active",
+            limit=1
+        )
+
+        if not subscriptions.data:
+            # Check for trialing subscriptions too
+            subscriptions = stripe.Subscription.list(
+                customer=customer_id,
+                status="trialing",
+                limit=1
+            )
+
+        if not subscriptions.data:
+            return jsonify({"error": "No active subscription found"}), 404
+
+        sub = subscriptions.data[0]
+
+        # Update customer metadata with the user_id
+        stripe.Customer.modify(
+            customer_id,
+            metadata={
+                "user_id": user_id,
+                "pending_subscription": "false",
+            }
+        )
+
+        # Update subscription metadata
+        stripe.Subscription.modify(
+            sub.id,
+            metadata={
+                "user_id": user_id,
+                "is_guest": "false",
+            }
+        )
+
+        # Update user's profile in database
+        update_user_subscription(user_id, "pro", {
+            "customer": customer_id,
+            "subscription_id": sub.id,
+            "status": sub.status,
+            "current_period_end": sub.current_period_end,
+        })
+
+        logger.info(f"Claimed subscription {sub.id} for user {user_id}")
+
+        return jsonify({
+            "success": True,
+            "subscription_id": sub.id,
+            "tier": "pro",
+        })
+
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error claiming subscription: {e}")
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        logger.error(f"Error claiming subscription: {e}")
+        return jsonify({"error": "Failed to claim subscription"}), 500
+
+
 @stripe_bp.route('/billing/portal', methods=['POST'])
 @require_auth
 def create_portal_session(user):
