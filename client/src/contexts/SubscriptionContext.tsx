@@ -8,6 +8,8 @@
  */
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { getSupabaseClient } from '@/lib/supabaseClient';
+import type { Session } from '@supabase/supabase-js';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES & INTERFACES
@@ -150,19 +152,21 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const [tier, setTier] = useState<TierType>(TIERS.GUEST);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [usage, setUsage] = useState<UsageData>({
     analysesUsed: 0,
     analysesLimit: 3,
     periodEnd: null,
   });
 
-  const loadSubscriptionStatus = useCallback(async (): Promise<void> => {
+  const supabase = getSupabaseClient();
+
+  const loadSubscriptionStatus = useCallback(async (currentSession: Session | null): Promise<void> => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      
-      if (!token) {
-        const guestUsed = parseInt(localStorage.getItem('guest_analyses') || '0', 10);
+      if (!currentSession?.access_token) {
+        // Guest user - use localStorage for usage tracking
+        const guestUsed = parseInt(localStorage.getItem('guest_analyses_used') || '0', 10);
         setTier(TIERS.GUEST);
         setUsage({
           analysesUsed: guestUsed,
@@ -170,12 +174,13 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
           periodEnd: null,
         });
       } else {
+        // Authenticated user - fetch subscription from API
         const response = await fetch('/api/subscription', {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${currentSession.access_token}`,
           },
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           const userTier = (data.tier as TierType) || TIERS.FREE;
@@ -187,20 +192,53 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
             periodEnd: data.period_end || null,
           });
         } else {
+          // API error or no subscription - default to free tier for authenticated users
           setTier(TIERS.FREE);
+          setUsage({
+            analysesUsed: 0,
+            analysesLimit: FEATURE_ACCESS.analysisLimit[TIERS.FREE],
+            periodEnd: null,
+          });
         }
       }
     } catch (error) {
       console.error('Failed to load subscription status:', error);
-      setTier(TIERS.GUEST);
+      // On error, check if we have a session - if so, assume free tier
+      if (currentSession) {
+        setTier(TIERS.FREE);
+      } else {
+        setTier(TIERS.GUEST);
+      }
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  // Initialize session and listen for auth changes
   useEffect(() => {
-    loadSubscriptionStatus();
-  }, [loadSubscriptionStatus]);
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      loadSubscriptionStatus(initialSession);
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession);
+        loadSubscriptionStatus(newSession);
+      }
+    );
+
+    return () => {
+      authSubscription.unsubscribe();
+    };
+  }, [supabase, loadSubscriptionStatus]);
 
   const hasFeature = useCallback((featureName: FeatureType): boolean => {
     const allowedTiers = FEATURE_ACCESS.features[featureName];
@@ -225,16 +263,16 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       ...prev,
       analysesUsed: prev.analysesUsed + 1,
     }));
-    
+
     if (tier === TIERS.GUEST) {
-      const current = parseInt(localStorage.getItem('guest_analyses') || '0', 10);
-      localStorage.setItem('guest_analyses', (current + 1).toString());
+      const current = parseInt(localStorage.getItem('guest_analyses_used') || '0', 10);
+      localStorage.setItem('guest_analyses_used', (current + 1).toString());
     }
   }, [tier]);
 
   const refreshSubscription = useCallback(async (): Promise<void> => {
-    await loadSubscriptionStatus();
-  }, [loadSubscriptionStatus]);
+    await loadSubscriptionStatus(session);
+  }, [loadSubscriptionStatus, session]);
 
   const value: SubscriptionContextType = {
     tier,

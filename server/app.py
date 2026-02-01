@@ -736,5 +736,14 @@ def analyze():
             extra={"match_score": 0},
         )
 
+# Register Stripe routes
+try:
+    from stripe_integration import register_stripe_routes
+    register_stripe_routes(app)
+except ImportError:
+    logger.warning("Stripe integration not available - stripe_integration module not found")
+except Exception as e:
+    logger.warning(f"Stripe integration not initialized: {e}")
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

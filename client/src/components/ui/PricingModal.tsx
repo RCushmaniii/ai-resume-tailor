@@ -38,24 +38,49 @@ export function PricingModal({ isOpen, onClose, onUpgrade }: PricingModalProps) 
   const handleUpgrade = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/create-checkout-session', {
+      // Get auth token if available
+      const token = localStorage.getItem('supabase.auth.token');
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+      if (token) {
+        try {
+          const parsed = JSON.parse(token);
+          if (parsed?.currentSession?.access_token) {
+            headers['Authorization'] = `Bearer ${parsed.currentSession.access_token}`;
+          }
+        } catch {
+          // Token parsing failed, continue without auth
+        }
+      }
+
+      const response = await fetch('/api/checkout/create-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        headers,
+        body: JSON.stringify({ billingPeriod: 'monthly' })
       });
-      
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+
       const data = await response.json();
-      
-      if (data.url) {
+
+      if (data.clientSecret) {
+        // For embedded checkout, would need Stripe.js integration
+        console.log('Checkout session created:', data.sessionId);
+        alert('Stripe checkout integration in progress. Session ID: ' + data.sessionId);
+      } else if (data.url) {
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
         throw new Error('No checkout URL returned');
       }
-      
+
     } catch (error) {
       console.error("Payment Error:", error);
-      alert("Could not initialize payment. Please try again.");
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Could not initialize payment: ${message}`);
     } finally {
       setIsLoading(false);
     }

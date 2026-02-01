@@ -67,36 +67,34 @@ export function Header({ navigate }: HeaderProps) {
     }
   };
 
-  // Add scroll effect with proper debouncing
+  // Add scroll effect with hysteresis to prevent pulsating
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    let lastIsScrolled = window.scrollY > 50;
+    // Hysteresis thresholds: collapse at 80px, expand back at 30px
+    // This creates a "dead zone" that prevents oscillation
+    const COLLAPSE_THRESHOLD = 80;
+    const EXPAND_THRESHOLD = 30;
 
     const handleScroll = () => {
-      const currentIsScrolled = window.scrollY > 50;
+      const scrollY = window.scrollY;
 
-      // Only update if the scrolled state actually changes
-      if (currentIsScrolled !== lastIsScrolled) {
-        // Clear existing timeout
-        if (timeoutId) {
-          clearTimeout(timeoutId);
+      setIsScrolled(prev => {
+        // If currently expanded, only collapse when past the collapse threshold
+        if (!prev && scrollY > COLLAPSE_THRESHOLD) {
+          return true;
         }
-
-        // Debounce to prevent rapid changes
-        timeoutId = setTimeout(() => {
-          setIsScrolled(currentIsScrolled);
-          lastIsScrolled = currentIsScrolled;
-        }, 150);
-      }
+        // If currently collapsed, only expand when below the expand threshold
+        if (prev && scrollY < EXPAND_THRESHOLD) {
+          return false;
+        }
+        // Otherwise, maintain current state (hysteresis)
+        return prev;
+      });
     };
-    
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
     };
   }, []);
 
@@ -121,6 +119,7 @@ export function Header({ navigate }: HeaderProps) {
             <Button onClick={() => handleNavClick('analyze')} className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
               {t('header.nav.analyze')}
             </Button>
+            <a href="/pricing" onClick={(e) => { e.preventDefault(); handleNavClick('pricing'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('header.nav.pricing')}</a>
             <a href="/methodology" onClick={(e) => { e.preventDefault(); handleNavClick('methodology'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('header.nav.forRecruiters')}</a>
             <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('header.nav.docs')}</a>
 
@@ -179,6 +178,7 @@ export function Header({ navigate }: HeaderProps) {
           {/* Mobile Nav Links */}
           <div className="px-2 pt-2 pb-3 space-y-1">
             <a href="/analyze" onClick={(e) => { e.preventDefault(); handleNavClick('analyze'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.analyze')}</a>
+            <a href="/pricing" onClick={(e) => { e.preventDefault(); handleNavClick('pricing'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.pricing')}</a>
             <a href="/methodology" onClick={(e) => { e.preventDefault(); handleNavClick('methodology'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.forRecruiters')}</a>
             <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.documentation')}</a>
 

@@ -22,9 +22,11 @@ const Analyze = lazy(() => import('./pages/Analyze').then(m => ({ default: m.Ana
 const MethodologyPage = lazy(() => import('./pages/MethodologyPage'));
 const SignupPage = lazy(() => import('./pages/SignupPage').then(m => ({ default: m.SignupPage })));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
+const PricingPage = lazy(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })));
+const CheckoutSuccessPage = lazy(() => import('./pages/CheckoutSuccessPage').then(m => ({ default: m.CheckoutSuccessPage })));
 
 // Define the possible pages in our application
-export type Page = 'home' | 'components' | 'docs' | 'examples' | 'privacy' | 'terms' | 'cookie' | 'test-api' | 'analyze' | 'methodology' | 'signup' | 'login' | 'not-found';
+export type Page = 'home' | 'components' | 'docs' | 'examples' | 'privacy' | 'terms' | 'cookie' | 'test-api' | 'analyze' | 'methodology' | 'signup' | 'login' | 'pricing' | 'checkout-success' | 'not-found';
 
 function App() {
   const { t } = useTranslation();
@@ -45,6 +47,8 @@ function App() {
       'methodology',
       'signup',
       'login',
+      'pricing',
+      'checkout-success',
       ...(import.meta.env.DEV ? (['components', 'examples', 'test-api'] as const) : []),
     ];
     const isValidPage = validPages.includes(page);
@@ -135,6 +139,10 @@ function App() {
         return <SignupPage navigate={handleNavClick} />;
       case 'login':
         return <LoginPage navigate={handleNavClick} />;
+      case 'pricing':
+        return <PricingPage />;
+      case 'checkout-success':
+        return <CheckoutSuccessPage navigate={handleNavClick} />;
       case 'not-found':
         return <NotFoundPage />;
       default:

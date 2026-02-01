@@ -59,7 +59,7 @@ STRIPE_CONFIG = {
         "monthly": os.getenv("STRIPE_PRICE_MONTHLY", "price_monthly_xxx"),
         "annual": os.getenv("STRIPE_PRICE_ANNUAL", "price_annual_xxx"),
     },
-    "success_url": os.getenv("FRONTEND_URL", "http://localhost:3000") + "/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+    "success_url": os.getenv("FRONTEND_URL", "http://localhost:3000") + "/checkout-success?session_id={CHECKOUT_SESSION_ID}",
     "cancel_url": os.getenv("FRONTEND_URL", "http://localhost:3000") + "/pricing",
 }
 
@@ -188,17 +188,19 @@ def get_checkout_config():
 
 
 @stripe_bp.route('/checkout/create-session', methods=['POST'])
-@require_auth
-def create_checkout_session(user):
+def create_checkout_session():
     """
     Create a Stripe Checkout session for embedded checkout.
-    
+
+    Supports both authenticated users and guest checkout.
+
     Request body:
     {
         "priceId": "price_xxx" or "monthly"/"annual",
-        "billingPeriod": "monthly" or "annual" (alternative to priceId)
+        "billingPeriod": "monthly" or "annual" (alternative to priceId),
+        "email": "guest@example.com" (required for guest checkout)
     }
-    
+
     Returns:
     {
         "clientSecret": "xxx" (for embedded checkout)
@@ -206,23 +208,47 @@ def create_checkout_session(user):
     """
     try:
         data = request.json or {}
-        
+
         # Get price ID
         price_id = data.get("priceId")
         billing_period = data.get("billingPeriod", "monthly")
-        
+
         if not price_id or price_id in ["monthly", "annual"]:
             price_id = STRIPE_CONFIG["prices"].get(billing_period)
-        
+
         if not price_id:
             return jsonify({"error": "Invalid billing period"}), 400
-        
+
+        # Check if user is authenticated
+        user = get_user_from_token()
+
+        if user:
+            # Authenticated user - use their info
+            user_id = user.get("id")
+            email = user.get("email")
+            is_guest = False
+        else:
+            # Guest checkout - require email in request
+            email = data.get("email")
+            if not email:
+                return jsonify({"error": "Email is required for guest checkout"}), 400
+            user_id = None
+            is_guest = True
+
         # Get or create Stripe customer
         customer_id = get_or_create_stripe_customer(
-            user_id=user.get("id"),
-            email=user.get("email")
+            user_id=user_id or f"guest_{email}",
+            email=email
         )
-        
+
+        # Build metadata
+        metadata = {
+            "is_guest": str(is_guest).lower(),
+            "email": email,
+        }
+        if user_id:
+            metadata["user_id"] = user_id
+
         # Create checkout session for embedded checkout
         session = stripe.checkout.Session.create(
             customer=customer_id,
@@ -234,25 +260,22 @@ def create_checkout_session(user):
             mode="subscription",
             ui_mode="embedded",  # For embedded checkout
             return_url=STRIPE_CONFIG["success_url"],
-            metadata={
-                "user_id": user.get("id"),
-            },
+            metadata=metadata,
             subscription_data={
-                "metadata": {
-                    "user_id": user.get("id"),
-                }
+                "metadata": metadata,
             },
             # Allow promotion codes
             allow_promotion_codes=True,
         )
-        
-        logger.info(f"Created checkout session {session.id} for user {user.get('id')}")
-        
+
+        checkout_type = "guest" if is_guest else f"user {user_id}"
+        logger.info(f"Created checkout session {session.id} for {checkout_type}")
+
         return jsonify({
             "clientSecret": session.client_secret,
             "sessionId": session.id,
         })
-        
+
     except stripe.error.StripeError as e:
         logger.error(f"Stripe error: {e}")
         return jsonify({"error": str(e)}), 400
@@ -441,21 +464,42 @@ def stripe_webhook():
 # ═══════════════════════════════════════════════════════════════════════════
 
 def handle_checkout_completed(session):
-    """Handle successful checkout."""
-    user_id = session.get("metadata", {}).get("user_id")
+    """Handle successful checkout for both authenticated users and guests."""
+    metadata = session.get("metadata", {})
+    user_id = metadata.get("user_id")
+    is_guest = metadata.get("is_guest", "false") == "true"
+    email = metadata.get("email")
     customer_id = session.get("customer")
     subscription_id = session.get("subscription")
-    
-    if not user_id:
-        logger.warning("Checkout completed without user_id in metadata")
+
+    if is_guest:
+        # Guest checkout - log for now, user can claim subscription when they create account
+        logger.info(f"Guest checkout completed for {email}, customer_id={customer_id}")
+        # Store the pending subscription info in Stripe customer metadata
+        if customer_id:
+            try:
+                stripe.Customer.modify(
+                    customer_id,
+                    metadata={
+                        "pending_subscription": "true",
+                        "subscription_id": subscription_id,
+                        "checkout_email": email,
+                    }
+                )
+            except Exception as e:
+                logger.error(f"Failed to update customer metadata: {e}")
         return
-    
+
+    if not user_id:
+        logger.warning("Checkout completed without user_id in metadata (non-guest)")
+        return
+
     logger.info(f"Checkout completed for user {user_id}")
-    
+
     # Get subscription details
     if subscription_id:
         subscription = stripe.Subscription.retrieve(subscription_id)
-        
+
         update_user_subscription(user_id, "pro", {
             "customer": customer_id,
             "subscription_id": subscription_id,
