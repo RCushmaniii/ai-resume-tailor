@@ -6,16 +6,17 @@
 portfolio_enabled: true
 portfolio_priority: 2
 portfolio_featured: false
-portfolio_last_reviewed: "2025-12-31"
+portfolio_last_reviewed: "2026-02-18"
 
 title: "AI Resume Tailor"
-tagline: "Automatically customize resumes for each job application using AI analysis"
+tagline: "AI-powered ATS resume analysis with instant, actionable feedback"
 slug: "ai-resume-tailor"
 
-category: "AI Automation"
+category: "AI SaaS"
 target_audience: "Job seekers, career coaches, and recruiting agencies"
 tags:
   - "ai"
+  - "saas"
   - "job-search"
   - "automation"
   - "resume"
@@ -25,85 +26,87 @@ thumbnail: ""
 hero_images: []
 demo_video_url: ""
 
-live_url: ""
+live_url: "https://ai-resume-tailor-client.vercel.app"
 case_study_url: ""
 
 problem_solved: |
-  Job seekers spend hours manually customizing resumes for each application.
-  Generic resumes get filtered out by ATS systems. Tailoring is time-consuming
-  but necessary. Most people don't know how to optimize for specific roles.
+  Job seekers don't know why ATS systems reject their resumes. 75% of resumes
+  never reach human eyes. Manual optimization is slow and guesswork-driven.
+  Most people don't understand what ATS algorithms look for.
 
 key_outcomes:
-  - "Generate tailored resumes in under 60 seconds per job"
-  - "AI analyzes job descriptions and matches relevant experience"
-  - "Optimizes for ATS (Applicant Tracking Systems)"
-  - "Maintains truthful content while emphasizing relevant skills"
-  - "Multiple output formats (PDF, DOCX, plain text)"
+  - "Instant AI-powered ATS compatibility scoring (0-100) with granular breakdown"
+  - "Missing keyword detection with priority-ranked severity (Critical/Warning/Tip)"
+  - "Actionable optimization suggestions powered by GPT-4 semantic analysis"
+  - "Bilingual support (English/Spanish) for global job seekers"
+  - "Privacy-first design — no data storage, real-time processing only"
 
 tech_stack:
-  - "Python"
-  - "OpenAI API"
-  - "Natural Language Processing"
-  - "PDF Generation"
-  - "FastAPI"
+  - "React 19"
+  - "TypeScript"
+  - "Tailwind CSS"
+  - "shadcn/ui"
+  - "Flask"
+  - "Python 3.11"
+  - "OpenAI GPT-4"
+  - "Clerk"
+  - "Neon Postgres"
+  - "Stripe"
+  - "Vercel"
+  - "Render"
 
-complexity: "MVP"
+complexity: "Production SaaS"
 
 ---
 
 ## Overview
 
-AI Resume Tailor automates the tedious process of customizing resumes for each job application. Using natural language processing and AI, it analyzes job descriptions and intelligently emphasizes the most relevant experience, skills, and accomplishments from your master resume.
+AI Resume Tailor is a bilingual SaaS application that helps job seekers optimize their resumes for Applicant Tracking Systems (ATS). Using OpenAI GPT-4, it analyzes resumes against job descriptions and delivers structured, actionable feedback — match scores, missing keywords, and severity-coded optimization suggestions.
 
-The tool maintains factual accuracy while presenting your qualifications in the context that matters most to each specific role.
+The app is privacy-first (no data storage), supports English and Spanish, and includes Clerk authentication, Stripe payments, and a Neon Postgres backend.
 
 ## The Challenge
 
-Modern job applications require tailored resumes:
+Modern job applications are filtered by ATS software before any human sees them:
 
-- **Generic resumes get filtered out** by ATS software
-- **Manual tailoring takes 30-60 minutes** per application
-- **Most job seekers don't know** which experiences to emphasize
-- **Applying to multiple jobs** becomes unsustainable
+- **75% of resumes are rejected** by automated screening
+- **Job seekers don't understand** what ATS algorithms scan for
+- **Manual optimization is slow** and often guesswork
+- **Applying to multiple jobs** becomes unsustainable without tooling
 - **Quality suffers** as fatigue sets in
-
-This creates a barrier to aggressive job searching, especially for career changers who need to reframe their experience for different industries.
 
 ## The Solution
 
 AI Resume Tailor provides:
 
 **For Job Seekers:**
-- Upload your master resume once
-- Paste a job description
-- Get a tailored resume in seconds
-- Download in multiple formats
-- Apply to more jobs without burnout
+- Paste your resume and a job description
+- Get an instant ATS compatibility score (0-100)
+- See exactly which keywords are missing and their priority
+- Receive actionable suggestions coded by severity (Critical/Warning/Tip)
+- Work in English or Spanish
 
 **How It Works:**
-1. Analyzes job description for key requirements
-2. Identifies matching experience in your master resume
-3. Reorders and emphasizes relevant accomplishments
-4. Adjusts language to match job posting terminology
-5. Optimizes for ATS keyword matching
+1. Analyzes job description for key requirements using GPT-4
+2. Scores resume against ATS-style keyword and semantic matching
+3. Returns structured JSON with score breakdown, missing keywords, and suggestions
+4. Displays results with visual severity coding and clear next steps
 
 **Key Features:**
-- Maintains factual accuracy (no fabrication)
-- Preserves your writing style
-- Highlights transferable skills
-- Industry-specific customization
-- ATS optimization
+- Privacy-first (no data stored, processed in real-time)
+- Bilingual (EN/ES) with full internationalization
+- Clerk auth (Google, LinkedIn, email/password)
+- Stripe-powered premium subscriptions
+- Neon Postgres for user profiles and usage tracking
 
 ## Technical Highlights
 
-- **NLP Analysis:** Extracts key requirements and skills from job descriptions
-- **Semantic Matching:** Maps your experience to job requirements
-- **Content Ranking:** Scores resume items by relevance to specific role
-- **Format Preservation:** Maintains professional formatting across outputs
-- **Fast Processing:** Sub-60 second generation time
+- **Structured AI Output:** GPT-4 with JSON mode for type-safe, deterministic responses
+- **Semantic Matching:** Beyond keyword counting — understands context and intent
+- **Full-stack Type Safety:** TypeScript frontend with Python backend contracts
+- **Production Infrastructure:** Auto-deploy via Vercel + Render, health checks, CORS config
+- **SaaS Monetization:** Stripe embedded checkout with guest-to-paid conversion flow
 
 ## Results
 
-This MVP demonstrates practical AI application to a real-world problem that affects millions of job seekers. Shows understanding of NLP, document processing, and building tools that provide immediate value.
-
-The project highlights the ability to take AI capabilities and package them into user-friendly solutions that solve specific pain points.
+Live at [ai-resume-tailor-client.vercel.app](https://ai-resume-tailor-client.vercel.app). This is a production SaaS product demonstrating full-stack AI integration, modern authentication, payment processing, and bilingual UX — built end-to-end as the flagship product of CushLabs AI Services.

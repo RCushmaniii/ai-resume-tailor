@@ -2,11 +2,11 @@
 
 Thank you for your interest in contributing! This guide will help you get started.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ and npm/pnpm
+- Node.js 18+ and pnpm
 - Python 3.11+ and pip
 - Git
 
@@ -33,8 +33,8 @@ Thank you for your interest in contributing! This guide will help you get starte
 
    ```bash
    cd ../client
-   npm install
-   cp .env.example .env  # Configure API URL
+   pnpm install
+   cp .env.example .env  # Configure API URL and Clerk keys
    ```
 
 4. **Start development**
@@ -47,29 +47,44 @@ Thank you for your interest in contributing! This guide will help you get starte
    # Backend (port 5000)
    cd server && venv\Scripts\activate && python app.py
 
-   # Frontend (port 3000)
-   cd client && npm run dev
+   # Frontend (port 5173)
+   cd client && pnpm dev
    ```
 
-## 📋 Project Structure
+## Project Structure
 
 ```
 ai-resume-tailor/
 ├── client/                 # React frontend
 │   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── i18n/          # Translations (en/es)
-│   │   └── lib/           # Utilities
+│   │   ├── components/     # React components (analyze/, auth/, subscription/, ui/)
+│   │   ├── contexts/       # React Context (Subscription, SignInPrompt)
+│   │   ├── hooks/          # Custom hooks (useAnalysisLimit)
+│   │   ├── i18n/           # Translations (en/es)
+│   │   ├── lib/            # Utilities (api, useAuth, fetchWithAuth, store)
+│   │   ├── pages/          # Route pages
+│   │   └── types/          # TypeScript type definitions
 │   └── package.json
 ├── server/                 # Flask backend
-│   ├── app.py             # Main Flask application
-│   ├── ai_engine/         # AI analysis logic
+│   ├── app.py              # Main Flask application
+│   ├── ai_engine.py        # AI analysis engine
+│   ├── scoring_engine.py   # ATS scoring algorithm
+│   ├── database.py         # Neon Postgres helpers
+│   ├── clerk_webhooks.py   # Clerk webhook handlers
+│   ├── stripe_integration.py # Stripe payment handling
+│   ├── schema.sql          # Database schema
 │   └── requirements.txt
-├── docs/                  # Documentation
-└── .windsurf/             # Cascade configuration
+└── docs/                   # Documentation
 ```
 
-## 🛠️ Development Guidelines
+## Key Infrastructure
+
+- **Auth:** Clerk (Google OAuth, LinkedIn OAuth, email/password)
+- **Database:** Neon Serverless Postgres
+- **Payments:** Stripe (embedded checkout, webhooks)
+- **Hosting:** Vercel (frontend) + Render (backend)
+
+## Development Guidelines
 
 ### Code Style
 
@@ -89,7 +104,7 @@ ai-resume-tailor/
 - Sanitize data before AI API calls
 - Never expose API keys in client code
 
-## 🐛 Bug Reports
+## Bug Reports
 
 When reporting bugs, please include:
 
@@ -98,14 +113,14 @@ When reporting bugs, please include:
 - **Expected vs actual**: What you expected vs what happened
 - **Screenshots**: If applicable
 
-## ✨ Feature Requests
+## Feature Requests
 
 - **Use cases**: Describe the problem you're solving
 - **Proposed solution**: How you envision the feature
 - **Alternatives**: Other approaches you considered
 - **Impact**: Why this feature matters
 
-## 📝 Submitting Changes
+## Submitting Changes
 
 1. **Create a branch**
 
@@ -122,8 +137,8 @@ When reporting bugs, please include:
 
    ```bash
    # Frontend
-   npm run build
-   npm run lint
+   pnpm build
+   pnpm lint
 
    # Backend
    python -m py_compile app.py
@@ -142,7 +157,7 @@ When reporting bugs, please include:
    - Link relevant issues
    - Request review from maintainers
 
-## 🎯 Areas for Contribution
+## Areas for Contribution
 
 ### High Impact
 
@@ -158,7 +173,7 @@ When reporting bugs, please include:
 - **Testing**: Add unit or integration tests
 - **Components**: Create reusable UI components
 
-## 🏆 Recognition
+## Recognition
 
 Contributors are recognized in:
 
@@ -166,7 +181,7 @@ Contributors are recognized in:
 - **Release notes**: Feature attributions
 - **GitHub**: Badges and achievements
 
-## 📞 Get Help
+## Get Help
 
 - **Issues**: Create GitHub issue for bugs/questions
 - **Discussions**: Use GitHub Discussions for ideas
@@ -175,4 +190,4 @@ Contributors are recognized in:
 
 ---
 
-Thank you for contributing to AI Resume Tailor! 🎉
+Thank you for contributing to AI Resume Tailor!

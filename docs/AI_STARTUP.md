@@ -57,7 +57,7 @@
 
 **For Roadmap:**
 
-- [docs/product/ROADMAP.md](docs/product/ROADMAP.md)
+- [docs/WORLD_CLASS_SAAS_ROADMAP.md](docs/WORLD_CLASS_SAAS_ROADMAP.md)
 - _Contains:_ Planned features, future enhancements, and version history.
 
 ---
@@ -71,6 +71,9 @@
 - **State Management:** React Context + Zustand
 - **i18n:** react-i18next (EN/ES bilingual support)
 - **AI Engine:** OpenAI GPT-4 with structured JSON output
+- **Auth:** Clerk (Google OAuth, LinkedIn OAuth, email/password)
+- **Database:** Neon Serverless Postgres
+- **Payments:** Stripe (embedded checkout, webhooks, customer portal)
 - **Deployment:** Vercel (frontend) + Render (backend)
 - **Key Feature:** Real-time ATS-focused resume analysis with privacy-first design
 
@@ -100,12 +103,13 @@
 
 - React Context API
 - Zustand (auth/credits state)
-- Supabase (authentication & database)
+- Clerk (authentication)
+- Neon Postgres (database)
+- Stripe (payments)
 - @tanstack/react-query (data fetching)
 
 **Development:**
 
 - ESLint + Prettier
 - TypeScript strict mode
-- MSW (API mocking)
 - pnpm (package management)

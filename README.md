@@ -1,31 +1,32 @@
 # AI Resume Tailor
 
-**Live Demo:** [https://ai-resume-tailor-client.vercel.app](https://ai-resume-tailor-client.vercel.app)  
+**Live App:** [https://ai-resume-tailor-client.vercel.app](https://ai-resume-tailor-client.vercel.app)
 **Repository:** [github.com/RCushmaniii/ai-resume-tailor](https://github.com/RCushmaniii/ai-resume-tailor)
 
-**Release:** v2.0.0 - World-Class Analysis System  
+**Release:** v2.0.0 - World-Class Analysis System
 **Documentation:** See sections below for complete documentation index
 
 Over 75% of resumes are rejected by Applicant Tracking Systems (ATS) before reaching human recruiters. AI Resume Tailor provides instant, AI-powered analysis that translates complex ATS requirements into clear, actionable feedback.
 
-**🌟 World-Class Features:**
+**Key Features:**
 
 - **Structured AI Analysis** with JSON output for type-safe data handling
 - **Bilingual Support** (English/Spanish) with full internationalization
 - **Visual Severity Coding** for priority-based improvement guidance
 - **Professional UI Components** with skeleton loaders and smooth animations
 - **Real-time Validation** with character counting and smart error handling
-- **💰 Pro Monetization** with Stripe integration for premium features
-- **🔄 Developer Tools** including health check and reset utilities
+- **Stripe Integration** for premium features and subscription management
+- **Clerk Authentication** with Google and LinkedIn OAuth
+- **Developer Tools** including health check and reset utilities
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Health Check (Recommended)
 
 ```bash
-cd client && npm run health-check
+cd client && pnpm health-check
 ```
 
 Run this first to verify your development environment is properly configured.
@@ -40,28 +41,27 @@ START_DEV.bat
 # Backend (port 5000)
 cd server && venv\Scripts\activate && python app.py
 
-# Frontend (port 3000)
-cd client && npm run dev
+# Frontend (port 5173)
+cd client && pnpm dev
 ```
 
 ### Contributing
 
-📖 **See [CONTRIBUTING.md](./CONTRIBUTING.md)** for detailed development guidelines, code style, and contribution process.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed development guidelines, code style, and contribution process.
 
 ## What It Does
 
 AI Resume Tailor identifies exactly what recruiters want to see:
 
-- **📊 Quantified Compatibility** via 0-100 match score with granular breakdown
-- **🔍 Missing Keywords** with visual priority indicators (Critical/Warning/Tip)
-- **📋 Actionable Suggestions** categorized by severity with color-coded cards
-- **🌍 Bilingual Experience** supporting English and Spanish users
-- **⚡ Real-time Feedback** with character limits and validation warnings
+- **Quantified Compatibility** via 0-100 match score with granular breakdown
+- **Missing Keywords** with visual priority indicators (Critical/Warning/Tip)
+- **Actionable Suggestions** categorized by severity with color-coded cards
+- **Bilingual Experience** supporting English and Spanish users
+- **Real-time Feedback** with character limits and validation warnings
 
 **Key Design Principles:**
 
 - **Privacy-first** (no data storage, real-time processing only)
-- **Zero-friction UX** (no signup required, instant access)
 - **World-class Accessibility** (screen reader support, semantic HTML)
 - **Production-ready Infrastructure** with auto-deployment
 
@@ -72,22 +72,22 @@ AI Resume Tailor identifies exactly what recruiters want to see:
 ```
 ┌──────────────────┐         ┌───────────────────┐         ┌──────────────┐
 │  React + Vite    │  HTTPS  │   Flask API       │   API   │   OpenAI     │
-│  (Vercel)        │────────▶│   (Render)        │────────▶│   GPT-4      │
+│  (Vercel)        │────────>│   (Render)        │────────>│   GPT-4      │
 │                  │         │                   │         │              │
-│ • World-class UI │         │ • Structured JSON │         │ • ATS-focused │
-│ • i18n Support   │         │ • Type-safe       │         │   prompts    │
-│ • Skeleton Loaders│         │ • Error handling  │         │ • Suggestions │
-│ • Validation     │         │ • CORS config     │         │              │
+│ • World-class UI │         │ • Structured JSON │         │ • ATS-focused│
+│ • i18n Support   │         │ • Clerk auth      │         │   prompts    │
+│ • Skeleton       │         │ • Stripe billing  │         │ • Suggestions│
+│   Loaders        │         │ • Error handling  │         │              │
 └──────────────────┘         └───────────────────┘         └──────────────┘
-        ↓                              ↓
+        |                              |
    TypeScript types            Python 3.11 runtime
    Tailwind + shadcn/ui        Gunicorn WSGI server
-   Internationalization        Environment-based config
+   Clerk (auth)                Neon Postgres (DB)
 ```
 
 ---
 
-## 🌟 World-Class Features
+## World-Class Features
 
 ### 1. Structured Analysis System
 
@@ -230,6 +230,9 @@ function transformAnalysisResult(
 | **React i18next**            | Internationalization | Industry-standard i18n library with comprehensive features                            |
 | **Flask**                    | Backend API          | Lightweight; perfect for single-purpose APIs; excellent for Python ML/AI integrations |
 | **OpenAI GPT-4**             | AI analysis          | Industry-leading semantic understanding; structured JSON output for scoring           |
+| **Clerk**                    | Authentication       | Google + LinkedIn OAuth, email/password; drop-in React components                     |
+| **Neon Postgres**            | Database             | Serverless Postgres with branching; scales to zero when idle                          |
+| **Stripe**                   | Payments             | Industry-standard billing; embedded checkout, webhooks, customer portal               |
 | **Vercel + Render**          | Hosting              | Free tier with auto-deploy from GitHub; production-ready infrastructure               |
 
 ---
@@ -247,6 +250,7 @@ function transformAnalysisResult(
 
 ```bash
 VITE_API_URL=https://ai-resume-tailor-hxpr.onrender.com/api
+VITE_CLERK_PUBLISHABLE_KEY=pk_...
 VITE_GUEST_CREDITS_TOTAL=5
 ```
 
@@ -256,6 +260,9 @@ VITE_GUEST_CREDITS_TOTAL=5
 OPENAI_API_KEY=sk-proj-xxxxx
 OPENAI_MODEL=gpt-4o
 FRONTEND_URL=https://ai-resume-tailor-client.vercel.app
+CLERK_SECRET_KEY=sk_...
+CLERK_WEBHOOK_SECRET=whsec_...
+DATABASE_URL=postgres://user:pass@ep-xxx.region.aws.neon.tech/neondb
 ```
 
 ---
@@ -300,30 +307,30 @@ Visit `http://localhost:5173`
 
 ---
 
-## 🌟 Key Enhancements (v2.0.0)
+## Key Enhancements (v2.0.0)
 
 ### Analysis System Overhaul
 
-- ✅ **Structured JSON Output** from OpenAI API
-- ✅ **Type-Safe Interfaces** with backward compatibility
-- ✅ **ATS-Focused Prompts** for better keyword matching
-- ✅ **Low Temperature** responses for determinism
+- **Structured JSON Output** from OpenAI API
+- **Type-Safe Interfaces** with backward compatibility
+- **ATS-Focused Prompts** for better keyword matching
+- **Low Temperature** responses for determinism
 
 ### World-Class UI Components
 
-- ✅ **AnalysisReport** with hero section and visual hierarchy
-- ✅ **AnalysisSkeleton** with layout-perfect loading states
-- ✅ **ValidatedTextArea** with character counting and clear buttons
-- ✅ **SuggestionsList** with severity-coded cards
-- ✅ **MatchScoreCard** with compact donut chart design
+- **AnalysisReport** with hero section and visual hierarchy
+- **AnalysisSkeleton** with layout-perfect loading states
+- **ValidatedTextArea** with character counting and clear buttons
+- **SuggestionsList** with severity-coded cards
+- **MatchScoreCard** with compact donut chart design
 
 ### Internationalization & UX
 
-- ✅ **Complete i18n Support** for English/Spanish
-- ✅ **Visual Severity Coding** (red/amber/blue)
-- ✅ **Success State Handling** for perfect matches
-- ✅ **Smooth Animations** and micro-interactions
-- ✅ **Accessibility Features** with semantic HTML
+- **Complete i18n Support** for English/Spanish
+- **Visual Severity Coding** (red/amber/blue)
+- **Success State Handling** for perfect matches
+- **Smooth Animations** and micro-interactions
+- **Accessibility Features** with semantic HTML
 
 ---
 
@@ -345,95 +352,96 @@ Visit `http://localhost:5173`
 ai-resume-tailor/
 ├── client/                  # Frontend (React + TypeScript)
 │   ├── src/
-│   │   ├── components/      # World-class UI components
+│   │   ├── components/      # UI components
 │   │   │   ├── analyze/     # Analysis-specific components
-│   │   │   │   ├── AnalysisReport.tsx
-│   │   │   │   ├── AnalysisSkeleton.tsx
-│   │   │   │   ├── ValidatedTextArea.tsx
-│   │   │   │   └── SuggestionsList.tsx
-│   │   │   └── ui/          # Base UI components
-│   │   ├── i18n/            # Internationalization
-│   │   │   ├── en.ts        # English translations
-│   │   │   └── es.ts        # Spanish translations
-│   │   ├── lib/             # Utilities and helpers
+│   │   │   ├── auth/        # Auth dialogs and modals
+│   │   │   ├── subscription/# Payment/upgrade components
+│   │   │   └── ui/          # Base shadcn components
+│   │   ├── contexts/        # React Context (Subscription, SignInPrompt)
+│   │   ├── hooks/           # Custom hooks (useAnalysisLimit)
+│   │   ├── i18n/            # Internationalization (en.ts, es.ts)
+│   │   ├── lib/             # Utilities (api, useAuth, fetchWithAuth, store)
+│   │   ├── pages/           # Route pages (Analyze, Landing, Login, etc.)
 │   │   └── types/           # TypeScript type definitions
 │   └── public/              # Static assets
 ├── server/                  # Backend (Flask API)
 │   ├── app.py               # Main Flask application
-│   ├── ai_engine.py         # World-class AI analysis engine
+│   ├── ai_engine.py         # AI analysis engine
+│   ├── scoring_engine.py    # ATS scoring algorithm
+│   ├── database.py          # Neon Postgres database helpers
+│   ├── clerk_webhooks.py    # Clerk webhook handlers
+│   ├── stripe_integration.py# Stripe payment handling
+│   ├── schema.sql           # Database schema
 │   └── requirements.txt     # Python dependencies
 └── docs/                    # Documentation
-    ├── setup/               # Setup and installation guides
-    ├── development/         # Development workflows
-    └── backend/             # API documentation
+    ├── product/             # PRD, monetization strategy
+    ├── development/         # Security, testing, deployment guides
+    ├── backend/             # API and AI engine documentation
+    └── phases/              # Development phase summaries
 ```
 
 ---
 
-## 📚 Documentation Index
+## Documentation Index
 
-### 🧭 Start Here
+### Start Here
 
-- **[Quick Start](./docs/setup/SETUP.md)** - Run the app locally
-- **[Setup Guide](./docs/setup/SETUP.md)** - Complete setup instructions
+- **[AI Startup Guide](./docs/AI_STARTUP.md)** - Project orientation and index
+- **[Contributing](./CONTRIBUTING.md)** - Development guidelines
 
-### 📦 Product
+### Product
 
 - **[PRD](./docs/product/PRD.md)** - Product requirements
-- **[Roadmap](./docs/product/ROADMAP.md)** - Planned enhancements
+- **[Roadmap](./docs/WORLD_CLASS_SAAS_ROADMAP.md)** - Planned enhancements
 - **[Monetization & Abuse Controls](./docs/product/MONETIZATION_AND_ABUSE_CONTROLS.md)** - Quotas, feature gating, and anti-abuse strategy
 
-### 💻 Development
+### Development
 
 - **[Security](./docs/development/SECURITY.md)** - Security measures and validation
 - **[Testing](./docs/development/TESTING.md)** - Consolidated testing guide
 - **[Deployment Guide](./docs/development/DEPLOYMENT.md)** - Backend deployment instructions
-- **[Supabase & Postgres Best Practices](./docs/development/SUPABASE_POSTGRES_BEST_PRACTICES.md)**
 - **[Coding Principles](./docs/development/CODING_PRINCIPLES.md)**
 - **[Changelog](./docs/development/CHANGELOG.md)**
 
-### 🚀 Operations
+### Backend Documentation
 
-- **[Deployment](./docs/operations/DEPLOYMENT.md)** - Brief deployment overview
-
-### 🔧 Backend Documentation
-
-- **[Backend API Reference](./docs/backend/API_REFERENCE.md)** - Backend API documentation
-- **[AI Engine](./docs/backend/AI_ENGINE.md)** - World-class AI analysis engine documentation
+- **[Backend Overview](./docs/backend/README.md)** - Backend API documentation
+- **[AI Engine](./docs/backend/AI_ENGINE.md)** - AI analysis engine documentation
 
 ---
 
-## 📊 Project Status
+## Project Status
 
-✅ **Phase 0 Complete** - Project scaffold with FE/BE round-trip  
-✅ **Phase 1 Complete** - Core analysis engine implementation  
-✅ **Phase 2 Complete** - Form validation and security  
-🌟 **v2.0.0 Complete** - World-class analysis system with i18n  
-🚀 **Ready for Production Deployment**
+- **Phase 0 Complete** - Project scaffold with FE/BE round-trip
+- **Phase 1 Complete** - Core analysis engine implementation
+- **Phase 2 Complete** - Form validation and security
+- **v2.0.0 Complete** - World-class analysis system with i18n
+- **In Progress** - Stripe integration, Clerk auth, Neon database
 
 ---
 
 ## About This Project
 
-Portfolio project demonstrating:
+AI Resume Tailor is a SaaS product built by [CushLabs AI Services](https://rankitbetter.com), helping job seekers optimize their resumes for ATS systems with AI-powered analysis.
+
+**Demonstrates:**
 
 - **Full-stack Development** (React + TypeScript, Flask + Python)
 - **AI/ML Integration** (OpenAI GPT-4 API with structured output)
+- **SaaS Infrastructure** (Clerk auth, Stripe payments, Neon Postgres)
 - **World-Class UX** (Internationalization, accessibility, animations)
 - **Production Deployment** with CI/CD (Vercel + Render)
-- **Modern Architecture** (Type safety, component composition, i18n)
-- **Security Configuration** (CORS, input validation, environment management)
 
 ---
 
 ## Contact
 
-**Robert Cushman**  
-Business Solution Architect & Full-Stack Developer  
+**Robert Cushman**
+Founder, CushLabs AI Services
 Guadalajara, Mexico
 
-📧 info@rankitbetter.com  
-🔗 [GitHub](https://github.com/RCushmaniii) • [LinkedIn](https://linkedin.com/in/robertcushman) • [Portfolio](https://rankitbetter.com)
+info@rankitbetter.com
+[GitHub](https://github.com/RCushmaniii) | [LinkedIn](https://linkedin.com/in/robertcushman) | [Portfolio](https://rankitbetter.com)
 
 ---
 
@@ -443,4 +451,4 @@ MIT License - Free to use for personal or commercial projects.
 
 ---
 
-_Updated: December 23, 2025 - v2.0.0 World-Class Analysis System_
+_Updated: February 2026 - v2.0.0 World-Class Analysis System_
