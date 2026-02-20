@@ -1,46 +1,14 @@
 ---
-# =============================================================================
-# PORTFOLIO.md — AI Resume Tailor
-# =============================================================================
-
+# === CONTROL FLAGS ===
 portfolio_enabled: true
 portfolio_priority: 2
 portfolio_featured: false
-portfolio_last_reviewed: "2026-02-18"
 
+# === CARD DISPLAY ===
 title: "AI Resume Tailor"
 tagline: "AI-powered ATS resume analysis with instant, actionable feedback"
 slug: "ai-resume-tailor"
-
 category: "AI SaaS"
-target_audience: "Job seekers, career coaches, and recruiting agencies"
-tags:
-  - "ai"
-  - "saas"
-  - "job-search"
-  - "automation"
-  - "resume"
-  - "career-tools"
-
-thumbnail: ""
-hero_images: []
-demo_video_url: ""
-
-live_url: "https://ai-resume-tailor-client.vercel.app"
-case_study_url: ""
-
-problem_solved: |
-  Job seekers don't know why ATS systems reject their resumes. 75% of resumes
-  never reach human eyes. Manual optimization is slow and guesswork-driven.
-  Most people don't understand what ATS algorithms look for.
-
-key_outcomes:
-  - "Instant AI-powered ATS compatibility scoring (0-100) with granular breakdown"
-  - "Missing keyword detection with priority-ranked severity (Critical/Warning/Tip)"
-  - "Actionable optimization suggestions powered by GPT-4 semantic analysis"
-  - "Bilingual support (English/Spanish) for global job seekers"
-  - "Privacy-first design — no data storage, real-time processing only"
-
 tech_stack:
   - "React 19"
   - "TypeScript"
@@ -55,8 +23,20 @@ tech_stack:
   - "Vercel"
   - "Render"
 
-complexity: "Production SaaS"
+# === DETAIL PAGE ===
 
+# === LINKS ===
+demo_url: ""
+live_url: "https://ai-resume-tailor-client.vercel.app"
+
+# === OPTIONAL ===
+tags:
+  - "ai"
+  - "saas"
+  - "job-search"
+  - "automation"
+  - "resume"
+  - "career-tools"
 ---
 
 ## Overview
