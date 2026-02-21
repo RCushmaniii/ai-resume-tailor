@@ -39,6 +39,7 @@ client/src/docs/
 !.vscode/settings.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
