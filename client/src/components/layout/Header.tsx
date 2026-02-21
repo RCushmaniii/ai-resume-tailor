@@ -1,10 +1,10 @@
 // File: src/components/layout/Header.tsx
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
 import { LanguageToggle } from '@/components/layout/LanguageToggle';
 import { useAuth } from '@/lib/useAuth';
-import { toast } from 'sonner';
 import logoImage from '@/assets/images/logo.jpg';
 import logoNoTextImage from '@/assets/images/ai resume tailor notext logo .jpg';
 import logoImageES from '@/assets/images/ai resume tailor logo es.jpg';
@@ -19,40 +19,26 @@ type HeaderProps = {
 export function Header({ navigate }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { enabled: authEnabled, user, supabase } = useAuth();
+  const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const { showSignIn } = useSignInPrompt();
 
   // Select appropriate logos based on current language
   const currentLogoImage = i18n.language === 'es' ? logoImageES : logoImage;
-  // No-text logo is the same for both languages (no text to translate)
-
-  const handleSignOut = async () => {
-    if (!supabase) return;
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error(t('header.toasts.signOutFailed'), {
-        description: error.message,
-        duration: 8000,
-      });
-      return;
-    }
-    toast.success(t('header.toasts.signedOut'));
-  };
 
   const handleNavClick = (page: string) => {
     setIsMenuOpen(false);
-    
+
     // Handle anchor links (e.g., "home#how-it-works")
     if (page.includes('#')) {
       const [pageName, anchor] = page.split('#');
       navigate(pageName || 'home');
-      
+
       // Wait for navigation, then scroll to anchor
       setTimeout(() => {
         const element = document.getElementById(anchor);
         if (element) {
-          const headerOffset = 100; // Account for sticky header height
+          const headerOffset = 100;
           const elementPosition = element.getBoundingClientRect().top;
           const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -69,8 +55,6 @@ export function Header({ navigate }: HeaderProps) {
 
   // Add scroll effect with hysteresis to prevent pulsating
   useEffect(() => {
-    // Hysteresis thresholds: collapse at 80px, expand back at 30px
-    // This creates a "dead zone" that prevents oscillation
     const COLLAPSE_THRESHOLD = 80;
     const EXPAND_THRESHOLD = 30;
 
@@ -78,15 +62,12 @@ export function Header({ navigate }: HeaderProps) {
       const scrollY = window.scrollY;
 
       setIsScrolled(prev => {
-        // If currently expanded, only collapse when past the collapse threshold
         if (!prev && scrollY > COLLAPSE_THRESHOLD) {
           return true;
         }
-        // If currently collapsed, only expand when below the expand threshold
         if (prev && scrollY < EXPAND_THRESHOLD) {
           return false;
         }
-        // Otherwise, maintain current state (hysteresis)
         return prev;
       });
     };
@@ -129,20 +110,23 @@ export function Header({ navigate }: HeaderProps) {
               <LanguageToggle variant="ghost" />
             </div>
 
-            {authEnabled && showSignIn ? (
-              user ? (
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-slate-500 dark:text-slate-400 max-w-[180px] truncate" title={user.email ?? undefined}>
-                    {user.email ?? t('header.auth.signedIn')}
-                  </span>
-                  <Button variant="outline" onClick={handleSignOut}>
-                    {t('header.auth.signOut')}
-                  </Button>
-                </div>
-              ) : (
-                <AuthDialog triggerLabel={t('header.auth.signIn')} />
-              )
-            ) : null}
+            {showSignIn && (
+              <>
+                <SignedIn>
+                  <div className="flex items-center gap-3">
+                    {user?.email && (
+                      <span className="text-xs text-slate-500 dark:text-slate-400 max-w-[180px] truncate" title={user.email}>
+                        {user.email}
+                      </span>
+                    )}
+                    <UserButton afterSignOutUrl="/" />
+                  </div>
+                </SignedIn>
+                <SignedOut>
+                  <AuthDialog triggerLabel={t('header.auth.signIn')} />
+                </SignedOut>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -182,19 +166,17 @@ export function Header({ navigate }: HeaderProps) {
             <a href="/methodology" onClick={(e) => { e.preventDefault(); handleNavClick('methodology'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.forRecruiters')}</a>
             <a href="/docs" onClick={(e) => { e.preventDefault(); handleNavClick('docs/index'); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800">{t('header.nav.documentation')}</a>
 
-            {authEnabled && showSignIn && (
+            {showSignIn && (
               <div className="px-2 py-2">
-                {user ? (
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800"
-                  >
-                    {t('header.auth.signOut')}
-                  </button>
-                ) : (
+                <SignedIn>
+                  <div className="flex items-center gap-3 px-3 py-2">
+                    <UserButton afterSignOutUrl="/" />
+                    <span className="text-sm text-gray-600">{user?.email}</span>
+                  </div>
+                </SignedIn>
+                <SignedOut>
                   <AuthDialog triggerLabel={t('header.auth.signIn')} />
-                )}
+                </SignedOut>
               </div>
             )}
           </div>

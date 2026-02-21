@@ -136,9 +136,9 @@ function App() {
       case 'methodology':
         return <MethodologyPage />;
       case 'signup':
-        return <SignupPage navigate={handleNavClick} />;
+        return <SignupPage />;
       case 'login':
-        return <LoginPage navigate={handleNavClick} />;
+        return <LoginPage />;
       case 'pricing':
         return <PricingPage />;
       case 'checkout-success':

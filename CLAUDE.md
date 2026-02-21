@@ -9,28 +9,45 @@ This file provides context for Claude Code to work effectively on this project.
 **Live:** https://ai-resume-tailor-client.vercel.app
 **Status:** Production MVP (v2.0.0) - working toward full SaaS with monetization
 
+---
+
+> ## **IMPORTANT: Proactive Product Advisor**
+>
+> **You are not just an engineer - you are a product advisor.** Proactively challenge complexity and advocate for simplicity. Apply these principles without being asked:
+>
+> 1. **Simplify UX** - If a feature adds complexity users don't need, suggest removing it
+> 2. **"It Just Works"** - Modern apps don't ask users to configure things that should be automatic
+> 3. **Fewer Choices = Better** - Don't expose settings users shouldn't need to think about
+> 4. **Challenge Requirements** - If something seems over-engineered, say so and propose simpler alternatives
+> 5. **Think Like a User** - Would your mom understand this UI? If not, simplify it
+>
+> **Example phrases to use:**
+> - *"Do users really need a Start/Stop button, or should the service just always run?"*
+> - *"This setting adds complexity - can we just pick a sensible default?"*
+> - *"Instead of 3 options, what if we just did the right thing automatically?"*
+>
+> **When implementing features, always ask:** Is there a way to deliver the same value with less UI, fewer options, or zero configuration?
+
+---
+
 ## Claude Code Capabilities
 
 **You have access to:**
-- **Supabase CLI** - Full database management, migrations, auth configuration
+- **Neon CLI** (`neonctl`) - Database management
 - **File system** - Read/write all project files
 - **Bash commands** - Git, pnpm, python, etc.
 
-**Supabase CLI Commands:**
+**Neon CLI Commands:**
 ```bash
-# Login (if needed)
-npx supabase login
-
-# Link to project
-npx supabase link --project-ref [project-id]
+# Authenticate
+npx neonctl auth
 
 # Database operations
-npx supabase db push          # Push migrations
-npx supabase db reset         # Reset database
-npx supabase db diff          # Generate migration from changes
+npx neonctl databases list
+npx neonctl connection-string
 
-# Generate types from database
-npx supabase gen types typescript --local > client/src/types/database.ts
+# Run SQL against the database
+psql $DATABASE_URL -f server/schema.sql
 ```
 
 ## Quick Start Commands
@@ -62,15 +79,18 @@ client/               # React 19 + Vite + TypeScript frontend
     contexts/         # React Context (SubscriptionContext, SignInPromptContext)
     hooks/            # Custom hooks (useAnalysisLimit)
     i18n/             # Translations (en.ts, es.ts)
-    lib/              # Utilities (api.ts, supabaseClient.ts, store.ts)
+    lib/              # Utilities (api.ts, useAuth.ts, fetchWithAuth.ts, store.ts)
     pages/            # Route pages (Analyze, Landing, Login, etc.)
     types/            # TypeScript interfaces (analysis.ts)
 
 server/               # Flask + Python 3.11 backend
-  app.py              # Main Flask app with CORS, validation, auth
+  app.py              # Main Flask app with CORS, validation, Clerk auth
   ai_engine.py        # OpenAI GPT-4 integration
   scoring_engine.py   # ATS scoring algorithm
-  stripe_integration.py  # Stripe payment handling (WIP)
+  database.py         # Neon Postgres database helpers
+  clerk_webhooks.py   # Clerk webhook handlers (user.created, etc.)
+  stripe_integration.py  # Stripe payment handling
+  schema.sql          # Database schema (run against Neon)
   analyzers/          # Modular analysis modules
     resume_quality.py
     interview_prep.py
@@ -94,8 +114,8 @@ docs/                 # Comprehensive documentation
 | i18n | react-i18next (EN/ES) |
 | Backend | Flask 3.0, Python 3.11, Gunicorn |
 | AI | OpenAI GPT-4 with structured JSON output |
-| Auth | Supabase Auth |
-| Database | Supabase Postgres (for user data/subscriptions) |
+| Auth | Clerk (email/password, Google, LinkedIn OAuth) |
+| Database | Neon Serverless Postgres |
 | Payments | Stripe (in progress) |
 | Hosting | Vercel (frontend), Render (backend) |
 
@@ -146,8 +166,7 @@ docs/                 # Comprehensive documentation
 **Frontend (.env):**
 ```
 VITE_API_URL=https://ai-resume-tailor-hxpr.onrender.com/api
-VITE_SUPABASE_URL=https://[project].supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJ...
+VITE_CLERK_PUBLISHABLE_KEY=pk_...
 VITE_GUEST_CREDITS_TOTAL=5
 ```
 
@@ -156,9 +175,9 @@ VITE_GUEST_CREDITS_TOTAL=5
 OPENAI_API_KEY=sk-proj-...
 OPENAI_MODEL=gpt-4o
 FRONTEND_URL=https://ai-resume-tailor-client.vercel.app
-SUPABASE_URL=https://[project].supabase.co
-SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
+CLERK_SECRET_KEY=sk_...
+CLERK_WEBHOOK_SECRET=whsec_...
+DATABASE_URL=postgres://user:pass@ep-xxx.region.aws.neon.tech/neondb
 ```
 
 ## Common Tasks
@@ -186,45 +205,30 @@ curl http://localhost:5000/api/health
 
 ## Current Priorities (from Roadmap)
 
-1. **OAuth Providers** - Google + LinkedIn login (Supabase Auth)
-2. **File Upload** - PDF + DOCX support with text extraction
-3. **Database Schema** - User profiles, analysis history, subscriptions
-4. **Stripe Integration** - Complete payment flow
-5. **Error Monitoring** - Add Sentry
+1. **Stripe Integration** - Complete payment flow
+2. **Error Monitoring** - Add Sentry
+3. **Analysis History** - Backend API endpoints for CRUD operations
 
-## Planned Features
+## Infrastructure
 
-### Authentication (OAuth)
-- **Google** - Primary social login
-- **LinkedIn** - Perfect for job seekers context
-- **Email/Password** - Already implemented as fallback
+### Authentication (Clerk)
+- **Google OAuth** - Primary social login (configured in Clerk Dashboard)
+- **LinkedIn OAuth** - Perfect for job seekers context
+- **Email/Password** - Built-in with Clerk
 
-Configure in Supabase Dashboard > Authentication > Providers
+Configure in Clerk Dashboard > User & Authentication > Social Connections
 
-### File Upload (PDF + DOCX)
-- **PDF parsing**: Use `pdf-parse` (Node.js) or `pdfplumber` (Python)
-- **DOCX parsing**: Use `mammoth` (converts to HTML/text)
-- **Skip .doc**: Legacy format, not worth complexity
-- **Max file size**: 5MB recommended
-- **Process in memory**: Don't store files, extract text only
-
-### Database Schema (Supabase Postgres)
-Tables in use:
-- `profiles` - User profiles with credits tracking (auto-created on signup)
+### Database (Neon Postgres)
+Tables:
+- `profiles` - User profiles with credits tracking (auto-created via Clerk webhook)
 - `analyses` - Saved analysis history
 
-Stripe data (via Stripe Sync Engine):
-- `stripe.customers` - Synced from Stripe
-- `stripe.subscriptions` - Synced from Stripe
-- `stripe.prices` / `stripe.products` - Synced from Stripe
+Schema: `server/schema.sql`
 
-### Stripe Sync Engine
-Instead of manual webhooks, use Supabase's Stripe Sync Engine:
-1. Enable in Supabase Dashboard → Integrations → Stripe Sync Engine
-2. Add restricted Stripe API key
-3. Run `supabase/stripe_sync_views.sql` in SQL Editor after sync completes
-
-See `docs/STRIPE_SYNC_SETUP.md` for full instructions.
+### Clerk Webhooks
+- Endpoint: `/api/webhooks/clerk`
+- Events: `user.created`, `user.updated`, `user.deleted`
+- Auto-creates profiles in Neon when users sign up
 
 ## Design Tokens
 
@@ -266,7 +270,6 @@ cd server && pytest           # Backend tests
 - `docs/LESSONS_LEARNED.md` - Bug solutions
 - `docs/WORLD_CLASS_SAAS_ROADMAP.md` - Feature roadmap
 - `docs/IMPLEMENTATION_PLAN.md` - Detailed implementation guide
-- `docs/STRIPE_SYNC_SETUP.md` - Stripe Sync Engine setup
 - `docs/product/MONETIZATION_AND_ABUSE_CONTROLS.md` - Quota strategy
 
 ## Contact

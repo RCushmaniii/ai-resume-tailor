@@ -1,15 +1,19 @@
-import { getSupabaseClient } from "@/lib/supabaseClient";
+/**
+ * Fetch wrapper that attaches Clerk auth token.
+ *
+ * Usage: Must be called with a getToken function from useAuth().
+ * For standalone use, see fetchWithAuthToken() below.
+ */
 
 export async function fetchWithAuth(
   input: RequestInfo | URL,
-  init?: RequestInit
+  init?: RequestInit,
+  getToken?: () => Promise<string | null>
 ): Promise<Response> {
-  const supabase = getSupabaseClient();
-
   let accessToken: string | null = null;
-  if (supabase) {
-    const { data } = await supabase.auth.getSession();
-    accessToken = data.session?.access_token ?? null;
+
+  if (getToken) {
+    accessToken = await getToken();
   }
 
   const headers = new Headers(init?.headers);
@@ -21,4 +25,12 @@ export async function fetchWithAuth(
     ...init,
     headers,
   });
+}
+
+/**
+ * Create a fetch function pre-bound with a token getter.
+ */
+export function createAuthFetch(getToken: () => Promise<string | null>) {
+  return (input: RequestInfo | URL, init?: RequestInit) =>
+    fetchWithAuth(input, init, getToken);
 }

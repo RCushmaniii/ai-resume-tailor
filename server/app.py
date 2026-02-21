@@ -4,6 +4,7 @@ import logging
 import time
 import os
 import re
+import jwt
 import requests
 from datetime import datetime
 from dotenv import load_dotenv
@@ -14,6 +15,10 @@ from ai_engine import analyze_resume
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+# Clerk JWKS cache
+_clerk_jwks = None
+_clerk_jwks_fetched_at = 0
 
 # App version for deployment tracking
 VERSION = "1.0.2"
@@ -76,26 +81,101 @@ def _get_bearer_token() -> str | None:
     return token or None
 
 
-def _validate_supabase_token(token: str):
-    supabase_url = os.getenv("SUPABASE_URL", "").strip()
-    publishable_key = os.getenv("SUPABASE_PUBLISHABLE_KEY") or os.getenv("SUPABASE_ANON_KEY")
-    publishable_key = (publishable_key or "").strip()
+def _get_clerk_jwks():
+    """Fetch Clerk's JWKS for JWT verification (cached for 1 hour)."""
+    global _clerk_jwks, _clerk_jwks_fetched_at
+    import time as _time
 
-    if not supabase_url or not publishable_key:
+    now = _time.time()
+    if _clerk_jwks and (now - _clerk_jwks_fetched_at) < 3600:
+        return _clerk_jwks
+
+    clerk_secret = os.getenv("CLERK_SECRET_KEY", "").strip()
+    if not clerk_secret:
         return None
 
-    resp = requests.get(
-        f"{supabase_url}/auth/v1/user",
-        headers={
-            "apikey": publishable_key,
-            "Authorization": f"Bearer {token}",
-        },
-        timeout=10,
-    )
+    # Extract the Clerk instance ID from the secret key to build the JWKS URL
+    # Clerk JWKS endpoint: https://<clerk-frontend-api>/.well-known/jwks.json
+    # The frontend API domain can be derived or set explicitly
+    clerk_jwks_url = os.getenv("CLERK_JWKS_URL", "")
+    if not clerk_jwks_url:
+        # Try to get from Clerk's API
+        try:
+            resp = requests.get(
+                "https://api.clerk.com/v1/jwks",
+                headers={"Authorization": f"Bearer {clerk_secret}"},
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                _clerk_jwks = resp.json()
+                _clerk_jwks_fetched_at = now
+                return _clerk_jwks
+        except Exception as e:
+            logger.error(f"Failed to fetch Clerk JWKS: {e}")
+            return None
 
-    if resp.status_code != 200:
+    try:
+        resp = requests.get(clerk_jwks_url, timeout=10)
+        if resp.status_code == 200:
+            _clerk_jwks = resp.json()
+            _clerk_jwks_fetched_at = now
+            return _clerk_jwks
+    except Exception as e:
+        logger.error(f"Failed to fetch JWKS from {clerk_jwks_url}: {e}")
+
+    return None
+
+
+def _validate_clerk_token(token: str):
+    """Validate a Clerk JWT and return user info."""
+    jwks_data = _get_clerk_jwks()
+    if not jwks_data:
+        logger.error("Could not fetch Clerk JWKS for token validation")
         return None
-    return resp.json()
+
+    try:
+        # Decode JWT header to find the key ID
+        unverified_header = jwt.get_unverified_header(token)
+        kid = unverified_header.get("kid")
+
+        # Find the matching key in JWKS
+        rsa_key = None
+        for key in jwks_data.get("keys", []):
+            if key.get("kid") == kid:
+                rsa_key = jwt.algorithms.RSAAlgorithm.from_jwk(key)
+                break
+
+        if not rsa_key:
+            logger.warning(f"No matching key found in JWKS for kid={kid}")
+            return None
+
+        # Verify and decode the token
+        payload = jwt.decode(
+            token,
+            rsa_key,
+            algorithms=["RS256"],
+            options={"verify_aud": False},
+        )
+
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+
+        return {
+            "id": user_id,
+            "email": payload.get("email"),
+            "session_id": payload.get("sid"),
+        }
+
+    except jwt.ExpiredSignatureError:
+        logger.warning("Clerk token expired")
+        return None
+    except jwt.InvalidTokenError as e:
+        logger.warning(f"Invalid Clerk token: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Error validating Clerk token: {e}")
+        return None
 
 
 def _get_guest_identity() -> str:
@@ -520,7 +600,7 @@ def dev_reset():
 
 @app.route("/api/me", methods=["GET"])
 def me():
-    """Validate Supabase access token and return basic user info.
+    """Validate Clerk access token and return basic user info.
 
     Client should send:
       Authorization: Bearer <access_token>
@@ -535,7 +615,7 @@ def me():
         )
 
     try:
-        user_json = _validate_supabase_token(token)
+        user_json = _validate_clerk_token(token)
         if not user_json:
             return api_error(
                 error_code="AUTH_INVALID_TOKEN",
@@ -549,7 +629,7 @@ def me():
             }
         )
     except Exception:
-        logger.exception("Error validating Supabase token")
+        logger.exception("Error validating Clerk token")
         return api_error(
             error_code="AUTH_VALIDATION_FAILED",
             status_code=500,
@@ -660,7 +740,7 @@ def analyze():
         token = _get_bearer_token()
         user_id = None
         if token:
-            user_json = _validate_supabase_token(token)
+            user_json = _validate_clerk_token(token)
             if user_json:
                 user_id = user_json.get("id")
 
@@ -744,6 +824,15 @@ except ImportError:
     logger.warning("Stripe integration not available - stripe_integration module not found")
 except Exception as e:
     logger.warning(f"Stripe integration not initialized: {e}")
+
+# Register Clerk webhook routes
+try:
+    from clerk_webhooks import register_clerk_webhook_routes
+    register_clerk_webhook_routes(app)
+except ImportError:
+    logger.warning("Clerk webhooks not available - clerk_webhooks module not found")
+except Exception as e:
+    logger.warning(f"Clerk webhooks not initialized: {e}")
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

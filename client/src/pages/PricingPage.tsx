@@ -25,7 +25,7 @@ type CheckoutState = 'pricing' | 'email' | 'checkout';
 
 export function PricingPage() {
   const { t } = useTranslation();
-  const { user, session } = useAuth();
+  const { user, getToken } = useAuth();
   const [checkoutState, setCheckoutState] = useState<CheckoutState>('pricing');
   const [guestEmail, setGuestEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -58,8 +58,9 @@ export function PricingPage() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
       // Add auth token if user is logged in
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
+      const token = await getToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
       const body: Record<string, string> = { billingPeriod: 'monthly' };
@@ -96,7 +97,7 @@ export function PricingPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [session, t]);
+  }, [getToken, t]);
 
   const handleUpgradeClick = () => {
     if (user) {

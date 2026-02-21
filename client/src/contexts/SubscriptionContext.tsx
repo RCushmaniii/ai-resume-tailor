@@ -1,19 +1,19 @@
 /**
  * Subscription Context
- * 
+ *
  * Manages user subscription state across the app.
  * Provides hooks for checking features and showing upgrade prompts.
- * 
+ *
  * File: client/src/contexts/SubscriptionContext.tsx
  */
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { getSupabaseClient } from '@/lib/supabaseClient';
-import type { Session } from '@supabase/supabase-js';
+import { useAuth } from '@clerk/clerk-react';
+import { useUser } from '@clerk/clerk-react';
 
-// ═══════════════════════════════════════════════════════════════════════════
+// =========================================================================
 // TYPES & INTERFACES
-// ═══════════════════════════════════════════════════════════════════════════
+// =========================================================================
 
 export type TierType = 'guest' | 'free' | 'pro' | 'commercial';
 
@@ -42,27 +42,27 @@ export interface SubscriptionContextType {
   isLoading: boolean;
   subscription: SubscriptionData | null;
   usage: UsageData;
-  
+
   // Tier info
   tierInfo: TierInfoData;
-  
+
   // Feature checks
   hasFeature: (featureName: FeatureType) => boolean;
   hasAnalysesRemaining: () => boolean;
   getAnalysesRemaining: () => number;
   isPaid: () => boolean;
-  
+
   // Actions
   incrementUsage: () => void;
   refreshSubscription: () => Promise<void>;
-  
+
   // Constants
   TIERS: typeof TIERS;
   FEATURE_ACCESS: typeof FEATURE_ACCESS;
   TIER_INFO: typeof TIER_INFO;
 }
 
-export type FeatureType = 
+export type FeatureType =
   | 'basicAnalysis'
   | 'fullOptimizationPlan'
   | 'resumeQualityFull'
@@ -72,9 +72,9 @@ export type FeatureType =
   | 'pdfExport'
   | 'teamDashboard';
 
-// ═══════════════════════════════════════════════════════════════════════════
+// =========================================================================
 // CONSTANTS
-// ═══════════════════════════════════════════════════════════════════════════
+// =========================================================================
 
 export const TIERS = {
   GUEST: 'guest' as const,
@@ -91,7 +91,7 @@ export const FEATURE_ACCESS = {
     [TIERS.PRO]: 50,
     [TIERS.COMMERCIAL]: 500,
   } as Record<TierType, number>,
-  
+
   // Feature availability
   features: {
     basicAnalysis: [TIERS.GUEST, TIERS.FREE, TIERS.PRO, TIERS.COMMERCIAL],
@@ -103,7 +103,7 @@ export const FEATURE_ACCESS = {
     pdfExport: [TIERS.PRO, TIERS.COMMERCIAL],
     teamDashboard: [TIERS.COMMERCIAL],
   } as Record<FeatureType, TierType[]>,
-  
+
   // Preview limits for free users
   previewLimits: {
     optimizationItems: 2,
@@ -135,9 +135,9 @@ export const TIER_INFO: Record<TierType, TierInfoData> = {
   },
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
+// =========================================================================
 // CONTEXT
-// ═══════════════════════════════════════════════════════════════════════════
+// =========================================================================
 
 const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
 
@@ -152,19 +152,19 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const [tier, setTier] = useState<TierType>(TIERS.GUEST);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [usage, setUsage] = useState<UsageData>({
     analysesUsed: 0,
     analysesLimit: 3,
     periodEnd: null,
   });
 
-  const supabase = getSupabaseClient();
+  const { isSignedIn, isLoaded, getToken } = useAuth();
+  const { user } = useUser();
 
-  const loadSubscriptionStatus = useCallback(async (currentSession: Session | null): Promise<void> => {
+  const loadSubscriptionStatus = useCallback(async (signedIn: boolean): Promise<void> => {
     setIsLoading(true);
     try {
-      if (!currentSession?.access_token) {
+      if (!signedIn) {
         // Guest user - use localStorage for usage tracking
         const guestUsed = parseInt(localStorage.getItem('guest_analyses_used') || '0', 10);
         setTier(TIERS.GUEST);
@@ -175,9 +175,10 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
         });
       } else {
         // Authenticated user - fetch subscription from API
+        const token = await getToken();
         const response = await fetch('/api/subscription', {
           headers: {
-            'Authorization': `Bearer ${currentSession.access_token}`,
+            'Authorization': `Bearer ${token}`,
           },
         });
 
@@ -203,8 +204,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       }
     } catch (error) {
       console.error('Failed to load subscription status:', error);
-      // On error, check if we have a session - if so, assume free tier
-      if (currentSession) {
+      if (signedIn) {
         setTier(TIERS.FREE);
       } else {
         setTier(TIERS.GUEST);
@@ -212,33 +212,13 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [getToken]);
 
-  // Initialize session and listen for auth changes
+  // Load subscription when auth state changes
   useEffect(() => {
-    if (!supabase) {
-      setIsLoading(false);
-      return;
-    }
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      setSession(initialSession);
-      loadSubscriptionStatus(initialSession);
-    });
-
-    // Listen for auth state changes
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        setSession(newSession);
-        loadSubscriptionStatus(newSession);
-      }
-    );
-
-    return () => {
-      authSubscription.unsubscribe();
-    };
-  }, [supabase, loadSubscriptionStatus]);
+    if (!isLoaded) return;
+    loadSubscriptionStatus(isSignedIn ?? false);
+  }, [isLoaded, isSignedIn, user?.id, loadSubscriptionStatus]);
 
   const hasFeature = useCallback((featureName: FeatureType): boolean => {
     const allowedTiers = FEATURE_ACCESS.features[featureName];
@@ -271,8 +251,8 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   }, [tier]);
 
   const refreshSubscription = useCallback(async (): Promise<void> => {
-    await loadSubscriptionStatus(session);
-  }, [loadSubscriptionStatus, session]);
+    await loadSubscriptionStatus(isSignedIn ?? false);
+  }, [loadSubscriptionStatus, isSignedIn]);
 
   const value: SubscriptionContextType = {
     tier,
@@ -321,7 +301,7 @@ export interface FeatureAccessResult {
 
 export function useFeatureAccess(featureName: FeatureType): FeatureAccessResult {
   const { hasFeature, tier, isPaid } = useSubscription();
-  
+
   return {
     hasAccess: hasFeature(featureName),
     tier,

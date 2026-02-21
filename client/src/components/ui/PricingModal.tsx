@@ -38,20 +38,7 @@ export function PricingModal({ isOpen, onClose, onUpgrade }: PricingModalProps) 
   const handleUpgrade = async () => {
     setIsLoading(true);
     try {
-      // Get auth token if available
-      const token = localStorage.getItem('supabase.auth.token');
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-      if (token) {
-        try {
-          const parsed = JSON.parse(token);
-          if (parsed?.currentSession?.access_token) {
-            headers['Authorization'] = `Bearer ${parsed.currentSession.access_token}`;
-          }
-        } catch {
-          // Token parsing failed, continue without auth
-        }
-      }
 
       const response = await fetch('/api/checkout/create-session', {
         method: 'POST',
