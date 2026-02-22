@@ -15,7 +15,8 @@ export const api = {
    * Analyze resume against job description
    */
   analyzeResume: async (params: AnalyzeResumeParams): Promise<AnalysisResult> => {
-    const response = await fetch('/api/analyze', {
+    const apiUrl = import.meta.env.VITE_API_URL || '/api';
+    const response = await fetch(`${apiUrl}/analyze`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -40,7 +40,8 @@ export function PricingModal({ isOpen, onClose, onUpgrade }: PricingModalProps) 
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
-      const response = await fetch('/api/checkout/create-session', {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const response = await fetch(`${apiUrl}/checkout/create-session`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ billingPeriod: 'monthly' })

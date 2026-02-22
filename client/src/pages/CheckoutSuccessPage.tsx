@@ -91,7 +91,8 @@ export function CheckoutSuccessPage({ navigate }: CheckoutSuccessPageProps) {
       if (user && sessionData?.customerEmail && pageState === 'create-account') {
         try {
           const token = await getToken();
-          const linkResponse = await fetch('/api/subscription/claim', {
+          const apiUrl = import.meta.env.VITE_API_URL || '/api';
+          const linkResponse = await fetch(`${apiUrl}/subscription/claim`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

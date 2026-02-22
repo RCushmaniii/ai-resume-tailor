@@ -68,7 +68,8 @@ export function PricingPage() {
         body.email = email;
       }
 
-      const response = await fetch('/api/checkout/create-session', {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const response = await fetch(`${apiUrl}/checkout/create-session`, {
         method: 'POST',
         headers,
         body: JSON.stringify(body)

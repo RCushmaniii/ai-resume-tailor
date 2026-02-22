@@ -176,7 +176,8 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       } else {
         // Authenticated user - fetch subscription from API
         const token = await getToken();
-        const response = await fetch('/api/subscription', {
+        const apiUrl = import.meta.env.VITE_API_URL || '/api';
+        const response = await fetch(`${apiUrl}/subscription`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
