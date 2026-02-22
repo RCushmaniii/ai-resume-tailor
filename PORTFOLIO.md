@@ -5,7 +5,7 @@
 portfolio_enabled: true
 portfolio_priority: 2
 portfolio_featured: true
-portfolio_last_reviewed: "2026-02-21"
+portfolio_last_reviewed: "2026-02-22"
 
 title: "AI Resume Tailor"
 tagline: "AI-powered ATS resume optimization with bilingual support and instant structured feedback"
@@ -25,12 +25,21 @@ tags:
   - "openai"
   - "stripe"
 
-thumbnail: ""
+thumbnail: "/images/ai-resume-tailor-thumb.jpg"
 hero_images:
-  - ""
-  - ""
-  - ""
-demo_video_url: ""
+  - "/images/ai-resume-tailor-01.png"
+  - "/images/ai-resume-tailor-02.png"
+  - "/images/ai-resume-tailor-03.png"
+  - "/images/ai-resume-tailor-04.png"
+  - "/images/ai-resume-tailor-05.png"
+  - "/images/ai-resume-tailor-06.png"
+  - "/images/ai-resume-tailor-07.png"
+  - "/images/ai-resume-tailor-08.png"
+  - "/images/ai-resume-tailor-09.png"
+  - "/images/ai-resume-tailor-10.png"
+  - "/images/ai-resume-tailor-11.png"
+demo_video_url: "/video/ai-resume-tailor-brief.mp4"
+demo_video_poster: "/video/ai-resume-tailor-brief-poster.jpg"
 
 live_url: "https://ai-resume-tailor-client.vercel.app"
 demo_url: "https://ai-resume-tailor-client.vercel.app"
