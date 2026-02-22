@@ -1,7 +1,7 @@
 {
   "framework": "vite",
   "installCommand": "pnpm install",
-  "buildCommand": "pnpm --filter client build",
+  "buildCommand": "pnpm --filter ai-resume-tailor-client build",
   "outputDirectory": "client/dist",
   "rewrites": [
     { "source": "/((?!assets|docs|legal|favicon|mockServiceWorker).*)", "destination": "/index.html" }
