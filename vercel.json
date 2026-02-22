@@ -1,7 +1,7 @@
 {
   "framework": "vite",
-  "installCommand": "cd client && pnpm install",
-  "buildCommand": "cd client && pnpm build",
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm --filter client build",
   "outputDirectory": "client/dist",
   "rewrites": [
     { "source": "/((?!assets|docs|legal|favicon|mockServiceWorker).*)", "destination": "/index.html" }
