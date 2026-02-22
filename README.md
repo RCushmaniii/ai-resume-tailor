@@ -8,6 +8,12 @@
 
 > Bilingual AI-powered ATS resume optimization — instant structured feedback, zero friction, privacy by design.
 
+**[Try it live](https://ai-resume-tailor-client.vercel.app)**
+
+<p align="center">
+  <img src="client/public/images/ai-resume-tailor-thumb.jpg" alt="AI Resume Tailor — Bilingual ATS Resume Optimization" width="100%">
+</p>
+
 ## Overview
 
 AI Resume Tailor is a bilingual (EN/ES) SaaS application that helps job seekers understand exactly why Applicant Tracking Systems reject their resumes and what to do about it. Users paste a resume and a job description, and the system returns a structured analysis: a 0-100 match score, missing keywords with severity coding, and actionable optimization suggestions.

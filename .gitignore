@@ -79,3 +79,6 @@ cookies.txt
 /public/
 /index.html
 cushlabs-writing/
+
+.vercel
+.env*.local
