@@ -8,7 +8,7 @@ portfolio_featured: true
 title: "AI Resume Tailor"
 tagline: "AI-powered ATS resume optimization with bilingual support and instant feedback"
 slug: "ai-resume-tailor"
-category: "AI SaaS"
+category: "AI Automation"
 tech_stack:
   - "React 19"
   - "Flask / Python"
