@@ -339,7 +339,7 @@ export const en = {
       cookiePolicy: "Cookie Policy",
       support: "Support",
     },
-    copyright: " 2023 AI Resume Tailor. All Rights Reserved.",
+    copyright: "\u00a9 {{year}} AI Resume Tailor. All Rights Reserved.",
   },
   docs: {
     nav: {
