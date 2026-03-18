@@ -147,12 +147,9 @@ export interface DisplayAnalysisResult {
 
 // Transform backend response to frontend format
 export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalysisResult | HybridV2Result): DisplayAnalysisResult {
-  console.log('🔄 Transform: Raw API Result:', apiResult);
-  
   // Check for gate-based evaluation system (new format with evaluation.hiring.status)
   if ('evaluation' in apiResult && apiResult.evaluation?.hiring?.status) {
-    console.log('✅ Transform: Using gate-based evaluation system');
-    const v2Result = apiResult as HybridV2Result;
+const v2Result = apiResult as HybridV2Result;
     
     // Extract keywords
     const missing: string[] = [];
@@ -172,8 +169,6 @@ export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalys
     }
     
     const dimensions = v2Result.dimensions || {};
-    console.log('📊 Transform: Evaluation data:', v2Result.evaluation);
-    
     return {
       score: v2Result.score || 0,
       breakdown: {
@@ -190,8 +185,7 @@ export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalys
   
   // Legacy format check
   if ('score_breakdown' in apiResult && 'keywords' in apiResult) {
-    console.log('📊 Transform: Using legacy format');
-    const legacyResult = apiResult as LegacyAnalysisResult;
+const legacyResult = apiResult as LegacyAnalysisResult;
     return {
       score: legacyResult.score,
       breakdown: {
@@ -207,8 +201,7 @@ export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalys
   
   // Hybrid_v2 format (scoring engine without new evaluation)
   if ('scoring_method' in apiResult || 'breakdown' in apiResult) {
-    console.log('📊 Transform: Using hybrid_v2 format (no evaluation)');
-    const v2Result = apiResult as HybridV2Result;
+const v2Result = apiResult as HybridV2Result;
     
     // Extract keywords from the new format
     const missing: string[] = [];
@@ -279,8 +272,6 @@ export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalys
     const resumeQuality = dimensions.resume_quality?.score || 50;
     const jobAlignment = dimensions.job_alignment?.score || 50;
     
-    console.log('📊 Transform: Dimensions (no eval):', { keywordPresence, resumeQuality, jobAlignment });
-    
     return {
       score: v2Result.score || 0,
       breakdown: {
@@ -299,8 +290,7 @@ export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalys
   }
   
   // Fallback: Original enterprise ATS format
-  console.log('⚠️ Transform: Fallback to original ATS format');
-  const newResult = apiResult as AnalysisResult;
+const newResult = apiResult as AnalysisResult;
   
   // Extract missing and present keywords from the new structure
   const missing: string[] = [];
@@ -330,9 +320,7 @@ export function transformAnalysisResult(apiResult: AnalysisResult | LegacyAnalys
   }
   
   // Convert critical gaps to suggestions format
-  console.log('🔍 Critical gaps:', newResult.critical_gaps); // Debug log
   const suggestions = newResult.critical_gaps ? newResult.critical_gaps.map((gap) => {
-    console.log('🔍 Processing gap:', gap); // Debug each gap
     return {
       type: (gap.impact === 'HIGH' ? 'critical' : 'warning') as 'critical' | 'warning' | 'tip',
       title: gap.missing_skill,

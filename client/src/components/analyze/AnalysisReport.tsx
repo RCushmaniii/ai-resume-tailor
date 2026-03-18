@@ -17,8 +17,6 @@ interface AnalysisReportProps {
 const AnalysisReport: React.FC<AnalysisReportProps> = ({ data }) => {
   const { t } = useTranslation();
   
-  // Debug log for suggestions
-  console.log('🔍 Suggestions in AnalysisReport:', data.suggestions);
   // Helper to determine badge color for suggestions
   const getSuggestionStyle = (type: 'critical' | 'warning' | 'tip') => {
     switch (type) {

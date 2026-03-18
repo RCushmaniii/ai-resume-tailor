@@ -68,10 +68,7 @@ export function Analyze() {
     
     try {
       const API_URL = import.meta.env.VITE_API_URL || '/api';
-      console.log('🔍 API URL:', API_URL); // Debug: verify environment variable
-      console.log('📤 Sending request to:', `${API_URL}/analyze`); // Debug: full URL
-      console.log('📄 Resume length:', resumeText.length, 'Job length:', jobText.length); // Debug: data
-      
+
       const response = await fetchWithAuth(`${API_URL}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,17 +79,13 @@ export function Analyze() {
         signal: controller.signal
       });
       
-      console.log('📥 Response status:', response.status, response.statusText); // Debug: response
-
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        console.log('🔍 Response status in !response.ok block:', response.status); // Debug
         const errorData = await response.json().catch(() => ({}));
         
         // Handle 429 (rate limit) error specially to show reset button
         if (response.status === 429) {
-          console.log('🔍 Handling 429 error'); // Debug
           setError(t('analyze.messages.freeLimitReached', { total: GUEST_CREDITS_TOTAL }));
           setIsAnalyzing(false);
           return;
@@ -105,16 +98,10 @@ export function Analyze() {
         credits_remaining?: number;
         credits_total?: number;
       } = await response.json();
-      
-      console.log('🤖 Backend response:', apiResult); // Debug: full response
-      console.log('📊 Score from backend:', apiResult.score); // Debug: score value
-      
+
       // Transform backend format to frontend display format
       const displayResult = transformAnalysisResult(apiResult);
-      
-      console.log('✅ Transformed displayResult:', displayResult); // Debug transformed result
-      console.log('✅ DisplayResult suggestions:', displayResult.suggestions); // Debug suggestions specifically
-      
+
       // Keep minimum 1s loading to prevent UI flash
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -205,7 +192,7 @@ export function Analyze() {
         title="Analyze Your Resume - AI Resume Tailor"
         description="Get instant AI-powered analysis of your resume against any job description. See your match score, missing keywords, and improvement suggestions in 60 seconds."
         keywords="resume analysis, ATS score, resume checker, job match, resume keywords, AI analysis"
-        canonical="https://airesumatailor.com/analyze"
+        canonical="https://ai-resume-tailor-client.vercel.app/analyze"
       />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}

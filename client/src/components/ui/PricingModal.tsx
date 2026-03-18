@@ -56,8 +56,8 @@ export function PricingModal({ isOpen, onClose, onUpgrade }: PricingModalProps) 
 
       if (data.clientSecret) {
         // For embedded checkout, would need Stripe.js integration
-        console.log('Checkout session created:', data.sessionId);
-        alert('Stripe checkout integration in progress. Session ID: ' + data.sessionId);
+        // Stripe embedded checkout - redirect when ready
+        window.location.href = data.url || '#';
       } else if (data.url) {
         // Redirect to Stripe Checkout
         window.location.href = data.url;
