@@ -9,10 +9,17 @@
 
 import type { ReactElement } from 'react';
 import { SignIn } from '@clerk/clerk-react';
+import { SEO } from '@/components/SEO';
 
 export function LoginPage(): ReactElement {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center py-12">
+    <>
+      <SEO
+        title="Log In - AI Resume Tailor"
+        description="Sign in to AI Resume Tailor to access your resume analysis history, saved reports, and premium features."
+        path="/login"
+      />
+      <div className="min-h-[60vh] flex items-center justify-center py-12">
       <SignIn
         routing="hash"
         signUpUrl="/signup"
@@ -25,6 +32,7 @@ export function LoginPage(): ReactElement {
         }}
       />
     </div>
+    </>
   );
 }
 

@@ -192,7 +192,7 @@ export function Analyze() {
         title="Analyze Your Resume - AI Resume Tailor"
         description="Get instant AI-powered analysis of your resume against any job description. See your match score, missing keywords, and improvement suggestions in 60 seconds."
         keywords="resume analysis, ATS score, resume checker, job match, resume keywords, AI analysis"
-        canonical="https://ai-resume-tailor-client.vercel.app/analyze"
+        path="/analyze"
       />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}

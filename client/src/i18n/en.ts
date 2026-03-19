@@ -9,14 +9,12 @@ export const en = {
         "AI-powered resume analysis tool. Get instant match scores, missing keywords, and actionable suggestions to optimize your resume for any job. No signup required.",
       keywords:
         "resume analyzer, ATS checker, resume optimization, AI resume tool, job application, resume keywords, free resume checker, resume match score",
-      canonical: "https://airesumatailor.com",
     },
     analyze: {
       title: "Analyze Your Resume - AI Resume Tailor",
       description:
         "Get instant AI-powered analysis of your resume against any job description. See your match score, missing keywords, and improvement suggestions.",
       keywords: "resume analysis, ATS score, resume checker, job match, resume keywords, AI analysis",
-      canonical: "https://airesumatailor.com/analyze",
     },
   },
   language: {

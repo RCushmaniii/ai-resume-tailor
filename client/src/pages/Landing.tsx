@@ -17,7 +17,7 @@ export function Landing() {
         title={t('seo.landing.title')}
         description={t('seo.landing.description')}
         keywords={t('seo.landing.keywords')}
-        canonical={t('seo.landing.canonical')}
+        path="/"
       />
       <div className="min-h-screen">
         <Hero />

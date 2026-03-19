@@ -1,82 +1,18 @@
 ---
-# === CONTROL FLAGS ===
+# =============================================================================
+# PORTFOLIO.md — AI Resume Tailor
+# =============================================================================
 portfolio_enabled: true
 portfolio_priority: 1
 portfolio_featured: true
+portfolio_last_reviewed: "2026-03-18"
 
-# === CARD DISPLAY ===
 title: "AI Resume Tailor"
 tagline: "AI-powered ATS resume optimization with bilingual support and instant feedback"
 slug: "ai-resume-tailor"
+
 category: "AI Automation"
-tech_stack:
-  - "React 19"
-  - "Flask / Python"
-  - "OpenAI GPT-4"
-  - "Stripe"
-  - "Neon PostgreSQL"
-thumbnail: "/images/ai-resume-tailor-thumb.jpg"
-status: "Production"
-
-# === DETAIL PAGE ===
-problem: "Over 75% of resumes are rejected by Applicant Tracking Systems before a human ever sees them. Most job seekers have no visibility into why they're filtered out, and existing tools either charge upfront, require accounts, or provide generic advice that isn't tied to the specific job posting."
-solution: "A bilingual SaaS application that returns structured ATS analysis — match score, missing keywords with severity coding, and actionable suggestions — in under 10 seconds. Guests get 5 free analyses with no signup, and no resume data is ever stored."
-key_features:
-  - "Structured ATS analysis with 0-100 match score, keyword gaps, and severity-coded suggestions via GPT-4"
-  - "Zero-friction guest access — 5 free analyses before any signup prompt, value delivered first"
-  - "Full EN/ES bilingual support across all UI, error messages, and AI-generated analysis output"
-  - "Privacy-first architecture — no resume data stored, processing happens in a single request/response cycle"
-  - "Stripe embedded checkout with guest-to-paid conversion and Clerk auth (Google, LinkedIn, email)"
-
-# === LINKS ===
-demo_url: "https://ai-resume-tailor-client.vercel.app"
-live_url: "https://ai-resume-tailor-client.vercel.app"
-
-# === MEDIA: PORTFOLIO SLIDES ===
-slides:
-  - src: "/images/ai-resume-tailor-01.png"
-    alt_en: "AI Resume Tailor — Bilingual ATS optimization that shows you exactly why resumes get rejected"
-    alt_es: "AI Resume Tailor — Optimizacion ATS bilingue que te muestra exactamente por que rechazan tu CV"
-  - src: "/images/ai-resume-tailor-02.png"
-    alt_en: "The ATS Black Box — 75% of resumes rejected before a human sees them, zero visibility into why"
-    alt_es: "La Caja Negra del ATS — 75% de CVs rechazados antes de que un humano los vea, sin visibilidad del por que"
-  - src: "/images/ai-resume-tailor-03.png"
-    alt_en: "Structured Analysis — 0-100 match score with keyword gaps and severity-coded suggestions"
-    alt_es: "Analisis Estructurado — puntuacion de coincidencia 0-100 con brechas de palabras clave y sugerencias codificadas"
-  - src: "/images/ai-resume-tailor-04.png"
-    alt_en: "Missing Keywords Detected — severity-coded priority indicators showing exactly what to fix first"
-    alt_es: "Palabras Clave Faltantes Detectadas — indicadores de prioridad codificados mostrando que corregir primero"
-  - src: "/images/ai-resume-tailor-05.png"
-    alt_en: "Zero Friction — 5 free analyses with no signup, no email, no commitment required"
-    alt_es: "Cero Friccion — 5 analisis gratis sin registro, sin email, sin compromiso requerido"
-  - src: "/images/ai-resume-tailor-06.png"
-    alt_en: "Full Bilingual Support — native English and Spanish across UI, analysis, and AI-generated feedback"
-    alt_es: "Soporte Bilingue Completo — ingles y espanol nativo en UI, analisis y retroalimentacion generada por IA"
-  - src: "/images/ai-resume-tailor-07.png"
-    alt_en: "Privacy by Architecture — no resume data stored, analysis happens in a single request/response cycle"
-    alt_es: "Privacidad por Arquitectura — ningun dato de CV almacenado, analisis en un solo ciclo solicitud/respuesta"
-  - src: "/images/ai-resume-tailor-08.png"
-    alt_en: "Stripe Embedded Checkout — guest-to-paid conversion with no signup wall before purchase"
-    alt_es: "Checkout Integrado de Stripe — conversion de invitado a pago sin muro de registro antes de la compra"
-  - src: "/images/ai-resume-tailor-09.png"
-    alt_en: "Clerk Authentication — Google, LinkedIn, and email/password with automatic Neon profile provisioning"
-    alt_es: "Autenticacion Clerk — Google, LinkedIn y email/contrasena con aprovisionamiento automatico de perfil en Neon"
-  - src: "/images/ai-resume-tailor-10.png"
-    alt_en: "Full-Stack Architecture — React 19 on Vercel, Flask on Render, Neon Postgres, Stripe, Clerk"
-    alt_es: "Arquitectura Full-Stack — React 19 en Vercel, Flask en Render, Neon Postgres, Stripe, Clerk"
-  - src: "/images/ai-resume-tailor-11.png"
-    alt_en: "Results — structured feedback in under 10 seconds, zero data retention, full bilingual coverage"
-    alt_es: "Resultados — retroalimentacion estructurada en menos de 10 segundos, cero retencion de datos, cobertura bilingue"
-
-# === MEDIA: VIDEO ===
-video_url: "/video/ai-resume-tailor-brief.mp4"
-video_poster: "/video/ai-resume-tailor-brief-poster.jpg"
-
-# === OPTIONAL ===
-metrics:
-  - "Structured ATS feedback in under 10 seconds"
-  - "5 free analyses before any signup prompt"
-  - "Zero resume data stored — privacy by architecture"
+target_audience: "Job seekers who want to understand why ATS systems reject their resumes"
 tags:
   - "ai"
   - "saas"
@@ -88,7 +24,48 @@ tags:
   - "stripe"
   - "clerk"
   - "flask"
-date_completed: "2026-02"
+
+thumbnail: "/images/ai-resume-tailor-thumb.jpg"
+hero_images:
+  - "/images/ai-resume-tailor-01.png"
+  - "/images/ai-resume-tailor-02.png"
+  - "/images/ai-resume-tailor-03.png"
+  - "/images/ai-resume-tailor-04.png"
+  - "/images/ai-resume-tailor-05.png"
+  - "/images/ai-resume-tailor-06.png"
+demo_video_url: "/video/ai-resume-tailor-brief.mp4"
+
+live_url: "https://ai-resume-tailor-client.vercel.app"
+demo_url: "https://ai-resume-tailor-client.vercel.app/analyze"
+case_study_url: ""
+
+problem_solved: |
+  Over 75% of resumes are rejected by Applicant Tracking Systems before a human ever sees them.
+  Job seekers submit into a black box with no visibility into why they're filtered out. Existing
+  tools charge upfront, require accounts, or provide generic advice not tied to the specific posting.
+  The Latin American market is further underserved by English-only tools.
+
+key_outcomes:
+  - "Structured ATS feedback in under 10 seconds"
+  - "5 free analyses before any signup prompt — value delivered first"
+  - "Zero resume data stored — privacy by architecture"
+  - "Full EN/ES bilingual coverage across UI and AI-generated analysis"
+  - "Guest-to-paid conversion funnel with embedded Stripe checkout"
+
+tech_stack:
+  - "React 19"
+  - "TypeScript"
+  - "Flask / Python 3.11"
+  - "OpenAI GPT-4"
+  - "Stripe"
+  - "Clerk"
+  - "Neon PostgreSQL"
+  - "Tailwind CSS"
+  - "shadcn/ui"
+  - "Vercel"
+  - "Render"
+
+complexity: "Production"
 ---
 
 ## Overview
@@ -125,3 +102,19 @@ The product is designed around zero friction — guests get 5 free analyses with
 - **Embedded Stripe Checkout:** Guest-to-paid conversion with post-payment account creation
 - **Clerk Webhook Pipeline:** Automatic profile provisioning in Neon Postgres across all auth methods
 - **Skeleton Loading States:** Layout-perfect skeletons matching final render dimensions — zero layout shift
+
+## Results
+
+**For the End User:**
+- Structured, actionable ATS feedback in under 10 seconds
+- 5 free analyses with no signup, no email, no commitment
+- Native Spanish support — not machine-translated afterthoughts
+- Zero data retention — resume text never persisted
+
+**Technical Demonstration:**
+- Full-stack production SaaS with AI, auth, payments, and database
+- Clean separation between AI engine, scoring logic, and presentation layer
+- Internationalization architecture that scales to additional languages without refactoring
+- Privacy-by-design approach that eliminates an entire category of data liability
+
+This project demonstrates end-to-end product engineering: from AI prompt design through payment integration to bilingual UX — shipping a production SaaS that solves a real problem for a real audience.

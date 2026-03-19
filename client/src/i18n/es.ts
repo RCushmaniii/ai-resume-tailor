@@ -9,14 +9,12 @@ export const es = {
         "Herramienta de análisis de CV con IA. Obtén puntaje de compatibilidad, palabras clave faltantes y sugerencias claras para optimizar tu CV para cualquier vacante. Sin registro.",
       keywords:
         "analizador de CV, ATS, optimizar CV, herramienta de CV con IA, postulación, palabras clave CV, revisar CV gratis, puntaje de compatibilidad",
-      canonical: "https://airesumatailor.com",
     },
     analyze: {
       title: "Analiza tu CV - AI Resume Tailor",
       description:
         "Obtén un análisis con IA de tu CV contra cualquier vacante. Ve tu puntaje de compatibilidad, keywords faltantes y sugerencias de mejora en segundos.",
       keywords: "análisis de CV, ATS, puntaje ATS, revisar CV, compatibilidad con vacante, análisis con IA",
-      canonical: "https://airesumatailor.com/analyze",
     },
   },
   language: {

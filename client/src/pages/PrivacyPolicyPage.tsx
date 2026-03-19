@@ -1,6 +1,7 @@
 // File: src/pages/PrivacyPolicyPage.tsx
 import { MarkdownContent } from '../components/layout/MarkdownContent';
 import { LegalLayout } from '../components/layout/LegalLayout';
+import { SEO } from '@/components/SEO';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -11,14 +12,21 @@ export function PrivacyPolicyPage() {
   const { t } = useTranslation();
 
   return (
-    <LegalLayout 
-      title={t('legal.privacy.title')} 
-      lastUpdated="September 29, 2025"
-    >
+    <>
+      <SEO
+        title="Privacy Policy - AI Resume Tailor"
+        description="Learn how AI Resume Tailor protects your privacy. No resume data is stored. Privacy-first design with transparent data practices."
+        path="/privacy"
+      />
+      <LegalLayout
+        title={t('legal.privacy.title')}
+        lastUpdated="September 29, 2025"
+      >
       <MarkdownContent 
         filePath="legal/privacy-policy.md" 
       />
     </LegalLayout>
+    </>
   );
 }
 

@@ -1,8 +1,16 @@
 import { Check, X, Shield, Search, ArrowRight, Info, Lightbulb, Users, Cpu, Eye, SlidersHorizontal } from 'lucide-react';
+import { SEO } from '@/components/SEO';
 
 export default function MethodologyPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <SEO
+        title="Our Methodology - AI Resume Tailor"
+        description="Learn how our AI resume evaluation works. Transparent scoring methodology designed to mirror how recruiters actually hire."
+        keywords="resume scoring methodology, ATS algorithm, resume evaluation, hiring process, recruiter scoring"
+        path="/methodology"
+      />
+      <div className="min-h-screen bg-white">
       <header className="bg-gradient-to-b from-slate-50 to-white py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-emerald-700 text-sm font-medium mb-6">
@@ -305,5 +313,6 @@ export default function MethodologyPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }
