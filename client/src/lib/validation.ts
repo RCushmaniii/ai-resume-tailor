@@ -6,7 +6,7 @@
 export const VALIDATION_RULES = {
   MIN_RESUME_LENGTH: 200,
   MIN_JOB_LENGTH: 100,
-  MAX_LENGTH: 10000,
+  MAX_LENGTH: 15000,
 } as const;
 
 /**

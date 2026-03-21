@@ -697,7 +697,7 @@ def analyze():
             )
         
         # Validate input lengths - reject if too long
-        max_length = 10000
+        max_length = 15000
         min_resume_length = 200
         min_job_length = 100
         

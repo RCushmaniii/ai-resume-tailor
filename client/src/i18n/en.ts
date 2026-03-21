@@ -107,6 +107,16 @@ export const en = {
     extractionSuccess: "Resume text extracted successfully!",
     extractionHint: "Review your text below and make any edits before analyzing.",
     analyzing: "Analyzing...",
+    loadingSteps: {
+      reading: "Reading your resume...",
+      extracting: "Analyzing job requirements...",
+      matching: "Matching keywords & skills...",
+      scoring: "Scoring your fit...",
+      recommendations: "Generating recommendations...",
+      finalizing: "Finalizing your report...",
+    },
+    loadingElapsed: "{{seconds}}s elapsed",
+    loadingHang: "Still working — AI analysis can take up to 60 seconds",
     pasteBothToStart: "Paste Both Texts to Start",
     analyzeMatch: "Analyze Match Now",
     results: {

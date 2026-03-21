@@ -107,6 +107,16 @@ export const es = {
     extractionSuccess: "¡Texto del CV extraído exitosamente!",
     extractionHint: "Revisa tu texto abajo y haz ediciones antes de analizar.",
     analyzing: "Analizando...",
+    loadingSteps: {
+      reading: "Leyendo tu CV...",
+      extracting: "Analizando requisitos del puesto...",
+      matching: "Comparando palabras clave y habilidades...",
+      scoring: "Calculando tu compatibilidad...",
+      recommendations: "Generando recomendaciones...",
+      finalizing: "Finalizando tu reporte...",
+    },
+    loadingElapsed: "{{seconds}}s transcurridos",
+    loadingHang: "Aún trabajando — el análisis con IA puede tomar hasta 60 segundos",
     pasteBothToStart: "Pega ambos textos para comenzar",
     analyzeMatch: "Analizar compatibilidad ahora",
     toasts: {
