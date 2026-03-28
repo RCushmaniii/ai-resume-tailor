@@ -7,7 +7,7 @@ import { Footer } from './components/layout/Footer';
 import { Landing } from './pages/Landing';
 import { SignInPromptProvider } from './contexts/SignInPromptContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
-import { SpeedInsights } from '@vercel/speed-insights/react';
+
 
 // Lazy load pages for code splitting
 const DocsPage = lazy(() => import('./pages/DocsPage').then(m => ({ default: m.DocsPage })));
@@ -169,7 +169,7 @@ function App() {
           </Suspense>
         </main>
           <Footer navigate={handleNavClick} />
-          <SpeedInsights />
+
         </div>
       </SignInPromptProvider>
     </SubscriptionProvider>
