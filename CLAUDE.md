@@ -6,7 +6,7 @@ This file provides context for Claude Code to work effectively on this project.
 
 **AI Resume Tailor** is a bilingual (EN/ES) SaaS application that helps job seekers optimize their resumes for Applicant Tracking Systems (ATS). It provides AI-powered analysis with structured feedback, privacy-first design (no data storage), and zero-friction UX.
 
-**Live:** https://ai-resume-tailor-client.vercel.app
+**Live:** https://resume.cushlabs.ai
 **Status:** Production MVP (v2.0.0) - working toward full SaaS with monetization
 
 ---
@@ -165,7 +165,7 @@ docs/                 # Comprehensive documentation
 
 **Frontend (.env):**
 ```
-VITE_API_URL=https://ai-resume-tailor-hxpr.onrender.com/api
+VITE_API_URL=https://resume.cushlabs.ai/api
 VITE_CLERK_PUBLISHABLE_KEY=pk_...
 VITE_GUEST_CREDITS_TOTAL=5
 ```
@@ -174,7 +174,7 @@ VITE_GUEST_CREDITS_TOTAL=5
 ```
 OPENAI_API_KEY=sk-proj-...
 OPENAI_MODEL=gpt-4o
-FRONTEND_URL=https://ai-resume-tailor-client.vercel.app
+FRONTEND_URL=https://resume.cushlabs.ai
 CLERK_SECRET_KEY=sk_...
 CLERK_WEBHOOK_SECRET=whsec_...
 DATABASE_URL=postgres://user:pass@ep-xxx.region.aws.neon.tech/neondb
@@ -255,11 +255,41 @@ cd client && pnpm test:e2e    # E2E tests (Playwright)
 cd server && pytest           # Backend tests
 ```
 
-## Deployment
+## Deployment — Hetzner VPS
 
-- **Frontend:** Auto-deploys to Vercel on push to `main`
-- **Backend:** Auto-deploys to Render on push to `main`
-- Always run `pnpm verify` before pushing
+- **Host:** 178.156.192.117
+- **SSH:** `ssh deploy@178.156.192.117`
+- **VPS path:** `~/apps/resume-tailor/` (backend), `~/apps/static/resume-tailor/` (frontend static files)
+- **Orchestration:** `~/apps/cushlabs-prod-server/docker-compose.yml`
+- **Domain:** resume.cushlabs.ai (HTTPS via Caddy/Let's Encrypt)
+- **Internal port:** 5000 (bound to 127.0.0.1, not exposed publicly)
+- **Caddy config:** `/etc/caddy/Caddyfile` — needs update if routes change
+- **Resource limits:** 4GB RAM total on VPS (~350MB used)
+
+### Deploy backend change
+```bash
+ssh deploy@178.156.192.117 'cd ~/apps/resume-tailor && git pull && cd ~/apps/cushlabs-prod-server && docker compose up -d --build resume-tailor'
+```
+- Code changes need `--build`, config-only changes just need `docker compose restart resume-tailor`
+- Logs: `ssh deploy@178.156.192.117 'docker logs -f resume-tailor'`
+
+### Deploy frontend change
+```bash
+# Build locally then upload
+cd client && pnpm build
+scp -r client/dist/* deploy@178.156.192.117:~/apps/static/resume-tailor/
+```
+Note: Build requires all `VITE_*` env vars set (VITE_API_URL, VITE_CLERK_PUBLISHABLE_KEY, etc.)
+
+### Health check
+```bash
+curl https://resume.cushlabs.ai/api/health
+```
+
+### Always run before deploying
+```bash
+pnpm verify
+```
 
 ## Documentation Index
 
