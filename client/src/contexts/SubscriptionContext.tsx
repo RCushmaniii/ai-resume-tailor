@@ -15,7 +15,7 @@ import { useUser } from '@clerk/clerk-react';
 // TYPES & INTERFACES
 // =========================================================================
 
-export type TierType = 'guest' | 'free' | 'pro' | 'commercial';
+export type TierType = 'free' | 'pro' | 'commercial';
 
 export interface SubscriptionData {
   id: string;
@@ -77,7 +77,6 @@ export type FeatureType =
 // =========================================================================
 
 export const TIERS = {
-  GUEST: 'guest' as const,
   FREE: 'free' as const,
   PRO: 'pro' as const,
   COMMERCIAL: 'commercial' as const,
@@ -86,15 +85,14 @@ export const TIERS = {
 export const FEATURE_ACCESS = {
   // Analysis limits
   analysisLimit: {
-    [TIERS.GUEST]: 3,
-    [TIERS.FREE]: 5,
+    [TIERS.FREE]: 3,
     [TIERS.PRO]: 50,
     [TIERS.COMMERCIAL]: 500,
   } as Record<TierType, number>,
 
   // Feature availability
   features: {
-    basicAnalysis: [TIERS.GUEST, TIERS.FREE, TIERS.PRO, TIERS.COMMERCIAL],
+    basicAnalysis: [TIERS.FREE, TIERS.PRO, TIERS.COMMERCIAL],
     fullOptimizationPlan: [TIERS.PRO, TIERS.COMMERCIAL],
     resumeQualityFull: [TIERS.PRO, TIERS.COMMERCIAL],
     interviewPrepFull: [TIERS.PRO, TIERS.COMMERCIAL],
@@ -113,11 +111,6 @@ export const FEATURE_ACCESS = {
 };
 
 export const TIER_INFO: Record<TierType, TierInfoData> = {
-  [TIERS.GUEST]: {
-    name: 'Guest',
-    badge: null,
-    color: 'gray',
-  },
   [TIERS.FREE]: {
     name: 'Free',
     badge: null,
@@ -149,12 +142,12 @@ interface SubscriptionProviderProps {
  * Subscription Provider
  */
 export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
-  const [tier, setTier] = useState<TierType>(TIERS.GUEST);
+  const [tier, setTier] = useState<TierType>(TIERS.FREE);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [usage, setUsage] = useState<UsageData>({
     analysesUsed: 0,
-    analysesLimit: 3,
+    analysesLimit: FEATURE_ACCESS.analysisLimit[TIERS.FREE],
     periodEnd: null,
   });
 
@@ -165,12 +158,11 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     setIsLoading(true);
     try {
       if (!signedIn) {
-        // Guest user - use localStorage for usage tracking
-        const guestUsed = parseInt(localStorage.getItem('guest_analyses_used') || '0', 10);
-        setTier(TIERS.GUEST);
+        // Not signed in — default to free tier (auth gate will redirect to signup)
+        setTier(TIERS.FREE);
         setUsage({
-          analysesUsed: guestUsed,
-          analysesLimit: FEATURE_ACCESS.analysisLimit[TIERS.GUEST],
+          analysesUsed: 0,
+          analysesLimit: FEATURE_ACCESS.analysisLimit[TIERS.FREE],
           periodEnd: null,
         });
       } else {
@@ -194,7 +186,6 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
             periodEnd: data.period_end || null,
           });
         } else {
-          // API error or no subscription - default to free tier for authenticated users
           setTier(TIERS.FREE);
           setUsage({
             analysesUsed: 0,
@@ -205,11 +196,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       }
     } catch (error) {
       console.error('Failed to load subscription status:', error);
-      if (signedIn) {
-        setTier(TIERS.FREE);
-      } else {
-        setTier(TIERS.GUEST);
-      }
+      setTier(TIERS.FREE);
     } finally {
       setIsLoading(false);
     }
@@ -244,12 +231,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       ...prev,
       analysesUsed: prev.analysesUsed + 1,
     }));
-
-    if (tier === TIERS.GUEST) {
-      const current = parseInt(localStorage.getItem('guest_analyses_used') || '0', 10);
-      localStorage.setItem('guest_analyses_used', (current + 1).toString());
-    }
-  }, [tier]);
+  }, []);
 
   const refreshSubscription = useCallback(async (): Promise<void> => {
     await loadSubscriptionStatus(isSignedIn ?? false);

@@ -1,7 +1,7 @@
 /**
  * Pricing Page with Stripe Embedded Checkout
  *
- * Supports both authenticated users and guest checkout.
+ * All users must be authenticated before reaching this page.
  * Uses Stripe Elements for embedded checkout experience.
  *
  * File: client/src/pages/PricingPage.tsx
@@ -9,28 +9,25 @@
 
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Sparkles, ShieldCheck, Star, ArrowRight, Loader2, ArrowLeft, Mail } from 'lucide-react';
+import { Check, Sparkles, ShieldCheck, Star, ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/lib/useAuth';
 import { toast } from 'sonner';
+import { SignIn } from '@clerk/clerk-react';
 
 // Load Stripe outside of component to avoid recreating on every render
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
-type CheckoutState = 'pricing' | 'email' | 'checkout';
+type CheckoutState = 'pricing' | 'checkout';
 
 export function PricingPage() {
   const { t } = useTranslation();
-  const { user, getToken } = useAuth();
+  const { user, loading: authLoading, getToken } = useAuth();
   const [checkoutState, setCheckoutState] = useState<CheckoutState>('pricing');
-  const [guestEmail, setGuestEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [emailError, setEmailError] = useState<string | null>(null);
 
   const benefits = [
     {
@@ -47,32 +44,22 @@ export function PricingPage() {
     },
   ];
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const createCheckoutSession = useCallback(async (email?: string) => {
+  const createCheckoutSession = useCallback(async () => {
     setIsLoading(true);
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-      // Add auth token if user is logged in
       const token = await getToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const body: Record<string, string> = { billingPeriod: 'monthly' };
-      if (email) {
-        body.email = email;
       }
 
       const apiUrl = import.meta.env.VITE_API_URL || '/api';
       const response = await fetch(`${apiUrl}/checkout/create-session`, {
         method: 'POST',
         headers,
-        body: JSON.stringify(body)
+        body: JSON.stringify({ billingPeriod: 'monthly' })
       });
 
       if (!response.ok) {
@@ -100,41 +87,36 @@ export function PricingPage() {
     }
   }, [getToken, t]);
 
-  const handleUpgradeClick = () => {
-    if (user) {
-      // Logged in user - go directly to checkout
-      createCheckoutSession();
-    } else {
-      // Guest - show email form
-      setCheckoutState('email');
-    }
-  };
-
-  const handleEmailSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setEmailError(null);
-
-    if (!guestEmail.trim()) {
-      setEmailError(t('pricing.errors.emailRequired', 'Email is required'));
-      return;
-    }
-
-    if (!validateEmail(guestEmail)) {
-      setEmailError(t('pricing.errors.emailInvalid', 'Please enter a valid email'));
-      return;
-    }
-
-    createCheckoutSession(guestEmail);
-  };
-
   const handleBack = () => {
-    if (checkoutState === 'checkout') {
-      setClientSecret(null);
-      setCheckoutState(user ? 'pricing' : 'email');
-    } else {
-      setCheckoutState('pricing');
-    }
+    setClientSecret(null);
+    setCheckoutState('pricing');
   };
+
+  // Auth gate: require sign-in before pricing/checkout
+  if (!authLoading && !user) {
+    return (
+      <div className="max-w-lg mx-auto py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold mb-2">
+            {t('pricing.authGate.title', 'Sign in to upgrade')}
+          </h1>
+          <p className="text-muted-foreground">
+            {t('pricing.authGate.subtitle', 'Create a free account or sign in to access Pro features.')}
+          </p>
+        </div>
+        <SignIn
+          routing="hash"
+          forceRedirectUrl="/pricing"
+          appearance={{
+            elements: {
+              rootBox: 'mx-auto w-full',
+              card: 'shadow-none border border-gray-200 rounded-xl',
+            },
+          }}
+        />
+      </div>
+    );
+  }
 
   // Render embedded checkout
   if (checkoutState === 'checkout' && clientSecret) {
@@ -165,80 +147,6 @@ export function PricingPage() {
           >
             <EmbeddedCheckout />
           </EmbeddedCheckoutProvider>
-        </div>
-      </div>
-    );
-  }
-
-  // Render email form for guest checkout
-  if (checkoutState === 'email') {
-    return (
-      <div className="max-w-lg mx-auto">
-        <Button
-          variant="ghost"
-          onClick={handleBack}
-          className="mb-4"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          {t('pricing.back', 'Back')}
-        </Button>
-
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <div className="text-center mb-6">
-            <div className="inline-flex p-3 bg-indigo-100 rounded-full mb-4">
-              <Mail className="w-8 h-8 text-indigo-600" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
-              {t('pricing.guestCheckout.title', 'Enter Your Email')}
-            </h2>
-            <p className="text-gray-500 text-sm">
-              {t('pricing.guestCheckout.description', "We'll send your receipt and Pro access details here.")}
-            </p>
-          </div>
-
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="email">{t('pricing.guestCheckout.emailLabel', 'Email Address')}</Label>
-              <Input
-                id="email"
-                type="email"
-                value={guestEmail}
-                onChange={(e) => {
-                  setGuestEmail(e.target.value);
-                  setEmailError(null);
-                }}
-                placeholder="you@example.com"
-                className={emailError ? 'border-red-500' : ''}
-                autoFocus
-              />
-              {emailError && (
-                <p className="text-sm text-red-500 mt-1">{emailError}</p>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              size="lg"
-              className="w-full bg-indigo-600 hover:bg-indigo-700"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  {t('pricing.processing', 'Processing...')}
-                </>
-              ) : (
-                <>
-                  {t('pricing.continueToPayment', 'Continue to Payment')}
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </>
-              )}
-            </Button>
-          </form>
-
-          <p className="text-xs text-gray-400 text-center mt-4">
-            {t('pricing.guestCheckout.accountNote', 'You can create an account after purchase to manage your subscription.')}
-          </p>
         </div>
       </div>
     );
@@ -323,7 +231,7 @@ export function PricingPage() {
           <Button
             size="lg"
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-lg py-6 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleUpgradeClick}
+            onClick={() => createCheckoutSession()}
             disabled={isLoading}
           >
             {isLoading ? (

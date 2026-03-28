@@ -10,27 +10,57 @@ import { transformAnalysisResult, type AnalysisResult } from '@/types/analysis';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
 import { useAuth } from '@/lib/useAuth';
 import { useAnalysisLimit } from '@/hooks/useAnalysisLimit';
-import { RegistrationGateModal } from '@/components/auth/RegistrationGateModal';
 import { UpgradeRequiredModal } from '@/components/subscription/UpgradeRequiredModal';
 import { LowCreditsBanner } from '@/components/subscription/UpgradeBanner';
-
-const GUEST_CREDITS_TOTAL = Number(import.meta.env.VITE_GUEST_CREDITS_TOTAL ?? 3);
+import { SignIn } from '@clerk/clerk-react';
 
 export function Analyze() {
   const { t } = useTranslation();
+  const { user, loading: authLoading } = useAuth();
   const [resumeText, setResumeText] = useState('');
   const [jobText, setJobText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<DisplayAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  useAuth(); // Keep for future auth state needs
   const { checkCanAnalyze, incrementUsage } = useAnalysisLimit();
 
+  // Auth gate: require sign-in to use the analyzer
+  if (!authLoading && !user) {
+    return (
+      <>
+        <SEO
+          title="Analyze Your Resume - AI Resume Tailor"
+          description="Get instant AI-powered analysis of your resume against any job description. See your match score, missing keywords, and improvement suggestions in 60 seconds."
+          keywords="resume analysis, ATS score, resume checker, job match, resume keywords, AI analysis"
+          path="/analyze"
+        />
+        <div className="container mx-auto px-4 py-12 max-w-lg">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-3">
+              {t('analyze.authGate.title', 'Sign in to analyze your resume')}
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              {t('analyze.authGate.subtitle', 'Create a free account to get 3 AI-powered resume analyses — no credit card required.')}
+            </p>
+          </div>
+          <SignIn
+            routing="hash"
+            forceRedirectUrl="/analyze"
+            appearance={{
+              elements: {
+                rootBox: 'mx-auto w-full',
+                card: 'shadow-none border border-gray-200 rounded-xl',
+              },
+            }}
+          />
+        </div>
+      </>
+    );
+  }
+
   const handleAnalyzeAgain = () => {
-    // Clear everything - results, errors, AND input fields
     setResults(null);
     setError(null);
     setResumeText('');
@@ -39,21 +69,14 @@ export function Analyze() {
   };
 
   const handleAnalyze = async () => {
-    // Clear any cached results to ensure fresh data
     setResults(null);
     setError(null);
-    
-    // Check analysis limits using the new hook
+
+    // Check analysis limits
     const limitCheck = checkCanAnalyze();
-    
+
     if (!limitCheck.allowed) {
-      if (limitCheck.reason === 'guest_limit') {
-        // Show registration modal for guests
-        setShowRegistrationModal(true);
-        return;
-      }
       if (limitCheck.reason === 'free_limit') {
-        // Show upgrade modal for free users
         setShowUpgradeModal(true);
         return;
       }
@@ -61,11 +84,10 @@ export function Analyze() {
 
     setIsAnalyzing(true);
     setError(null);
-    
-    // Set up timeout controller
+
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout (AI + Render cold start)
-    
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+
     try {
       const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -78,43 +100,35 @@ export function Analyze() {
         }),
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        
-        // Handle 429 (rate limit) error specially to show reset button
+
         if (response.status === 429) {
-          setError(t('analyze.messages.freeLimitReached', { total: GUEST_CREDITS_TOTAL }));
+          setShowUpgradeModal(true);
           setIsAnalyzing(false);
           return;
         }
-        
+
         throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
-      const apiResult: AnalysisResult & {
-        credits_remaining?: number;
-        credits_total?: number;
-      } = await response.json();
+      const apiResult: AnalysisResult = await response.json();
 
-      // Transform backend format to frontend display format
       const displayResult = transformAnalysisResult(apiResult);
 
-      // Keep minimum 1s loading to prevent UI flash
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setResults(displayResult);
 
-      // Increment usage counter (works for both guest and registered users)
       incrementUsage();
-      
-      // Smooth scroll to results with offset for header
+
       setTimeout(() => {
         const resultsElement = document.getElementById('results');
         if (resultsElement) {
-          const headerOffset = 120; // Account for sticky header + breathing room
+          const headerOffset = 120;
           const elementPosition = resultsElement.getBoundingClientRect().top;
           const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
           window.scrollTo({
@@ -123,53 +137,28 @@ export function Analyze() {
           });
         }
       }, 100);
-      
+
     } catch (err) {
       clearTimeout(timeoutId);
-      
+
       let message = 'Analysis failed. Please try again.';
-      
+
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
           message = 'Request timed out. Please try again.';
-        } else if (err.message.includes('Free limit reached')) {
-          // Handle the free limit error with reset button
-          const limitMessage = t('analyze.messages.freeLimitReached', { total: GUEST_CREDITS_TOTAL });
-          toast.error(t('analyze.toasts.freeLimitReachedTitle'), {
-            description: limitMessage,
-            duration: 10000,
-            action: {
-              label: 'Reset (Dev)',
-              onClick: async () => {
-                try {
-                  const API_URL = import.meta.env.VITE_API_URL || '/api';
-                  await fetch(`${API_URL}/dev/reset`, { method: 'POST' });
-                  localStorage.removeItem('guest_analyses_used');
-                  toast.success('Counter reset! Refreshing...');
-                  setTimeout(() => window.location.reload(), 500);
-                } catch (e) {
-                  console.error('Reset failed:', e);
-                }
-              }
-            }
-          });
-          setError(limitMessage);
-          setIsAnalyzing(false);
-          return;
         } else {
           message = err.message;
         }
       }
-      
-      // Show error toast
+
       toast.error('Analysis Failed', {
         description: message,
         duration: 5000,
       });
-      
+
       setError(message);
       console.error('Analysis error:', err);
-      
+
     } finally {
       setIsAnalyzing(false);
       setIsEditing(false);
@@ -177,12 +166,9 @@ export function Analyze() {
   };
 
   const handleEditAndOptimize = () => {
-    // Clear results to show input section again
     setResults(null);
     setError(null);
     setIsEditing(true);
-    
-    // Scroll to top of inputs
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -203,7 +189,7 @@ export function Analyze() {
           </p>
         </div>
 
-      {/* Input Section - Always visible but grayed out when analyzing/showing results */}
+      {/* Input Section */}
       <div id="analyze-input" className={results && !isEditing ? 'opacity-50 pointer-events-none mb-8' : 'mb-8'}>
         <InputSection
           resumeText={resumeText}
@@ -219,23 +205,6 @@ export function Analyze() {
       {error && (
         <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-6">
           <p>{error}</p>
-          {error.includes('free limit') && (
-            <button
-              onClick={async () => {
-                try {
-                  const API_URL = import.meta.env.VITE_API_URL || '/api';
-                  await fetch(`${API_URL}/dev/reset`, { method: 'POST' });
-                  localStorage.removeItem('guest_analyses_used');
-                  window.location.reload();
-                } catch (e) {
-                  console.error('Reset failed:', e);
-                }
-              }}
-              className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-            >
-              Reset Counter (Dev Only)
-            </button>
-          )}
         </div>
       )}
 
@@ -260,13 +229,6 @@ export function Analyze() {
         />
       )}
       </div>
-
-      {/* Registration Gate Modal (Guest -> Free) */}
-      <RegistrationGateModal
-        isOpen={showRegistrationModal}
-        onClose={() => setShowRegistrationModal(false)}
-        allowDismiss={false}
-      />
 
       {/* Upgrade Required Modal (Free -> Pro) */}
       <UpgradeRequiredModal

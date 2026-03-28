@@ -6,7 +6,7 @@ export const en = {
     landing: {
       title: "AI Resume Tailor - Get Your Resume Past ATS in Seconds",
       description:
-        "AI-powered resume analysis tool. Get instant match scores, missing keywords, and actionable suggestions to optimize your resume for any job. No signup required.",
+        "AI-powered resume analysis tool. Get instant match scores, missing keywords, and actionable suggestions to optimize your resume for any job. 3 free analyses included.",
       keywords:
         "resume analyzer, ATS checker, resume optimization, AI resume tool, job application, resume keywords, free resume checker, resume match score",
     },
@@ -166,8 +166,8 @@ export const en = {
       analysisFailedTitle: "Analysis Failed",
     },
     messages: {
-      freeLimitReached: "You've used all {{total}} free analyses. Sign up for more!",
-      freeRemaining: "Free analyses remaining: {{remaining}} / {{total}}.",
+      freeLimitReached: "You've used all {{total}} free analyses. Upgrade to Pro for more.",
+      freeRemaining: "Analyses remaining: {{remaining}} / {{total}}.",
       creditsRemaining: "Credits remaining: {{remaining}} / {{total}}.",
       analysisFailedGeneric: "Analysis failed. Please try again.",
       requestTimedOut: "Request timed out. Please try again.",
@@ -187,8 +187,7 @@ export const en = {
     ANALYZE_JOB_TOO_SHORT: "Job description text is too short (minimum {{min_length}} characters).",
     ANALYZE_RESUME_TOO_LONG: "Resume text is too long (maximum {{max_length}} characters).",
     ANALYZE_JOB_TOO_LONG: "Job description text is too long (maximum {{max_length}} characters).",
-    ANALYZE_CREDITS_EXCEEDED_REGISTERED: "You’ve used all your credits.",
-    ANALYZE_CREDITS_EXCEEDED_GUEST: "You’ve used your free limit. Create a free account to continue.",
+    ANALYZE_CREDITS_EXCEEDED: "You’ve used all your free analyses. Upgrade to Pro for more.",
 
     INTERNAL_ERROR: "Server error. Please try again.",
   },
@@ -199,7 +198,7 @@ export const en = {
       headlineAts: "ATS in Seconds",
       headlineSuffix: "",
       subheadlinePrefix: "AI-powered analysis shows exactly what recruiters want to see.",
-      subheadlineEmphasis: "No signup required.",
+      subheadlineEmphasis: "3 free analyses included.",
       cta: "Analyze My Resume Free",
       socialProofPrefix: "Used by",
       socialProofHighlight: "10,000+",
@@ -255,7 +254,7 @@ export const en = {
         },
         free: {
           title: "Always Available",
-          description: "No credit card required. No signup needed for basic analysis.",
+          description: "No credit card required. 3 free analyses included.",
         },
       },
     },
@@ -320,7 +319,7 @@ export const en = {
       subheadlineLine2: "It’s free, private, and instant.",
       cta: "Analyze My Resume Free",
       trustNoCreditCard: "No Credit Card",
-      trustNoSignup: "No Signup Required",
+      trustNoSignup: "Free to Start",
       trustPrivate: "100% Private",
     },
   },
@@ -465,11 +464,9 @@ export const en = {
       score: "Guaranteed Score Boost",
       scoreDesc: "Reach 95%+ match to pass ATS filters.",
     },
-    guestCheckout: {
-      title: "Enter Your Email",
-      description: "We'll send your receipt and Pro access details here.",
-      emailLabel: "Email Address",
-      accountNote: "You can create an account after purchase to manage your subscription.",
+    authGate: {
+      title: "Sign in to upgrade",
+      subtitle: "Create a free account or sign in to access Pro features.",
     },
     errors: {
       checkoutFailed: "Could not start checkout",

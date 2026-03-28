@@ -2,7 +2,7 @@
  * Checkout Success Page
  *
  * Displayed after successful Stripe payment.
- * Handles session verification and prompts guests to create an account.
+ * All users are authenticated at this point.
  *
  * File: client/src/pages/CheckoutSuccessPage.tsx
  */
@@ -13,8 +13,6 @@ import { CheckCircle, Loader2, AlertCircle, ArrowRight, Sparkles } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-import { useAuth } from '@/lib/useAuth';
-import { SignUp } from '@clerk/clerk-react';
 
 interface CheckoutSuccessPageProps {
   navigate: (page: string) => void;
@@ -26,22 +24,19 @@ interface SessionStatus {
   customerEmail: string | null;
 }
 
-type PageState = 'loading' | 'success' | 'create-account' | 'error';
+type PageState = 'loading' | 'success' | 'error';
 
 export function CheckoutSuccessPage({ navigate }: CheckoutSuccessPageProps) {
   const { t } = useTranslation();
   const { refreshSubscription } = useSubscription();
-  const { user, getToken } = useAuth();
   const [pageState, setPageState] = useState<PageState>('loading');
   const [sessionData, setSessionData] = useState<SessionStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     const verifySession = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const sid = urlParams.get('session_id');
-      setSessionId(sid);
 
       if (!sid) {
         setError('No session ID found. Please try again.');
@@ -50,7 +45,8 @@ export function CheckoutSuccessPage({ navigate }: CheckoutSuccessPageProps) {
       }
 
       try {
-        const response = await fetch(`/api/checkout/session-status?session_id=${sid}`);
+        const apiUrl = import.meta.env.VITE_API_URL || '/api';
+        const response = await fetch(`${apiUrl}/checkout/session-status?session_id=${sid}`);
 
         if (!response.ok) {
           throw new Error('Failed to verify payment');
@@ -60,14 +56,8 @@ export function CheckoutSuccessPage({ navigate }: CheckoutSuccessPageProps) {
         setSessionData(data);
 
         if (data.status === 'complete' && data.paymentStatus === 'paid') {
-          if (user) {
-            // Authenticated user - go straight to success
-            setPageState('success');
-            await refreshSubscription();
-          } else {
-            // Guest user - prompt to create account
-            setPageState('create-account');
-          }
+          setPageState('success');
+          await refreshSubscription();
         } else if (data.status === 'expired') {
           setError('This checkout session has expired. Please try again.');
           setPageState('error');
@@ -83,46 +73,7 @@ export function CheckoutSuccessPage({ navigate }: CheckoutSuccessPageProps) {
     };
 
     verifySession();
-  }, [refreshSubscription, user]);
-
-  // When user signs up via Clerk's SignUp component, claim the subscription
-  useEffect(() => {
-    const claimSubscription = async () => {
-      if (user && sessionData?.customerEmail && pageState === 'create-account') {
-        try {
-          const token = await getToken();
-          const apiUrl = import.meta.env.VITE_API_URL || '/api';
-          const linkResponse = await fetch(`${apiUrl}/subscription/claim`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              session_id: sessionId,
-              email: sessionData.customerEmail,
-            }),
-          });
-
-          if (!linkResponse.ok) {
-            console.warn('Failed to link subscription, but account was created');
-          }
-
-          setPageState('success');
-          await refreshSubscription();
-        } catch (err) {
-          console.error('Failed to claim subscription:', err);
-          setPageState('success');
-        }
-      }
-    };
-
-    claimSubscription();
-  }, [user, sessionData, pageState, getToken, sessionId, refreshSubscription]);
-
-  const handleSkipAccountCreation = () => {
-    setPageState('success');
-  };
+  }, [refreshSubscription]);
 
   // Loading state
   if (pageState === 'loading') {
@@ -173,46 +124,6 @@ export function CheckoutSuccessPage({ navigate }: CheckoutSuccessPageProps) {
             </Button>
           </CardContent>
         </Card>
-      </div>
-    );
-  }
-
-  // Create account state (for guests) - use Clerk's SignUp
-  if (pageState === 'create-account') {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center py-8">
-        <div className="max-w-lg w-full space-y-6">
-          <div className="text-center">
-            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mb-4 ring-4 ring-green-50">
-              <CheckCircle className="w-10 h-10 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              {t('checkout.createAccount.title', 'Payment Successful!')}
-            </h2>
-            <p className="text-gray-600 mt-2">
-              {t('checkout.createAccount.subtitle', 'Create your account to access your Pro features')}
-            </p>
-          </div>
-
-          <SignUp
-            routing="hash"
-            forceRedirectUrl="/analyze"
-            appearance={{
-              elements: {
-                rootBox: 'mx-auto w-full',
-                card: 'shadow-none border border-gray-200',
-              },
-            }}
-          />
-
-          <button
-            type="button"
-            onClick={handleSkipAccountCreation}
-            className="w-full text-sm text-gray-500 hover:text-gray-700 underline"
-          >
-            {t('checkout.createAccount.skip', 'Skip for now (you can create an account later)')}
-          </button>
-        </div>
       </div>
     );
   }

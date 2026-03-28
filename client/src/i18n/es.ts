@@ -6,7 +6,7 @@ export const es = {
     landing: {
       title: "AI Resume Tailor - Mejora tu CV para pasar el ATS en Segundos",
       description:
-        "Herramienta de análisis de CV con IA. Obtén puntaje de compatibilidad, palabras clave faltantes y sugerencias claras para optimizar tu CV para cualquier vacante. Sin registro.",
+        "Herramienta de análisis de CV con IA. Obtén puntaje de compatibilidad, palabras clave faltantes y sugerencias claras para optimizar tu CV para cualquier vacante. 3 análisis gratis.",
       keywords:
         "analizador de CV, ATS, optimizar CV, herramienta de CV con IA, postulación, palabras clave CV, revisar CV gratis, puntaje de compatibilidad",
     },
@@ -125,8 +125,8 @@ export const es = {
       analysisFailedTitle: "Falló el análisis",
     },
     messages: {
-      freeLimitReached: "¡Usaste todos los {{total}} análisis gratis! Regístrate para más.",
-      freeRemaining: "Análisis gratis restantes: {{remaining}} / {{total}}.",
+      freeLimitReached: "Usaste todos los {{total}} análisis gratis. Actualiza a Pro para más.",
+      freeRemaining: "Análisis restantes: {{remaining}} / {{total}}.",
       creditsRemaining: "Créditos restantes: {{remaining}} / {{total}}.",
       analysisFailedGeneric: "Falló el análisis. Inténtalo de nuevo.",
       requestTimedOut: "Se agotó el tiempo de la solicitud. Inténtalo de nuevo.",
@@ -176,8 +176,7 @@ export const es = {
     ANALYZE_JOB_TOO_SHORT: "La vacante está muy corta (mínimo {{min_length}} caracteres).",
     ANALYZE_RESUME_TOO_LONG: "El CV está muy largo (máximo {{max_length}} caracteres).",
     ANALYZE_JOB_TOO_LONG: "La vacante está muy larga (máximo {{max_length}} caracteres).",
-    ANALYZE_CREDITS_EXCEEDED_REGISTERED: "Ya usaste todos tus créditos.",
-    ANALYZE_CREDITS_EXCEEDED_GUEST: "Ya usaste tu límite gratis. Crea una cuenta gratis para seguir.",
+    ANALYZE_CREDITS_EXCEEDED: "Ya usaste todos tus análisis gratis. Actualiza a Pro para más.",
 
     INTERNAL_ERROR: "Error del servidor. Intenta de nuevo.",
   },
@@ -188,7 +187,7 @@ export const es = {
       headlineAts: "ATS en Segundos",
       headlineSuffix: "",
       subheadlinePrefix: "El análisis con IA te muestra exactamente lo que los reclutadores quieren ver.",
-      subheadlineEmphasis: "Sin registro.",
+      subheadlineEmphasis: "3 análisis gratis incluidos.",
       cta: "Analizar mi CV gratis",
       socialProofPrefix: "Usado por",
       socialProofHighlight: "10,000+",
@@ -311,7 +310,7 @@ export const es = {
       subheadlineLine2: "Es gratis, privado e instantáneo.",
       cta: "Analizar mi CV gratis",
       trustNoCreditCard: "Sin tarjeta",
-      trustNoSignup: "Sin registro",
+      trustNoSignup: "Gratis para empezar",
       trustPrivate: "100% privado",
     },
   },
@@ -455,11 +454,9 @@ export const es = {
       score: "Mejora de Puntaje Garantizada",
       scoreDesc: "Alcanza 95%+ de match para pasar filtros ATS.",
     },
-    guestCheckout: {
-      title: "Ingresa tu Correo",
-      description: "Te enviaremos tu recibo y detalles de acceso Pro aquí.",
-      emailLabel: "Correo Electrónico",
-      accountNote: "Puedes crear una cuenta después de la compra para administrar tu suscripción.",
+    authGate: {
+      title: "Inicia sesión para actualizar",
+      subtitle: "Crea una cuenta gratis o inicia sesión para acceder a funciones Pro.",
     },
     errors: {
       checkoutFailed: "No se pudo iniciar el pago",

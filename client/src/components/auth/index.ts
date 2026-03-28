@@ -5,4 +5,3 @@
  */
 
 export { AuthDialog } from './AuthDialog';
-export { RegistrationGateModal } from './RegistrationGateModal';

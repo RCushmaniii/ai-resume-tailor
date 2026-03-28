@@ -51,7 +51,7 @@ const PRO_FEATURES = [
 
 export function UpgradeRequiredModal({
   isOpen,
-  analysesUsed = 5,
+  analysesUsed = 3,
   onClose,
 }: UpgradeRequiredModalProps): ReactElement | null {
   if (!isOpen) return null;

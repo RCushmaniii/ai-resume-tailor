@@ -65,40 +65,26 @@ interface BannerConfig {
 /**
  * CreditExhaustedBanner - Shows when user has no credits left
  */
-export function CreditExhaustedBanner({ 
-  onDismiss, 
-  className = '' 
+export function CreditExhaustedBanner({
+  onDismiss,
+  className = ''
 }: BannerBaseProps): ReactElement {
-  const { tier, TIERS } = useSubscription();
-  const isGuest = tier === TIERS.GUEST;
-
   return (
     <div className={`bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 ${className}`}>
       <div className="flex items-start gap-3">
         <div className="p-2 bg-amber-100 rounded-full">
           <AlertTriangle className="w-5 h-5 text-amber-600" />
         </div>
-        
+
         <div className="flex-1">
           <h3 className="font-semibold text-gray-900">
-            {isGuest ? "You've used all free analyses" : "You've reached your analysis limit"}
+            You've reached your analysis limit
           </h3>
           <p className="text-sm text-gray-600 mt-1">
-            {isGuest 
-              ? "Create a free account to get 2 more analyses, or upgrade to Pro for 50/month."
-              : "Upgrade to Pro to get 50 analyses per month and unlock all premium features."
-            }
+            Upgrade to Pro to get 50 analyses per month and unlock all premium features.
           </p>
-          
+
           <div className="flex items-center gap-3 mt-3">
-            {isGuest && (
-              <a
-                href="/signup"
-                className="text-sm font-medium text-amber-700 hover:text-amber-800"
-              >
-                Create Free Account
-              </a>
-            )}
             <a
               href="/pricing"
               className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
