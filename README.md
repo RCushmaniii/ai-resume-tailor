@@ -5,10 +5,11 @@
 ![Flask](https://img.shields.io/badge/Flask_3.0-000000?style=flat&logo=flask&logoColor=white)
 ![OpenAI](https://img.shields.io/badge/OpenAI_GPT--4-412991?style=flat&logo=openai&logoColor=white)
 ![Stripe](https://img.shields.io/badge/Stripe-635BFF?style=flat&logo=stripe&logoColor=white)
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-Docs-blue?logo=readthedocs&logoColor=white)](https://deepwiki.com/RCushmaniii/ai-resume-tailor)
 
 > Bilingual AI-powered ATS resume optimization — instant structured feedback, zero friction, privacy by design.
 
-**[Try it live](https://ai-resume-tailor-client.vercel.app)**
+**[Try it live →](https://resume.cushlabs.ai)** · **[Technical Docs](https://deepwiki.com/RCushmaniii/ai-resume-tailor)**
 
 <p align="center">
   <img src="client/public/images/ai-resume-tailor-thumb.jpg" alt="AI Resume Tailor — Bilingual ATS Resume Optimization" width="100%">
@@ -18,7 +19,7 @@
 
 AI Resume Tailor is a bilingual (EN/ES) SaaS application that helps job seekers understand exactly why Applicant Tracking Systems reject their resumes and what to do about it. Users paste a resume and a job description, and the system returns a structured analysis: a 0-100 match score, missing keywords with severity coding, and actionable optimization suggestions.
 
-The product runs a React 19 frontend on Vercel with a Flask backend on Render. OpenAI GPT-4 handles analysis through ATS-focused prompts with structured JSON output. Authentication flows through Clerk (Google, LinkedIn, email/password), payments through Stripe embedded checkout, and user data through Neon serverless Postgres.
+The product runs a React 19 frontend with a Flask backend, self-hosted on a Hetzner VPS behind Caddy. OpenAI GPT-4 handles analysis through ATS-focused prompts with structured JSON output. Authentication flows through Clerk (Google, LinkedIn, email/password), payments through Stripe embedded checkout, and user data through Neon serverless Postgres.
 
 The design prioritizes zero friction — guests get 5 free analyses with no signup required — and privacy by architecture: no resume data is stored, all processing happens in a single request/response cycle.
 
@@ -120,7 +121,7 @@ Visit `http://localhost:5173`
 
 ## Live Demo
 
-**[Try it live](https://ai-resume-tailor-client.vercel.app)**
+**[Try it live →](https://resume.cushlabs.ai)**
 
 Test scenarios to try:
 
@@ -163,8 +164,9 @@ ai-resume-tailor/
 
 ## Deployment
 
-- **Frontend:** Auto-deploys to [Vercel](https://ai-resume-tailor-client.vercel.app) on push to `main`
-- **Backend:** Auto-deploys to [Render](https://ai-resume-tailor-hxpr.onrender.com) on push to `main`
+- **Frontend:** Static files served from Hetzner VPS via Caddy
+- **Backend:** Docker container on Hetzner VPS (port 5000, reverse-proxied)
+- **Domain:** [resume.cushlabs.ai](https://resume.cushlabs.ai) — HTTPS via Caddy/Let's Encrypt
 
 ```powershell
 # Verify before pushing
@@ -215,4 +217,4 @@ Guadalajara, Mexico
 
 ---
 
-*Last Updated: 2026-02-21*
+*Last Updated: 2026-03-29*
