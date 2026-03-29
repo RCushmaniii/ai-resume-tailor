@@ -160,6 +160,14 @@ export const es = {
       optimizationPlan: "Plan de Optimización",
       noGapsTitle: "¡Coincidencia Excelente!",
       noGapsDescription: "Tu CV coincide fuertemente con los requisitos del trabajo. No se identificaron brechas críticas.",
+      suggestions: {
+        title: "Plan de Optimización",
+        subtitle: "Recomendaciones prácticas para fortalecer tu CV.",
+        perfectTitle: "¡No necesitas mejoras!",
+        perfectDesc: "Tu CV se alinea perfectamente con la descripción del puesto según nuestro análisis.",
+      },
+      editButton: "Editar y Optimizar",
+      analyzeAgain: "Analizar de Nuevo",
     },
   },
   apiErrors: {
@@ -328,6 +336,7 @@ export const es = {
       features: "Funciones",
       faq: "Preguntas frecuentes",
       documentation: "Documentación",
+      methodology: "Nuestra Metodología",
       resumeTips: "Tips para tu CV",
       atsGuide: "Guía ATS",
       github: "GitHub",

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const SITE_URL = 'https://ai-resume-tailor-client.vercel.app';
+const SITE_URL = 'https://resume.cushlabs.ai';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/images/ai-resume-tailor-thumb.jpg`;
 
 interface SEOProps {

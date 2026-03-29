@@ -86,7 +86,7 @@ export function Header({ navigate }: HeaderProps) {
           {/* Logo and Branding */}
           <div className="flex-shrink-0">
             <a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }}>
-              <img className={`transition-all duration-300 ${isScrolled ? 'h-16' : 'h-24'} w-auto`} src={isScrolled ? logoNoTextImage : currentLogoImage} alt={t('header.logoAlt')} />
+              <img className={`transition-all duration-300 ${isScrolled ? 'h-16' : 'h-24'} w-auto`} src={isScrolled ? logoNoTextImage : currentLogoImage} alt={t('header.logoAlt')} width={1200} height={360} />
             </a>
           </div>
 

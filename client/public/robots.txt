@@ -4,4 +4,4 @@ Disallow: /test-api
 Disallow: /components
 Disallow: /examples
 
-Sitemap: https://ai-resume-tailor-client.vercel.app/sitemap.xml
+Sitemap: https://resume.cushlabs.ai/sitemap.xml

@@ -133,7 +133,7 @@ export function Footer({ navigate }: FooterProps) {
             {/* Logo */}
             <div className="flex flex-col items-center lg:items-start">
               <a href="/" onClick={(e) => { e.preventDefault(); handleNavClick('home'); }}>
-                <img className="h-16 w-auto mb-4" src={currentLogoImage} alt={t('footer.logoAlt')} />
+                <img className="h-16 w-auto mb-4" src={currentLogoImage} alt={t('footer.logoAlt')} width={1200} height={360} loading="lazy" />
               </a>
             </div>
 

@@ -185,9 +185,9 @@ export function PricingPage() {
                 <Check className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-sm">
+                <h3 className="font-bold text-gray-900 text-sm">
                   {benefit.text}
-                </h4>
+                </h3>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {benefit.subtext}
                 </p>

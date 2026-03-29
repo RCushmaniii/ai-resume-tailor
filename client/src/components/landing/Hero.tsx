@@ -77,6 +77,8 @@ export function Hero() {
               <img
                 src={heroImage}
                 alt={t('landing.hero.heroImageAlt')}
+                width={1920}
+                height={1080}
                 className="w-full h-auto object-cover"
                 onError={(e) => {
                   // Fallback gradient if image doesn't load
