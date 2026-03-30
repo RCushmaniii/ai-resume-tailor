@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight, ChevronDown } from 'lucide-react';
 import heroImage from '@/assets/images/hero.jpg';
 import { useTranslation } from 'react-i18next';
 
@@ -8,12 +8,9 @@ export function Hero() {
 
   const handleCTA = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Update URL and trigger navigation
     window.history.pushState({}, '', '/analyze');
-    // Force a re-render by dispatching popstate
     const popStateEvent = new PopStateEvent('popstate', { state: null });
     window.dispatchEvent(popStateEvent);
-    // Also try direct reload as fallback
     setTimeout(() => {
       if (window.location.pathname !== '/analyze') {
         window.location.href = '/analyze';
@@ -21,11 +18,22 @@ export function Hero() {
     }, 100);
   };
 
+  const handleScrollToHowItWorks = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById('how-it-works');
+    if (el) {
+      const headerOffset = 100;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-slate-50">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
-      
+
       <div className="container mx-auto px-4 py-20 lg:py-28">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Content */}
@@ -51,7 +59,7 @@ export function Hero() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
               <Button
                 size="lg"
                 onClick={handleCTA}
@@ -61,6 +69,14 @@ export function Hero() {
                 {t('landing.hero.cta')}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
+              <a
+                href="#how-it-works"
+                onClick={handleScrollToHowItWorks}
+                className="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors"
+              >
+                {t('landing.hero.secondaryCta')}
+                <ChevronDown className="w-4 h-4" />
+              </a>
             </div>
 
             {/* Social Proof */}
@@ -81,9 +97,8 @@ export function Hero() {
                 height={1080}
                 className="w-full h-auto object-cover"
                 onError={(e) => {
-                  // Fallback gradient if image doesn't load
                   e.currentTarget.style.display = 'none';
-                  e.currentTarget.parentElement!.style.background = 
+                  e.currentTarget.parentElement!.style.background =
                     'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                   e.currentTarget.parentElement!.style.minHeight = '400px';
                 }}
@@ -103,6 +118,16 @@ export function Hero() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* SEO body copy — keyword-rich text for search engines */}
+        <div className="mt-20 max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+            {t('landing.hero.seoHeading')}
+          </h2>
+          <p className="text-base text-slate-600 leading-relaxed">
+            {t('landing.hero.seoCopy')}
+          </p>
         </div>
       </div>
 

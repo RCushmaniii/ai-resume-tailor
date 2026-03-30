@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -33,6 +33,38 @@ export function FAQ() {
     },
   ];
 
+  // Inject FAQPage schema for Google rich results
+  useEffect(() => {
+    const schemaId = 'faq-schema';
+    const existing = document.getElementById(schemaId);
+    if (existing) existing.remove();
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    };
+
+    const script = document.createElement('script');
+    script.id = schemaId;
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+
+    return () => {
+      const el = document.getElementById(schemaId);
+      if (el) el.remove();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t]);
+
   return (
     <section id="faq" className="py-20 bg-slate-50">
       <div className="container mx-auto px-4">
@@ -66,7 +98,7 @@ export function FAQ() {
                   }`}
                 />
               </button>
-              
+
               {openIndex === index && (
                 <div className="px-6 pb-5 text-slate-600 leading-relaxed animate-in fade-in slide-in-from-top-2 duration-200">
                   {faq.answer}

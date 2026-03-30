@@ -200,6 +200,9 @@ export const en = {
       subheadlinePrefix: "AI-powered analysis shows exactly what recruiters want to see.",
       subheadlineEmphasis: "3 free analyses included.",
       cta: "Analyze My Resume Free",
+      secondaryCta: "See how it works",
+      seoHeading: "Free ATS Resume Checker & Keyword Optimizer",
+      seoCopy: "Most resumes get rejected by Applicant Tracking Systems before a human ever reads them. AI Resume Tailor analyzes your resume against any job description, identifies missing keywords, and shows you exactly how to improve your match score — all in under 60 seconds. Whether you're a software engineer, marketer, nurse, or project manager, our AI understands your industry and gives you actionable, personalized recommendations to get past the ATS and into the interview.",
       socialProofPrefix: "Used by",
       socialProofHighlight: "10,000+",
       socialProofSuffix: "job seekers",
@@ -281,6 +284,7 @@ export const en = {
       resumesAnalyzed: "Resumes Analyzed",
       averageMatchScore: "Average Match Score",
       averageAnalysisTime: "Average Analysis Time",
+      freeForever: "Private & Secure",
     },
     faq: {
       heading: "Frequently Asked Questions",
@@ -308,7 +312,7 @@ export const en = {
         },
         q6: {
           question: "Do I need to create an account?",
-          answer: "No. Just paste your resume and the job description and get instant analysis. No registration, no email required.",
+          answer: "Creating a free account takes just 30 seconds — sign up with Google, LinkedIn, or email. You get 3 free analyses to try the tool, and your data is never stored or shared.",
         },
       },
     },

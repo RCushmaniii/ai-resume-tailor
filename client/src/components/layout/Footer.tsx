@@ -29,8 +29,6 @@ export function Footer({ navigate }: FooterProps) {
     resources: [
       { key: 'documentation', href: '/docs', page: 'docs/index' },
       { key: 'methodology', href: '/methodology', page: 'methodology' },
-      { key: 'resumeTips', href: '/', page: 'home' },
-      { key: 'support', href: '/', page: 'home' },
     ],
     legal: [
       { key: 'privacy', href: '/privacy', page: 'privacy' },
@@ -45,19 +43,19 @@ export function Footer({ navigate }: FooterProps) {
       name: 'GitHub', 
       href: 'https://github.com/RCushmaniii/ai-resume-tailor', 
       icon: Github,
-      ariaLabel: 'GitHub'
+      ariaLabel: 'View our source code on GitHub'
     },
-    { 
-      name: 'X (Twitter)', 
-      href: 'https://twitter.com', 
+    {
+      name: 'X (Twitter)',
+      href: 'https://twitter.com',
       icon: Twitter,
-      ariaLabel: 'X (Twitter)'
+      ariaLabel: 'Follow us on X (Twitter)'
     },
-    { 
-      name: 'LinkedIn', 
-      href: 'https://linkedin.com', 
+    {
+      name: 'LinkedIn',
+      href: 'https://linkedin.com',
       icon: Linkedin,
-      ariaLabel: 'LinkedIn'
+      ariaLabel: 'Follow us on LinkedIn'
     },
   ];
 

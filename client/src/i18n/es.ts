@@ -197,6 +197,9 @@ export const es = {
       subheadlinePrefix: "El análisis con IA te muestra exactamente lo que los reclutadores quieren ver.",
       subheadlineEmphasis: "3 análisis gratis incluidos.",
       cta: "Analizar mi CV gratis",
+      secondaryCta: "Mira cómo funciona",
+      seoHeading: "Verificador Gratuito de CV para ATS y Optimizador de Palabras Clave",
+      seoCopy: "La mayoría de los CVs son rechazados por los Sistemas de Seguimiento de Candidatos antes de que un humano los lea. AI Resume Tailor analiza tu CV contra cualquier descripción de trabajo, identifica palabras clave faltantes y te muestra exactamente cómo mejorar tu puntuación de coincidencia — todo en menos de 60 segundos. Ya seas ingeniero de software, especialista en marketing, enfermero o gerente de proyectos, nuestra IA entiende tu industria y te da recomendaciones personalizadas para pasar el ATS y llegar a la entrevista.",
       socialProofPrefix: "Usado por",
       socialProofHighlight: "10,000+",
       socialProofSuffix: "personas buscando chamba",
@@ -307,7 +310,7 @@ export const es = {
         },
         q6: {
           question: "¿Necesito crear una cuenta?",
-          answer: "No. Solo pega tu currículum y la descripción del trabajo y obtén análisis instantáneo. Sin registro, sin correo electrónico requerido.",
+          answer: "Crear una cuenta gratis toma solo 30 segundos — regístrate con Google, LinkedIn o correo electrónico. Obtienes 3 análisis gratis para probar la herramienta, y tus datos nunca se almacenan ni comparten.",
         },
       },
     },
