@@ -24,5 +24,12 @@
   },
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.2.8"
+  },
+  "pnpm": {
+    "overrides": {
+      "yaml@<2.8.0": "2.8.0",
+      "js-yaml@<3.14.2": "3.14.2",
+      "ajv@<6.12.6": "6.12.6"
+    }
   }
 }
