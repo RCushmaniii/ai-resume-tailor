@@ -14,8 +14,16 @@ from dotenv import load_dotenv
 # Import AI engine
 from ai_engine import analyze_resume
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+# Configure structured JSON logging
+from pythonjsonlogger.json import JsonFormatter
+
+_handler = logging.StreamHandler()
+_handler.setFormatter(JsonFormatter(
+    fmt="%(asctime)s %(levelname)s %(name)s %(message)s",
+    rename_fields={"asctime": "timestamp", "levelname": "level", "name": "logger"},
+))
+logging.root.handlers = [_handler]
+logging.root.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Clerk JWKS cache
