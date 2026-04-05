@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import logging
 import time
 import os
@@ -38,6 +40,14 @@ CORS(app, resources={
     }
 })
 
+# Rate limiting - per-IP request throttling
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://",
+)
+
 # Security: Suspicious patterns that might indicate injection attempts
 SUSPICIOUS_PATTERNS = [
     r'<script[\s\S]*?>[\s\S]*?</script>',  # Script tags
@@ -71,6 +81,15 @@ def api_error(
     if extra:
         payload.update(extra)
     return jsonify(payload), status_code
+
+
+@app.errorhandler(429)
+def rate_limit_exceeded(e):
+    return api_error(
+        error_code="RATE_LIMITED",
+        status_code=429,
+        message="Too many requests. Please slow down and try again.",
+    )
 
 
 def _get_bearer_token() -> str | None:
@@ -195,6 +214,7 @@ def contains_suspicious_content(text: str) -> bool:
     return False
 
 @app.route("/api/health", methods=["GET"])
+@limiter.limit("60 per minute")
 def health():
     return jsonify({
         "status": "ok",
@@ -208,6 +228,7 @@ def health():
 # ═══════════════════════════════════════════════════════════════════════════
 
 @app.route("/api/parse-resume", methods=["POST"])
+@limiter.limit("10 per minute")
 def parse_resume():
     """
     Parse uploaded resume file (PDF or DOCX) and return extracted text.
@@ -599,6 +620,7 @@ def dev_reset():
 
 
 @app.route("/api/me", methods=["GET"])
+@limiter.limit("30 per minute")
 def me():
     """Validate Clerk access token and return basic user info.
 
@@ -637,6 +659,7 @@ def me():
         )
 
 @app.route("/api/analyze", methods=["POST"])
+@limiter.limit("5 per minute")
 def analyze():
     start_time = time.time()
     logger.info("Received analyze request")
@@ -816,19 +839,21 @@ def analyze():
             extra={"match_score": 0},
         )
 
-# Register Stripe routes
+# Register Stripe routes (exempt from rate limiting — requests come from Stripe)
 try:
-    from stripe_integration import register_stripe_routes
+    from stripe_integration import register_stripe_routes, stripe_bp
     register_stripe_routes(app)
+    limiter.exempt(stripe_bp)
 except ImportError:
     logger.warning("Stripe integration not available - stripe_integration module not found")
 except Exception as e:
     logger.warning(f"Stripe integration not initialized: {e}")
 
-# Register Clerk webhook routes
+# Register Clerk webhook routes (exempt from rate limiting — requests come from Clerk)
 try:
-    from clerk_webhooks import register_clerk_webhook_routes
+    from clerk_webhooks import register_clerk_webhook_routes, clerk_webhook_bp
     register_clerk_webhook_routes(app)
+    limiter.exempt(clerk_webhook_bp)
 except ImportError:
     logger.warning("Clerk webhooks not available - clerk_webhooks module not found")
 except Exception as e:

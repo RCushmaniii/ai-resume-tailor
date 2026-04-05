@@ -186,6 +186,7 @@ export const es = {
     ANALYZE_JOB_TOO_LONG: "La vacante está muy larga (máximo {{max_length}} caracteres).",
     ANALYZE_CREDITS_EXCEEDED: "Ya usaste todos tus análisis gratis. Actualiza a Pro para más.",
 
+    RATE_LIMITED: "Demasiadas solicitudes. Por favor, espera un momento e intenta de nuevo.",
     INTERNAL_ERROR: "Error del servidor. Intenta de nuevo.",
   },
   landing: {

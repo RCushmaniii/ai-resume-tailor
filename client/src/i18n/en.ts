@@ -189,6 +189,7 @@ export const en = {
     ANALYZE_JOB_TOO_LONG: "Job description text is too long (maximum {{max_length}} characters).",
     ANALYZE_CREDITS_EXCEEDED: "You’ve used all your free analyses. Upgrade to Pro for more.",
 
+    RATE_LIMITED: "Too many requests. Please slow down and try again.",
     INTERNAL_ERROR: "Server error. Please try again.",
   },
   landing: {
