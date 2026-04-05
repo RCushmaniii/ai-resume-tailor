@@ -451,7 +451,8 @@ export const en = {
   pricing: {
     title: "Unlock the Perfect Resume",
     subtitle: "Get hired faster with AI-powered optimization.",
-    oneTimePayment: "One-time payment",
+    annualOption: "or $79/year (save 45%)",
+    includes: "50 analyses/month + all Pro features",
     socialProof: "Join 500+ professionals who got hired faster",
     cta: "Upgrade & Unlock Now",
     secure: "Secure SSL Encrypted Payment",
