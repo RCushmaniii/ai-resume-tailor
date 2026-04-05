@@ -5,15 +5,13 @@ import App from './App.tsx'
 import './index.css'
 import { initI18n } from '@/lib/i18n'
 import { initSentry } from '@/lib/sentry'
+import { validateEnv } from '@/lib/validateEnv'
 
+validateEnv()
 initSentry()
 initI18n()
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string
-
-if (!CLERK_PUBLISHABLE_KEY) {
-  console.warn('Missing VITE_CLERK_PUBLISHABLE_KEY - auth will not work')
-}
 
 async function enableMocking() {
   // Check if MSW is explicitly enabled via environment variable
