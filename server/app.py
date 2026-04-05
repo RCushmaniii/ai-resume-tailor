@@ -28,6 +28,10 @@ VERSION = "1.0.2"
 # Load environment variables
 load_dotenv()
 
+# Validate required env vars before anything else
+from config import validate_env
+validate_env()
+
 app = Flask(__name__)
 
 # CORS configuration - allow requests from your frontend domain
