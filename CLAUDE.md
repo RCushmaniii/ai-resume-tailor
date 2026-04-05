@@ -286,6 +286,11 @@ Note: Build requires all `VITE_*` env vars set (VITE_API_URL, VITE_CLERK_PUBLISH
 curl https://resume.cushlabs.ai/api/health
 ```
 
+### Database backup
+- Neon free tier provides 6-hour point-in-time recovery (PITR) automatically
+- Project: `lingering-feather-33068134` in org `org-snowy-poetry-98147419`
+- No manual backup configuration needed; upgrade to paid plan for 7-30 day retention
+
 ### Always run before deploying
 ```bash
 pnpm verify

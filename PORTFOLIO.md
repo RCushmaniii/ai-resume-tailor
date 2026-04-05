@@ -75,14 +75,14 @@ health_status:
   testing: "Y"
   ci_cd: "Y"
   health_endpoint: "Y"
-  security_headers: "-"
+  security_headers: "Y"
   rate_limiting: "Y"
   env_validation: "Y"
   analytics: "Y"
-  structured_logging: "-"
+  structured_logging: "Y"
   dependabot: "Y"
   secret_scanning: "Y"
-  db_backup: "-"
+  db_backup: "PITR-6h"
 ---
 
 ## Overview
