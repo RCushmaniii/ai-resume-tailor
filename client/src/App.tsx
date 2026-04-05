@@ -1,5 +1,6 @@
 // File: src/App.tsx
 import { useState, useEffect, lazy, Suspense } from 'react';
+import * as Sentry from '@sentry/react';
 import { Toaster } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { Header } from './components/layout/Header';
@@ -151,28 +152,40 @@ function App() {
   };
 
   return (
-    <SubscriptionProvider>
-      <SignInPromptProvider>
-        <div className="flex flex-col min-h-screen bg-white">
-        <Toaster position="top-center" richColors closeButton />
-        <Header navigate={handleNavClick} />
-        <main className={currentPage === 'home' ? 'flex-grow' : 'flex-grow container mx-auto px-4 py-8'}>
-          <Suspense fallback={
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">{t('app.loading')}</p>
-              </div>
-            </div>
-          }>
-            {renderCurrentPage()}
-          </Suspense>
-        </main>
-          <Footer navigate={handleNavClick} />
-
+    <Sentry.ErrorBoundary fallback={
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('app.error_title', 'Something went wrong')}</h1>
+          <p className="text-gray-600 mb-4">{t('app.error_description', 'An unexpected error occurred. Please refresh the page.')}</p>
+          <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            {t('app.error_reload', 'Refresh Page')}
+          </button>
         </div>
-      </SignInPromptProvider>
-    </SubscriptionProvider>
+      </div>
+    }>
+      <SubscriptionProvider>
+        <SignInPromptProvider>
+          <div className="flex flex-col min-h-screen bg-white">
+          <Toaster position="top-center" richColors closeButton />
+          <Header navigate={handleNavClick} />
+          <main className={currentPage === 'home' ? 'flex-grow' : 'flex-grow container mx-auto px-4 py-8'}>
+            <Suspense fallback={
+              <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">{t('app.loading')}</p>
+                </div>
+              </div>
+            }>
+              {renderCurrentPage()}
+            </Suspense>
+          </main>
+            <Footer navigate={handleNavClick} />
+
+          </div>
+        </SignInPromptProvider>
+      </SubscriptionProvider>
+    </Sentry.ErrorBoundary>
   );
 }
 
