@@ -20,7 +20,7 @@
     "test:server": "cd server && venv/Scripts/python.exe -m pytest -v"
   },
   "devDependencies": {
-    "prettier": "^3.4.2"
+    "prettier": "^3.8.1"
   },
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.2.8"
