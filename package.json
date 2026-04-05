@@ -15,7 +15,9 @@
     "format": "prettier --write .",
     "verify": "pnpm --filter ./client verify",
     "install:client": "pnpm --filter ./client install",
-    "install:server": "cd server && python -m venv venv && .\\venv\\Scripts\\activate && pip install -r requirements.txt && python -m spacy download en_core_web_sm"
+    "install:server": "cd server && python -m venv venv && .\\venv\\Scripts\\activate && pip install -r requirements.txt && python -m spacy download en_core_web_sm",
+    "test:client": "pnpm --filter ./client test",
+    "test:server": "cd server && venv/Scripts/python.exe -m pytest -v"
   },
   "devDependencies": {
     "prettier": "^3.4.2"
