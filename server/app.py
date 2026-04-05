@@ -8,11 +8,14 @@ import os
 import re
 import jwt
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 
 # Import AI engine
 from ai_engine import analyze_resume
+
+# Import database helpers
+from database import get_profile, save_analysis_with_credit, reset_usage
 
 # Configure structured JSON logging
 from pythonjsonlogger.json import JsonFormatter
@@ -72,7 +75,6 @@ SUSPICIOUS_PATTERNS = [
 ]
 
 _usage_counts_guest = {}
-_usage_counts_user = {}
 
 
 def api_error(
@@ -372,11 +374,10 @@ def dev_reset():
     
     logger.info("Development reset requested")
     
-    # Reset server-side usage counters
-    global _usage_counts_guest, _usage_counts_user
+    # Reset server-side guest usage counters
+    global _usage_counts_guest
     _usage_counts_guest.clear()
-    _usage_counts_user.clear()
-    logger.info("Server-side usage counters reset")
+    logger.info("Server-side guest usage counters reset")
     
     # Check if this is an API request (JSON) or a browser request
     if request.headers.get('Content-Type') == 'application/json' or request.headers.get('Accept') == 'application/json':
@@ -772,33 +773,75 @@ def analyze():
                 extra={"match_score": 0},
             )
         
+        # --- Authentication ---
         token = _get_bearer_token()
         user_id = None
+        profile = None
         if token:
             user_json = _validate_clerk_token(token)
             if user_json:
                 user_id = user_json.get("id")
 
-        guest_limit = int(os.getenv("GUEST_CREDITS_TOTAL", "3"))
-        reg_limit = int(os.getenv("REG_CREDITS_TOTAL", "7"))
-
+        # --- Usage enforcement (database-backed for users, in-memory for guests) ---
         if user_id:
-            used = int(_usage_counts_user.get(user_id, 0))
-            total = reg_limit
-            remaining = max(0, total - used)
-            if used >= total:
+            try:
+                profile = get_profile(user_id)
+            except Exception as e:
+                logger.error(f"Database error fetching profile for {user_id}: {e}")
                 return api_error(
-                    error_code="ANALYZE_CREDITS_EXCEEDED_REGISTERED",
+                    error_code="INTERNAL_ERROR",
+                    status_code=500,
+                    message="Server error",
+                    extra={"match_score": 0},
+                )
+
+            if not profile:
+                return api_error(
+                    error_code="PROFILE_NOT_FOUND",
+                    status_code=403,
+                    message="User profile not found. Please sign out and sign back in.",
+                    extra={"match_score": 0},
+                )
+
+            tier = profile.get("subscription_tier", "free")
+            used = profile.get("analyses_used_this_period", 0) or 0
+            total = profile.get("analyses_limit", 5) or 5
+            reset_date = profile.get("analyses_reset_date")
+
+            # Pro users: reset usage if billing period has rolled over
+            if tier == "pro" and reset_date:
+                reset_dt = reset_date if hasattr(reset_date, 'tzinfo') else datetime.fromisoformat(str(reset_date))
+                if reset_dt.tzinfo is None:
+                    reset_dt = reset_dt.replace(tzinfo=timezone.utc)
+                if datetime.now(timezone.utc) >= reset_dt:
+                    try:
+                        reset_usage(user_id)
+                        used = 0
+                        logger.info(f"Reset usage for pro user {user_id} (period expired)")
+                    except Exception as e:
+                        logger.error(f"Failed to reset usage for {user_id}: {e}")
+
+            remaining = max(0, total - used)
+
+            if used >= total:
+                error_code = (
+                    "ANALYZE_CREDITS_EXCEEDED_PRO" if tier == "pro"
+                    else "ANALYZE_CREDITS_EXCEEDED_REGISTERED"
+                )
+                return api_error(
+                    error_code=error_code,
                     status_code=429,
                     message="Credit limit reached",
                     extra={
                         "match_score": 0,
                         "credits_total": total,
                         "credits_used": used,
-                        "credits_remaining": remaining,
+                        "credits_remaining": 0,
+                        "subscription_tier": tier,
                     },
                 )
         else:
+            guest_limit = int(os.getenv("GUEST_CREDITS_TOTAL", "3"))
             guest_id = _get_guest_identity()
             used = int(_usage_counts_guest.get(guest_id, 0))
             total = guest_limit
@@ -812,26 +855,43 @@ def analyze():
                         "match_score": 0,
                         "credits_total": total,
                         "credits_used": used,
-                        "credits_remaining": remaining,
+                        "credits_remaining": 0,
                     },
                 )
 
-        # Use AI engine to analyze resume against job description
+        # --- Run AI analysis ---
         result = analyze_resume(resume_text, job_text)
 
+        # --- Persist usage ---
         if user_id:
-            _usage_counts_user[user_id] = int(_usage_counts_user.get(user_id, 0)) + 1
-            used = int(_usage_counts_user.get(user_id, 0))
-            total = reg_limit
+            try:
+                save_result = save_analysis_with_credit(
+                    user_id=user_id,
+                    resume_text=resume_text,
+                    job_description=job_text,
+                    job_title=data.get("job_title"),
+                    company_name=data.get("company_name"),
+                    score=result.get("match_score", 0),
+                    result_json=result,
+                )
+                used = total - save_result.get("credits_remaining", 0)
+                remaining = save_result.get("credits_remaining", 0)
+            except Exception as e:
+                logger.error(f"Failed to save analysis for {user_id}: {e}")
+                # Analysis succeeded — return results even if save failed
+                used += 1
+                remaining = max(0, total - used)
         else:
             guest_id = _get_guest_identity()
             _usage_counts_guest[guest_id] = int(_usage_counts_guest.get(guest_id, 0)) + 1
-            used = int(_usage_counts_guest.get(guest_id, 0))
-            total = guest_limit
+            used = int(_usage_counts_guest[guest_id])
+            remaining = max(0, total - used)
 
         result["credits_total"] = total
         result["credits_used"] = used
-        result["credits_remaining"] = max(0, total - used)
+        result["credits_remaining"] = remaining
+        if profile:
+            result["subscription_tier"] = profile.get("subscription_tier", "free")
         
         # Calculate processing time (if not already included in result)
         if "processing_time_seconds" not in result:

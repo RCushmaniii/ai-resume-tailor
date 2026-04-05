@@ -197,21 +197,17 @@ export function PricingPage() {
         </div>
 
         {/* Pricing Offer */}
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 mb-6 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
-              {t('pricing.oneTimePayment', 'One-time payment')}
-            </p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-gray-900">$4.99</span>
-              <span className="text-sm text-gray-400 line-through decoration-gray-400">$19.99</span>
-            </div>
+        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 mb-6">
+          <div className="flex items-baseline justify-center gap-1">
+            <span className="text-3xl font-bold text-gray-900">$12</span>
+            <span className="text-gray-600">/month</span>
           </div>
-          <div className="text-right">
-            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-              75% OFF
-            </span>
-          </div>
+          <p className="text-center text-sm text-blue-600 mt-1">
+            {t('pricing.annualOption', 'or $79/year (save 45%)')}
+          </p>
+          <p className="text-center text-xs text-gray-400 mt-1">
+            {t('pricing.includes', '50 analyses/month + all Pro features')}
+          </p>
         </div>
 
         {/* Social Proof */}

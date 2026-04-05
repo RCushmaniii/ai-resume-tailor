@@ -449,7 +449,8 @@ export const es = {
   pricing: {
     title: "Desbloquea el CV Perfecto",
     subtitle: "Consigue trabajo más rápido con optimización de IA.",
-    oneTimePayment: "Pago único",
+    annualOption: "o $79/año (ahorra 45%)",
+    includes: "50 análisis/mes + todas las funciones Pro",
     socialProof: "Únete a 500+ profesionales que consiguieron trabajo más rápido",
     cta: "Actualizar y Desbloquear",
     secure: "Pago Seguro con SSL",
