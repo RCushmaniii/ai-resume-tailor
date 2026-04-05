@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { resolve } from 'path'
 import fs from 'fs-extra'
 import type { ViteDevServer } from 'vite'
@@ -54,7 +55,16 @@ function copyMarkdownFiles() {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), copyMarkdownFiles()],
+  plugins: [
+    react(),
+    copyMarkdownFiles(),
+    sentryVitePlugin({
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      // Only upload source maps during production builds when auth token is available
+      disable: !process.env.SENTRY_AUTH_TOKEN,
+    }),
+  ],
   resolve: {
     alias: {
       '@': resolve(__dirname, './src')
@@ -64,6 +74,8 @@ export default defineConfig({
   publicDir: 'public',
   build: {
     outDir: 'dist',
+    // Enable source maps for Sentry
+    sourcemap: true,
     // Ensure assets are copied
     assetsInlineLimit: 0,
     // Code splitting and chunk optimization

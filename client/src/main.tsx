@@ -4,7 +4,9 @@ import { ClerkProvider } from '@clerk/clerk-react'
 import App from './App.tsx'
 import './index.css'
 import { initI18n } from '@/lib/i18n'
+import { initSentry } from '@/lib/sentry'
 
+initSentry()
 initI18n()
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string
