@@ -14,7 +14,9 @@
     "verify": "pnpm typecheck && pnpm lint && pnpm build",
     "health-check": "node ../scripts/dev-health-check.js",
     "init:template": "tsx scripts/init.ts",
-    "msw:init": "node scripts/msw-init.mjs"
+    "msw:init": "node scripts/msw-init.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.60.0",
@@ -55,6 +57,8 @@
     "@eslint/js": "^9.35.0",
     "@sentry/vite-plugin": "^5.1.1",
     "@tailwindcss/typography": "^0.5.16",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/fs-extra": "^11.0.4",
     "@types/marked": "^6.0.0",
     "@types/node": "^24.5.2",
@@ -67,6 +71,7 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "fs-extra": "^11.3.2",
     "globals": "^16.4.0",
+    "jsdom": "^29.0.1",
     "msw": "^2.11.2",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
@@ -74,7 +79,8 @@
     "tsx": "^4.20.6",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.43.0",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^4.1.2"
   },
   "msw": {
     "workerDirectory": [
