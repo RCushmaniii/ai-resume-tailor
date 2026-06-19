@@ -1,9 +1,14 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter ai-resume-tailor-client build",
   "outputDirectory": "client/dist",
   "rewrites": [
-    { "source": "/((?!assets|favicon|mockServiceWorker).*)", "destination": "/index.html" }
-  ]
+    {
+      "source": "/((?!assets|favicon|mockServiceWorker).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "ignoreCommand": "git rev-parse --verify HEAD^ > /dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- . ':!docs/' ':!README.md' ':!CLAUDE.md' ':!LICENSE' ':!portfolio.md' ':!.gitignore'"
 }
