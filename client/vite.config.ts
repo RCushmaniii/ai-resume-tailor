@@ -1,60 +1,60 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { sentryVitePlugin } from '@sentry/vite-plugin'
-import { resolve } from 'path'
-import fs from 'fs-extra'
-import type { ViteDevServer } from 'vite'
+import { defineConfig, loadEnv, type UserConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
+import { resolve } from 'path';
+import fs from 'fs-extra';
+import type { ViteDevServer } from 'vite';
 
 // Custom plugin to copy markdown files to the build output
 function copyMarkdownFiles() {
   return {
     name: 'copy-markdown-files',
     configureServer(server: ViteDevServer) {
-      const docsDir = resolve(__dirname, '..', 'docs')
-      const publicDocsDir = resolve(__dirname, 'public', 'docs')
+      const docsDir = resolve(__dirname, '..', 'docs');
+      const publicDocsDir = resolve(__dirname, 'public', 'docs');
 
       const syncDocsToPublic = () => {
-        if (!fs.existsSync(docsDir)) return
+        if (!fs.existsSync(docsDir)) return;
 
-        fs.copySync(docsDir, publicDocsDir)
-        console.log(`✅ Synced docs to ${publicDocsDir}`)
-      }
+        fs.copySync(docsDir, publicDocsDir);
+        console.log(`✅ Synced docs to ${publicDocsDir}`);
+      };
 
-      syncDocsToPublic()
-      server.watcher.add(docsDir)
+      syncDocsToPublic();
+      server.watcher.add(docsDir);
 
       server.watcher.on('all', (_event, filePath) => {
         if (typeof filePath === 'string' && filePath.startsWith(docsDir)) {
-          syncDocsToPublic()
+          syncDocsToPublic();
         }
-      })
+      });
     },
     writeBundle() {
       try {
-        const docsSourceDir = resolve(__dirname, '..', 'docs')
-        const docsTargetDir = 'dist/docs'
+        const docsSourceDir = resolve(__dirname, '..', 'docs');
+        const docsTargetDir = 'dist/docs';
 
         if (fs.existsSync(docsSourceDir)) {
-          fs.copySync(docsSourceDir, docsTargetDir)
-          console.log(`✅ Copied docs to ${docsTargetDir}`)
+          fs.copySync(docsSourceDir, docsTargetDir);
+          console.log(`✅ Copied docs to ${docsTargetDir}`);
         }
-        
+
         // Ensure the legal directory is copied
         if (fs.existsSync('public/legal')) {
-          fs.copySync('public/legal', 'dist/legal')
-          console.log('✅ Copied legal markdown files to dist/legal')
+          fs.copySync('public/legal', 'dist/legal');
+          console.log('✅ Copied legal markdown files to dist/legal');
         }
-        
-        console.log('✅ Successfully copied docs markdown files to dist')
+
+        console.log('✅ Successfully copied docs markdown files to dist');
       } catch (error) {
-        console.error('❌ Error copying markdown files:', error)
+        console.error('❌ Error copying markdown files:', error);
       }
-    }
-  }
+    },
+  };
 }
 
 // https://vite.dev/config/
-export default defineConfig({
+const config: UserConfig = {
   plugins: [
     react(),
     copyMarkdownFiles(),
@@ -67,8 +67,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src')
-    }
+      '@': resolve(__dirname, './src'),
+    },
   },
   // Add public directory configuration
   publicDir: 'public',
@@ -121,16 +121,16 @@ export default defineConfig({
     fs: {
       // Prevent serving files from root that might conflict with routes
       deny: ['components.json'],
-      allow: [resolve(__dirname, '..')]
+      allow: [resolve(__dirname, '..')],
     },
     // Proxy API requests to Flask backend
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
-        secure: false
-      }
-    }
+        secure: false,
+      },
+    },
   },
   preview: {
     // Configure the preview server
@@ -138,5 +138,23 @@ export default defineConfig({
     port: 4173,
     strictPort: false,
     open: true,
+  },
+};
+
+export default defineConfig(({ command, mode }) => {
+  // Fail the production build LOUDLY if a critical public env var is missing, so we
+  // can never again ship a keyless bundle (root cause of the 2026-06-19 auth outage:
+  // a build made without VITE_CLERK_PUBLISHABLE_KEY crashed Clerk in production).
+  if (command === 'build') {
+    const env = loadEnv(mode, process.cwd(), '');
+    if (!env.VITE_CLERK_PUBLISHABLE_KEY) {
+      throw new Error(
+        '[vite build] VITE_CLERK_PUBLISHABLE_KEY is missing — refusing to build a ' +
+          'keyless bundle. Add it to client/.env.production (it is a public key, safe ' +
+          'to commit).'
+      );
+    }
   }
-})
+
+  return config;
+});
