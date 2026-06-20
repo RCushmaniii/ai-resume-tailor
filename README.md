@@ -1,5 +1,6 @@
 # AI Resume Tailor
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-resume.cushlabs.ai-22c55e?style=flat&logo=googlechrome&logoColor=white)](https://resume.cushlabs.ai)
 ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat&logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask_3.0-000000?style=flat&logo=flask&logoColor=white)
@@ -102,22 +103,22 @@ Visit `http://localhost:5173`
 
 **Frontend (.env):**
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_API_URL` | Backend API URL |
-| `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
-| `VITE_GUEST_CREDITS_TOTAL` | Free analyses for guests (default: 5) |
+| Variable                     | Description                           |
+| ---------------------------- | ------------------------------------- |
+| `VITE_API_URL`               | Backend API URL                       |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key                 |
+| `VITE_GUEST_CREDITS_TOTAL`   | Free analyses for guests (default: 5) |
 
 **Backend (.env):**
 
-| Variable | Description |
-|----------|-------------|
-| `OPENAI_API_KEY` | OpenAI API key |
-| `OPENAI_MODEL` | Model to use (default: gpt-4o) |
-| `FRONTEND_URL` | Frontend origin for CORS |
-| `CLERK_SECRET_KEY` | Clerk secret key |
-| `CLERK_WEBHOOK_SECRET` | Clerk webhook signing secret |
-| `DATABASE_URL` | Neon Postgres connection string |
+| Variable               | Description                     |
+| ---------------------- | ------------------------------- |
+| `OPENAI_API_KEY`       | OpenAI API key                  |
+| `OPENAI_MODEL`         | Model to use (default: gpt-4o)  |
+| `FRONTEND_URL`         | Frontend origin for CORS        |
+| `CLERK_SECRET_KEY`     | Clerk secret key                |
+| `CLERK_WEBHOOK_SECRET` | Clerk webhook signing secret    |
+| `DATABASE_URL`         | Neon Postgres connection string |
 
 ## Live Demo
 
@@ -187,12 +188,12 @@ pnpm verify    # typecheck + lint + build
 
 ## Results
 
-| Metric | Detail |
-|--------|--------|
-| Analysis speed | Structured feedback in < 10 seconds |
-| Guest conversion | 5 free analyses before any signup prompt |
+| Metric           | Detail                                                |
+| ---------------- | ----------------------------------------------------- |
+| Analysis speed   | Structured feedback in < 10 seconds                   |
+| Guest conversion | 5 free analyses before any signup prompt              |
 | Language support | Full EN/ES coverage across all UI and analysis output |
-| Data retention | Zero — no resume data stored, by design |
+| Data retention   | Zero — no resume data stored, by design               |
 
 **What this project demonstrates:**
 
@@ -217,4 +218,4 @@ Guadalajara, Mexico
 
 ---
 
-*Last Updated: 2026-03-29*
+_Last Updated: 2026-03-29_
