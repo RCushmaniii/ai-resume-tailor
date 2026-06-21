@@ -27,12 +27,24 @@ tags:
 
 thumbnail: '/images/ai-resume-tailor-thumb.jpg'
 hero_images:
-  - '/images/ai-resume-tailor-01.png'
-  - '/images/ai-resume-tailor-02.png'
-  - '/images/ai-resume-tailor-03.png'
-  - '/images/ai-resume-tailor-04.png'
-  - '/images/ai-resume-tailor-05.png'
-  - '/images/ai-resume-tailor-06.png'
+  - src: '/images/ai-resume-tailor-01.png'
+    alt_en: 'AI Resume Tailor landing page introducing bilingual ATS resume optimization with instant feedback'
+    alt_es: 'Página principal de AI Resume Tailor que presenta la optimización bilingüe de currículums para sistemas ATS con retroalimentación instantánea'
+  - src: '/images/ai-resume-tailor-02.png'
+    alt_en: 'Resume and job description input screen where the user pastes both for analysis'
+    alt_es: 'Pantalla de entrada del currículum y la descripción del puesto donde el usuario pega ambos para el análisis'
+  - src: '/images/ai-resume-tailor-03.png'
+    alt_en: 'ATS match score result with overall compatibility percentage for the pasted resume'
+    alt_es: 'Resultado de la puntuación de compatibilidad ATS con el porcentaje general para el currículum pegado'
+  - src: '/images/ai-resume-tailor-04.png'
+    alt_en: 'Missing keywords panel highlighting terms from the job posting absent in the resume'
+    alt_es: 'Panel de palabras clave faltantes que resalta los términos de la oferta de empleo ausentes en el currículum'
+  - src: '/images/ai-resume-tailor-05.png'
+    alt_en: 'Severity-coded suggestion list using red, amber, and blue to prioritize fixes'
+    alt_es: 'Lista de sugerencias codificadas por gravedad que usa rojo, ámbar y azul para priorizar las correcciones'
+  - src: '/images/ai-resume-tailor-06.png'
+    alt_en: 'Stripe checkout for upgrading from free analyses to a paid plan'
+    alt_es: 'Pago con Stripe para pasar de los análisis gratuitos a un plan de pago'
 demo_video_url: '/video/ai-resume-tailor-brief.mp4'
 
 live_url: 'https://resume.cushlabs.ai'
@@ -45,12 +57,26 @@ problem_solved: |
   tools charge upfront, require accounts, or provide generic advice not tied to the specific posting.
   The Latin American market is further underserved by English-only tools.
 
+solution: |
+  GPT-4 returns structured JSON with a match score, keyword gaps, and severity-coded
+  suggestions, all parsed into type-safe TypeScript interfaces on the frontend. Guests
+  get 5 free analyses with no account required, so the product delivers value before
+  asking for anything in return. Full bilingual i18n makes English and Spanish first-class
+  citizens across every UI element, error message, and analysis output, and a privacy-first
+  architecture never persists resume data.
+
 key_outcomes:
   - 'Structured ATS feedback in under 10 seconds'
   - '5 free analyses before any signup prompt — value delivered first'
   - 'Zero resume data stored — privacy by architecture'
   - 'Full EN/ES bilingual coverage across UI and AI-generated analysis'
   - 'Guest-to-paid conversion funnel with embedded Stripe checkout'
+
+metrics:
+  - 'Structured, actionable ATS feedback delivered in under 10 seconds'
+  - '5 free analyses with no signup, no email, and no commitment'
+  - 'Native Spanish support — not machine-translated afterthoughts'
+  - 'Zero data retention — resume text is never persisted'
 
 tech_stack:
   - 'React 19'
