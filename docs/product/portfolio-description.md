@@ -120,8 +120,8 @@ Guadalajara, Mexico
 
 17 years of enterprise execution discipline. 8 years building cross-border bridges between US and Mexican markets. I translate complex technical challenges into practical business solutions.
 
-info@rankitbetter.com
-[GitHub](https://github.com/RCushmaniii) | [LinkedIn](https://linkedin.com/in/robert-cushman3) | [Portfolio](https://rankitbetter.com)
+robert@cushlabs.ai
+[GitHub](https://github.com/RCushmaniii) | [LinkedIn](https://linkedin.com/in/robert-cushman3) | [Website](https://cushlabs.ai)
 
 ---
 

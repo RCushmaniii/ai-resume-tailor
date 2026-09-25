@@ -310,7 +310,7 @@ pnpm verify
 ## Contact
 
 **Owner:** Robert Cushman
-**Email:** info@rankitbetter.com
+**Email:** robert@cushlabs.ai
 **GitHub:** RCushmaniii
 
 
