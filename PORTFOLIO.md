@@ -5,7 +5,7 @@
 portfolio_enabled: true
 portfolio_priority: 10
 portfolio_featured: false
-portfolio_last_reviewed: '2026-03-18'
+portfolio_last_reviewed: "2026-09-13"
 
 title: 'AI Resume Tailor'
 tagline: 'AI-powered ATS resume optimization with bilingual support and instant feedback'
