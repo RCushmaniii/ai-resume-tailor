@@ -1,0 +1,10 @@
+# Build context is ./server (see .github/workflows/build-image.yml).
+venv
+__pycache__
+*.pyc
+.pytest_cache
+tests
+.env
+.env.*
+*.log
+setup.bat
