@@ -43,6 +43,21 @@ load_dotenv()
 from config import validate_env
 validate_env()
 
+# Error reporting. Active only when SENTRY_DSN is set (production). The Flask
+# integration reports unhandled exceptions, i.e. real 5xx, and nothing else, so
+# a rejected upload or a 429 never becomes an alert.
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
+if os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DSN"),
+        environment=os.getenv("FLASK_ENV", "production"),
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=0.1,
+        send_default_pii=False,
+    )
+
 app = Flask(__name__)
 
 # CORS configuration - allow requests from your frontend domain
