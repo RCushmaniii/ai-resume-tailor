@@ -259,18 +259,20 @@ cd server && pytest           # Backend tests
 
 - **Host:** 178.156.192.117
 - **SSH:** `ssh deploy@178.156.192.117`
-- **VPS path:** `~/apps/resume-tailor/` (backend), `~/apps/static/resume-tailor/` (frontend static files)
+- **VPS path:** `~/apps/static/resume-tailor/` (frontend static files only). The box holds no checkout of this repo (removed 2026-10-26); the backend runs the GHCR image
 - **Orchestration:** `~/apps/cushlabs-prod-server/docker-compose.yml`
 - **Domain:** resume.cushlabs.ai (HTTPS via Caddy/Let's Encrypt)
 - **Internal port:** 5000 (bound to 127.0.0.1, not exposed publicly)
-- **Caddy config:** `/etc/caddy/Caddyfile` — needs update if routes change
+- **Caddy config:** `Caddyfile` in the `cushlabs-prod-server` repo (source of truth), installed with `scripts/sync-caddy.sh` — needs update if routes change
 - **Resource limits:** 4GB RAM total on VPS (~350MB used)
 
 ### Deploy backend change
+The box never builds. Merging to `main` runs `build-image.yml`, which pushes `ghcr.io/rcushmaniii/ai-resume-tailor:latest`; wait for that run to finish, then:
 ```bash
-ssh deploy@178.156.192.117 'cd ~/apps/resume-tailor && git pull && cd ~/apps/cushlabs-prod-server && docker compose up -d --build resume-tailor'
+ssh deploy@178.156.192.117 'cd ~/apps/cushlabs-prod-server && bash scripts/deploy-service.sh resume-tailor'
 ```
-- Code changes need `--build`, config-only changes just need `docker compose restart resume-tailor`
+- `deploy-service.sh` records the running image, pulls, recreates, waits up to 90 s for healthy and rolls back on failure. Never pass `--build`
+- Config-only changes (env vars in `~/apps/cushlabs-prod-server/.env.resume-tailor`) just need `docker compose up -d resume-tailor` in that directory
 - Logs: `ssh deploy@178.156.192.117 'docker logs -f resume-tailor'`
 
 ### Deploy frontend change
